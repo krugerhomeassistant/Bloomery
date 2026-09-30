@@ -44,4 +44,5 @@ Format: [Problem] → [Root cause] → [Verified solution]
 41. **App lock every open/minute was a nuisance** (user feedback) → lock only after N minutes away, per-device choice, default 15.
 42. **pytest-homeassistant-custom-component: `Integration 'bloomery' not found`** → the plugin's own `testing_config/custom_components` package shadows the repo's namespace package → in `tests_ha/conftest.py` append the repo's `custom_components` dir to `custom_components.__path__`; also needs `asyncio_mode = auto`.
 43. **E2E "away" simulation reset by navigation** → `pagehide` marks the session active (correct for real app close) → set `lastActive` from a non-app page before reopening.
+44. **hassfest: "string should not contain HTML"** → `<token>` in translations/en.json reads as a tag → no angle brackets in HA translation strings.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
