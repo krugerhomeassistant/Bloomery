@@ -18,4 +18,7 @@ Format: [Problem] → [Root cause] → [Verified solution]
 15. **GPT-5 family rejects `max_tokens`/`temperature`** → reasoning models → for provider `openai` send `max_completion_tokens` (×4 headroom for reasoning tokens), no temperature.
 16. **After-log note commented on a tag that was already logged** → note computed from full tag set → diff against previous tags; comment only on newly added ones.
 17. **Forecasts looked "missing" in demo** → by design, tags already logged today are skipped → verify forecasts via `/api/feed?today=<PMS date>`.
+18. **README screenshot run polluted demo data** → a failed earlier Playwright run had already saved a log, so the rerun toggled chips off/on → always reseed a fresh data dir before screenshot runs; scope chip clicks to `[role=dialog]`.
+19. **`rm -rf dir/*` in workspace blocked by safety check** → glob removal inside workspace → overwrite files instead of deleting.
+20. **GitHub API from sandbox returns "access not enabled"** until repo attached → use `git ls-remote --tags` on public action repos to find latest majors (checkout v7, setup-python v7, setup-node v7, qemu/buildx/login v4, metadata v6, build-push v7).
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

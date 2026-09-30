@@ -1,18 +1,15 @@
 # ZimaOS: App Store → "+" → Install a customized app → Import (paste this file).
-# Requires the image to exist on the box first (see README "ZimaOS"): ZimaOS import can't build.
+# Pulls the prebuilt multi-arch image from GitHub Container Registry (published by CI).
 name: bloomery
 services:
   bloomery:
-    image: bloomery:latest
+    image: ghcr.io/krugerhomeassistant/bloomery:latest
     container_name: bloomery
     restart: unless-stopped
     ports:
       - "8420:8000"
     environment:
-      BLOOMERY_ALLOW_REGISTRATION: "auto"
-      BLOOMERY_AI_PROVIDER: "none"   # none | openai | anthropic  (skip ollama on low-RAM boxes)
-      BLOOMERY_AI_MODEL: ""
-      BLOOMERY_AI_API_KEY: ""
+      BLOOMERY_ALLOW_REGISTRATION: "auto"   # AI is configured in the app: Profile → AI assistant
     volumes:
       - /DATA/AppData/bloomery:/data
     mem_limit: 256m
@@ -24,6 +21,9 @@ x-casaos:
   tagline:
     en_us: Private period & cycle tracker
   category: Health
+  icon: https://raw.githubusercontent.com/krugerhomeassistant/Bloomery/main/frontend/public/icon-512.png
+  description:
+    en_us: Private, self-hosted period & cycle tracker with predictions, daily insights and an optional AI assistant.
   port_map: "8420"
   scheme: http
   index: /

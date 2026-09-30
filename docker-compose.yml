@@ -1,12 +1,14 @@
 services:
   bloomery:
+    image: ghcr.io/krugerhomeassistant/bloomery:latest   # prebuilt; `--build` builds locally instead
     build: .
-    image: bloomery:latest
     container_name: bloomery
     restart: unless-stopped
     ports:
       - "${BLOOMERY_PORT:-8420}:8000"
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false   # optional; copy .env.example to customise
     volumes:
       - ./data:/data
 

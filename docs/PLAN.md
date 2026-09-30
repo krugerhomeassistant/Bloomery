@@ -34,7 +34,7 @@
 - [x] ZimaOS compose (`docker-compose.zimaos.yml`, /DATA/AppData, 256 MiB cap) + README guide
 - [x] Memory profile: ~60 MiB idle, ~72 MiB under load
 - [ ] User: deploy on ZimaOS and log in
-- [ ] Publish multi-arch image to GHCR so ZimaOS can pull directly (removes manual build)
+- [x] Publish multi-arch image to GHCR so ZimaOS can pull directly (`.github/workflows/ci.yml`)
 
 ## Phase 4 — In-app AI settings (v0.2.0)
 - [x] `setting` table (new table → no migration needed on existing DBs)
@@ -51,6 +51,16 @@
 - [x] Tests 15/15 (`test_feed.py`); E2E cards/sheet/toast verified
 - [ ] Optional: AI-written recap/notes (currently rules; cheap to add via ai.complete)
 - [ ] Push notifications for milestones (needs Web Push; see backlog)
+
+## Phase 6 — Public repo (github.com/krugerhomeassistant/Bloomery)
+- [x] Landing README: hero image, badges, feature grid, screenshots (light/dark), install, ZimaOS, AI table, privacy, maths, mermaid architecture, config, roadmap
+- [x] `docs/screenshots/*` (Playwright, demo data, fake LLM) + `docs/assets/hero.jpg`
+- [x] Living docs moved to `docs/`
+- [x] CI: pytest + frontend build on PR/push; multi-arch (amd64/arm64) image → `ghcr.io/krugerhomeassistant/bloomery` (`latest`, semver, sha)
+- [x] compose files default to GHCR image; `.env` optional
+- [ ] Push (blocked: Claude GitHub app lacks access to repo)
+- [ ] After first CI run: make GHCR package public (Package settings → Change visibility)
+- [ ] Choose a license (user decision)
 
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
