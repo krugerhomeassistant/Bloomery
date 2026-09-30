@@ -3,7 +3,7 @@
 **Date:** 2026-09-30 · **Version:** 0.5.0
 
 ## Current subtask
-User runs Bloomery on ZimaOS behind their own domain. Shipped v0.5.0: security hardening + Flo/Clue/CSV import.
+User runs Bloomery on ZimaOS, reachable only via Tailscale (private tailnet, not public internet) → no further hardening needed; v0.5.0 throttle/headers kept as harmless defaults. Shipped v0.5.0: security hardening + Flo/Clue/CSV import.
 
 ## Last execution results
 - Per-IP login throttle, security headers, `no-store` on API; importer (`app/importers.py`) + `POST /api/import/other`; Profile import auto-routes.

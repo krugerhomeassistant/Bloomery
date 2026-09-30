@@ -73,7 +73,7 @@
 - [x] Login throttling (per IP), security headers, no-store API caching
 - [x] Import Flo / Clue / CSV period history (`importers.py` + self-check; UI auto-routes by file)
 - [x] Tests 19/19
-- [ ] User: set `BLOOMERY_SECURE_COOKIES=true` if only accessed via HTTPS domain
+- [x] Deployment context: owner's instance is Tailscale-only → no further hardening planned
 - [ ] Verify Clue format against a real `.cluedata` (format inferred from community converters)
 
 ## Backlog (next)
