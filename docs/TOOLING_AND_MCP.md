@@ -14,6 +14,8 @@
 | tsc | `cd frontend && npx tsc --noEmit` |
 | Vite dev | `npm run dev` (proxy `/api` → :8000) |
 | Playwright (Chromium) | visual QA screenshots at 390×844 (script pattern in LESSONS #4 / ACTIVE_CONTEXT) |
+| `pytest-homeassistant-custom-component` | HA test harness for `tests_ha/` (Python 3.13 venv) | real HA core in tests |
+| hassfest (GH action) | validates the HA integration manifest/translations in CI | official HA validator |
 | `scripts/seed_demo.py` | demo data (7 cycles, symptoms, BBT) |
 | fake LLM | tiny `http.server` returning `/chat/completions` JSON to test AI path without a model |
 

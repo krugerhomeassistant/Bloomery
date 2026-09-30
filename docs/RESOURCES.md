@@ -18,10 +18,13 @@
 | Demo seeder | `scripts/seed_demo.py` (user demo / demodemo) |
 | Data (runtime) | `./data/bloomery.db`, `./data/secret.key` |
 
+- `custom_components/bloomery/` HA integration · `tests_ha/` its tests · `hacs.json` HACS metadata
+
 ## Endpoints (all under `/api`, docs at `/api/docs`)
 `GET health` · `GET catalog` · auth: `GET status, POST register, POST login, POST logout, GET me, POST password` · `PUT profile` · `GET logs?start&end`, `GET|PUT logs/{day}` · `PUT period`, `POST period/start`, `POST period/end` · `GET cycle/overview`, `GET cycle/calendar?start&end` · `GET insights` · `GET export`, `POST import`, `DELETE account` · `GET ai/status`, `GET ai/daily[?refresh=true]`, `GET|POST|DELETE ai/chat`. Cycle endpoints accept `?today=`.
 
 ## External docs
+- HA DataUpdateCoordinator https://developers.home-assistant.io/docs/integration_fetching_data/ · HACS publish https://hacs.xyz/docs/publish/integration/ · local brand images (2026.3+) https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api/
 - FastAPI https://fastapi.tiangolo.com · SQLModel https://sqlmodel.tiangolo.com
 - Vite https://vite.dev · Tailwind v4 https://tailwindcss.com/docs · vite-plugin-pwa https://vite-pwa-org.netlify.app
 - React Router https://reactrouter.com · date-fns https://date-fns.org · lucide https://lucide.dev

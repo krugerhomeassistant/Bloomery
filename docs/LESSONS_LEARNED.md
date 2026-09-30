@@ -40,4 +40,8 @@ Format: [Problem] → [Root cause] → [Verified solution]
 37. **Tests needing a throwaway account** → registration is closed after the first user → `monkeypatch.setattr(auth, "registration_open", lambda db: True)` instead of depending on file order.
 38. **Pregnancy mode still showed fertile days** → current segment (from last period) keeps its fertile window → `day_info` returns no phase/kind for days ≥ LMP in pregnancy mode.
 39. **Daily AI insight stale after life-stage switch** → cached per user/day → clear `InsightCache` for the user on `PUT /api/life-stage`.
+40. **HA YAML setup was clunky** (user feedback) → pasted `rest:` config needs edits for every change → ship a HACS custom integration with a config flow instead; keep the ICS feed.
+41. **App lock every open/minute was a nuisance** (user feedback) → lock only after N minutes away, per-device choice, default 15.
+42. **pytest-homeassistant-custom-component: `Integration 'bloomery' not found`** → the plugin's own `testing_config/custom_components` package shadows the repo's namespace package → in `tests_ha/conftest.py` append the repo's `custom_components` dir to `custom_components.__path__`; also needs `asyncio_mode = auto`.
+43. **E2E "away" simulation reset by navigation** → `pagehide` marks the session active (correct for real app close) → set `lastActive` from a non-app page before reopening.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

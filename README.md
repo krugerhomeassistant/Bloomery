@@ -59,10 +59,10 @@ A private read-only link for your partner showing where you are in your cycle, t
 Switch to **Pregnancy** mode for your week, due date, baby-size cards and trimester tips, or **Perimenopause** mode for wider prediction ranges, days since your last period and the 12-month menopause marker. Your history stays intact.
 
 ### 🔐 App lock
-Optional 4-digit PIN when the app opens or comes back from the background. Five wrong tries sign you out.
+Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, your choice per device; 15 minutes by default).
 
 ### 🏠 Home Assistant & calendar
-Ready-to-paste YAML for **Home Assistant sensors** (cycle day, phase, days until period, period / fertile binary sensors) plus a private **iCalendar feed** of periods, fertile windows and ovulation for HA, Google, Apple or Outlook calendars.
+A **Home Assistant integration** (HACS, UI setup, no YAML) with cycle day, phase, next period, fertile window, pregnancy week and more, plus a private **iCalendar feed** of periods, fertile windows and ovulation for HA, Google, Apple or Outlook calendars.
 
 ### 📊 Insights
 Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature and weight charts, plus gentle health-check flags.
@@ -165,7 +165,18 @@ Only the owner account can change AI settings. The API key is stored in your dat
 
 **Profile → Home Assistant & calendar → Create feed.**
 
-1. **Sensors**: paste the generated `rest:` YAML into `configuration.yaml` and restart HA. You get `sensor.bloomery_cycle_day`, `sensor.bloomery_phase`, `sensor.bloomery_days_until_period`, `binary_sensor.bloomery_period` and `binary_sensor.bloomery_fertile_window` (refresh every 15 min).
+1. **Integration**: in HACS → ⋮ → *Custom repositories*, add `https://github.com/krugerhomeassistant/Bloomery` as **Integration**, download **Bloomery** and restart HA. Then **Settings → Devices & services → Add integration → Bloomery** and paste the integration URL from Bloomery.
+
+   | Entity | What it shows |
+   |---|---|
+   | `sensor.bloomery_<name>_status` | e.g. "Period in 5 days" (+ summary attribute) |
+   | `…_cycle_day`, `…_phase`, `…_days_until_period` | where you are in the cycle |
+   | `…_next_period`, `…_ovulation` | date sensors |
+   | `…_pregnancy_chance`, `…_life_stage`, `…_pregnancy_week`, `…_due_date` | fertility / life stage |
+   | `…_cycle_length`, `…_period_length` | learned averages (diagnostic) |
+   | `binary_sensor.bloomery_<name>_period`, `…_fertile_window` | on/off for automations |
+
+   Updates every 15 minutes and just after midnight. After **New token**, use the integration's **Reconfigure** to paste the new URL; entities stay the same.
 2. **Calendar**: add the `.ics` URL with HA's **Remote Calendar** integration (HA 2025.4+), or subscribe from Google / Apple / Outlook.
 
 Feeds contain cycle dates only, never symptoms or notes. **New token** invalidates the old URLs; **Turn off** removes them.
@@ -263,7 +274,7 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] AI-written cycle recaps
 - [x] Pregnancy and perimenopause modes
 - [x] Partner sharing (read-only link)
-- [x] Home Assistant sensors + calendar feed
+- [x] Home Assistant integration (HACS) + calendar feed
 - [x] Streaming AI replies
 - [ ] Translations
 

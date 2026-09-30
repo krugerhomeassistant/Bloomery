@@ -117,7 +117,7 @@ def change_password(body: PasswordChange, user: UserDep, db: SessionDep):
 # ---------------------------------------------------------------- app lock PIN
 # ponytail: the lock screen is client-side (guards a phone left unlocked); the server verifies the PIN
 # and ends the session after PIN_TRIES wrong guesses, so it can't be brute-forced.
-PIN_TRIES = 5
+PIN_TRIES = 10
 
 
 class PinIn(BaseModel):

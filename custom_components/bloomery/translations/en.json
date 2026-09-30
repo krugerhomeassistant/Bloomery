@@ -1,0 +1,47 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Bloomery",
+        "description": "In Bloomery open **Profile → Home Assistant & calendar**, tap **Create feed** and paste the integration URL here.",
+        "data": {"url": "Integration URL"},
+        "data_description": {"url": "Looks like http://your-server:8420/api/ha/…"}
+      },
+      "reconfigure": {
+        "title": "Update Bloomery link",
+        "description": "Paste the new integration URL from Bloomery (needed after tapping **New token**).",
+        "data": {"url": "Integration URL"}
+      }
+    },
+    "error": {
+      "invalid_url": "That doesn't look like a Bloomery integration URL (…/api/ha/<token>).",
+      "invalid_token": "This link is no longer active. Create a new one in Bloomery.",
+      "cannot_connect": "Can't reach Bloomery at that address from Home Assistant."
+    },
+    "abort": {
+      "already_configured": "This Bloomery account is already set up.",
+      "reconfigure_successful": "Link updated.",
+      "unique_id_mismatch": "That link belongs to a different Bloomery account."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {"name": "Status"},
+      "cycle_day": {"name": "Cycle day"},
+      "phase": {"name": "Phase", "state": {"menstrual": "Menstrual", "follicular": "Follicular", "fertile": "Fertile window", "ovulation": "Ovulation", "luteal": "Luteal"}},
+      "days_until_period": {"name": "Days until period"},
+      "next_period": {"name": "Next period"},
+      "ovulation": {"name": "Ovulation"},
+      "pregnancy_chance": {"name": "Pregnancy chance", "state": {"low": "Low", "medium": "Medium", "high": "High"}},
+      "life_stage": {"name": "Life stage", "state": {"cycle": "Cycle", "pregnancy": "Pregnancy", "perimenopause": "Perimenopause"}},
+      "pregnancy_week": {"name": "Pregnancy week"},
+      "due_date": {"name": "Due date"},
+      "cycle_length": {"name": "Cycle length"},
+      "period_length": {"name": "Period length"}
+    },
+    "binary_sensor": {
+      "period": {"name": "Period"},
+      "fertile_window": {"name": "Fertile window"}
+    }
+  }
+}

@@ -16,9 +16,9 @@ def test_pin_lock_and_account_cleanup(monkeypatch):
     assert c.put("/api/auth/pin", json={"password": "pinpinpin", "pin": "12a4"}).status_code == 422
     assert c.put("/api/auth/pin", json={"password": "pinpinpin", "pin": "1234"}).json()["pin_set"] is True
     assert c.post("/api/auth/pin/verify", json={"pin": "1234"}).json() == {"ok": True}
-    for i in range(4):
+    for i in range(9):
         r = c.post("/api/auth/pin/verify", json={"pin": "0000"})
-        assert r.status_code == 400 and f"{4 - i}" in r.json()["detail"]
+        assert r.status_code == 400 and f"{9 - i} " in r.json()["detail"]
     assert c.post("/api/auth/pin/verify", json={"pin": "0000"}).status_code == 401
     assert c.get("/api/auth/me").status_code == 401  # session ended
     c.post("/api/auth/login", json={"username": "pinny", "password": "pinpinpin"})

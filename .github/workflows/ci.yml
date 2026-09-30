@@ -25,6 +25,16 @@ jobs:
       - run: npm ci && npm run build
         working-directory: frontend
 
+  home-assistant:  # integration only; doesn't gate the Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: home-assistant/actions/hassfest@master
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.13" }
+      - run: pip install pytest-homeassistant-custom-component
+      - run: python -m pytest -c tests_ha/pytest.ini tests_ha -q
+
   image:
     needs: test
     if: github.event_name != 'pull_request'

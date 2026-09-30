@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock } from 'lucide-react'
 import { api, iso, type LifeStage, type Overview, type User } from '../api'
-import { useApp, useFetch } from '../state'
+import { LOCK_CHOICES, lockAfterMin, setLockAfter, useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
 import { extractAppleHealth } from '../appleHealth'
 import AiSettings from '../components/AiSettings'
@@ -24,6 +24,7 @@ export default function Profile() {
   const [val, setVal] = useState(0)
   const [pw, setPw] = useState<null | { current: string; new: string; msg?: string }>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [after, setAfter] = useState(lockAfterMin)
   const [lock, setLock] = useState<null | { pin: string; password: string; msg?: string }>(null)
   const [msg, setMsg] = useState('')
   const [aiOpen, setAiOpen] = useState(false)
@@ -83,7 +84,6 @@ export default function Profile() {
   const shareAct = (m: 'POST' | 'DELETE') => tokenAct('share', m)
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
   const haUrl = ha.data?.token ? `${location.origin}/api/ha/${ha.data.token}` : ''
-  const haYaml = haUrl ? HA_YAML(`${haUrl}?tz=${tz}`) : ''
   const LABEL = { cycle_length: 'Cycle length', period_length: 'Period length', luteal_length: 'Luteal phase length' }
   const RANGE = { cycle_length: [15, 90], period_length: [1, 15], luteal_length: [8, 20] } as const
 
@@ -183,16 +183,22 @@ export default function Profile() {
       <SectionTitle>Home Assistant & calendar</SectionTitle>
       <Group>
         <div className="space-y-3 px-4 py-4 text-sm">
-          <p className="text-muted">Private read-only feeds: sensors for Home Assistant (cycle day, phase, days until period, fertile window) and a calendar of your periods, fertile windows and ovulation. No symptoms or notes.</p>
+          <p className="text-muted">Private read-only feeds for Home Assistant sensors and your calendar app. Cycle dates only, never symptoms or notes.</p>
           {haUrl ? (
             <>
-              <div className="font-bold">1. Sensors: add to <code>configuration.yaml</code> and restart HA</div>
-              <pre className="select-all overflow-x-auto rounded-2xl bg-pink-50 p-3 font-mono text-[11px] leading-snug">{haYaml}</pre>
-              <div className="font-bold">2. Calendar: HA → Settings → Devices & services → Add → <i>Remote Calendar</i> (or subscribe in any calendar app)</div>
+              <div className="font-bold">1. Home Assistant sensors</div>
+              <ol className="list-decimal space-y-1 pl-5 text-muted">
+                <li>HACS → ⋮ → <i>Custom repositories</i> → add <code className="select-all break-all">github.com/krugerhomeassistant/Bloomery</code> as <i>Integration</i>, then download <b>Bloomery</b> and restart HA.</li>
+                <li>Settings → Devices & services → <i>Add integration</i> → <b>Bloomery</b> → paste:</li>
+              </ol>
+              <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{haUrl}</div>
+              <div className="font-bold">2. Calendar</div>
+              <p className="text-muted">HA → Add integration → <i>Remote Calendar</i>, or subscribe in Google, Apple or Outlook calendar:</p>
               <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{haUrl}/calendar.ics?tz={tz}</div>
+              <p className="text-xs text-muted">Home Assistant must be able to reach this address. <b>New token</b> disables the old links (update HA via the integration's <i>Reconfigure</i>).</p>
               <div className="flex flex-wrap gap-2">
                 {window.isSecureContext && navigator.clipboard && (
-                  <button className="btn-primary px-4 py-2 text-sm" onClick={() => navigator.clipboard.writeText(haYaml).then(() => setCopied(true))}>{copied ? 'Copied!' : 'Copy YAML'}</button>
+                  <button className="btn-primary px-4 py-2 text-sm" onClick={() => navigator.clipboard.writeText(haUrl).then(() => setCopied(true))}>{copied ? 'Copied!' : 'Copy integration URL'}</button>
                 )}
                 <button className="btn-ghost px-4 py-2 text-sm" onClick={() => tokenAct('ha', 'POST')}>New token</button>
                 <button className="btn-ghost px-4 py-2 text-sm" onClick={() => tokenAct('ha', 'DELETE')}>Turn off</button>
@@ -233,14 +239,19 @@ export default function Profile() {
             const remove = (e.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'remove'
             try {
               setUser(await api<User>('/api/auth/pin', { method: 'PUT', body: { password: lock.password, pin: remove ? null : lock.pin }, today: false }))
-              setLock(null); setMsg(remove ? 'App lock turned off' : 'PIN saved. Bloomery locks when opened or after a minute in the background.')
+              setLock(null); setMsg(remove ? 'App lock turned off' : 'PIN saved')
             } catch (err: any) { setLock({ ...lock, msg: err.message }) }
           }}>
-            <p className="text-sm text-muted">Asks for a 4-digit PIN when Bloomery opens or returns after a minute in the background. 5 wrong tries sign you out.</p>
+            <p className="text-sm text-muted">Asks for a 4-digit PIN when you come back to Bloomery after being away for a while. 10 wrong tries sign you out.</p>
             <input className="input text-center text-2xl tracking-[.5em]" type="password" inputMode="numeric" pattern="\d{4}" maxLength={4} autoComplete="off"
               placeholder="••••" value={lock.pin} onChange={(e) => setLock({ ...lock, pin: e.target.value.replace(/\D/g, '') })} required={!user.pin_set} />
             <input className="input" type="password" placeholder="Account password" autoComplete="current-password" value={lock.password} onChange={(e) => setLock({ ...lock, password: e.target.value })} required />
             {lock.msg && <p className="text-sm font-bold text-pink-600">{lock.msg}</p>}
+            <label className="flex items-center justify-between gap-3 text-sm font-bold text-muted">Ask for PIN after
+              <select className="input w-auto py-1.5" value={after} onChange={(e) => { setLockAfter(+e.target.value); setAfter(+e.target.value) }}>
+                {LOCK_CHOICES.map(([m, l]) => <option key={m} value={m}>{l} away</option>)}
+              </select>
+            </label>
             <button className="btn-primary w-full" disabled={lock.pin.length !== 4}>{user.pin_set ? 'Change PIN' : 'Set PIN'}</button>
             {user.pin_set && <button value="remove" formNoValidate className="btn-ghost w-full">Turn off app lock</button>}
           </form>
@@ -273,33 +284,6 @@ export default function Profile() {
   )
 }
 
-const HA_YAML = (url: string) => `rest:
-  - resource: ${url}
-    scan_interval: 900
-    sensor:
-      - name: Bloomery cycle day
-        unique_id: bloomery_cycle_day
-        icon: mdi:flower
-        value_template: "{{ value_json.cycle_day }}"
-        json_attributes: [phase, label, headline, summary, next_period, ovulation, pregnancy_chance]
-      - name: Bloomery phase
-        unique_id: bloomery_phase
-        icon: mdi:moon-waning-crescent
-        value_template: "{{ value_json.phase }}"
-      - name: Bloomery days until period
-        unique_id: bloomery_days_until_period
-        icon: mdi:calendar-heart
-        unit_of_measurement: d
-        value_template: "{{ value_json.days_until_period }}"
-    binary_sensor:
-      - name: Bloomery period
-        unique_id: bloomery_period
-        icon: mdi:water
-        value_template: "{{ value_json.in_period }}"
-      - name: Bloomery fertile window
-        unique_id: bloomery_fertile
-        icon: mdi:flower-tulip
-        value_template: "{{ value_json.fertile }}"`
 
 const Group = ({ children }: { children: ReactNode }) => <div className="card divide-y divide-line overflow-hidden">{children}</div>
 

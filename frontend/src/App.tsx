@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { BarChart3, CalendarDays, Flower2, Sparkles, User as UserIcon, X } from 'lucide-react'
 import { api, type User } from './api'
-import { useApp } from './state'
+import { idleTooLong, markActive, useApp } from './state'
 import { Spinner } from './components/ui'
 import Auth from './pages/Auth'
 import Onboarding from './pages/Onboarding'
@@ -13,8 +13,6 @@ import Assistant from './pages/Assistant'
 import Profile from './pages/Profile'
 import LogDay from './pages/LogDay'
 import LockScreen from './components/LockScreen'
-
-const LOCK_AFTER_MS = 60_000  // hidden this long → PIN again
 
 const TABS = [
   { to: '/', label: 'Today', icon: Flower2 },
@@ -27,17 +25,15 @@ const TABS = [
 export default function App() {
   const { user, setUser, toast, notify } = useApp()
   const [ready, setReady] = useState(false)
-  const [locked, setLocked] = useState(true)  // only matters when user.pin_set
+  const [locked, setLocked] = useState(idleTooLong)  // only matters when user.pin_set
 
   useEffect(() => { if (ready && !user?.pin_set) setLocked(false) }, [ready, user])  // fresh password login = unlocked
   useEffect(() => {
-    let hiddenAt = 0
-    const onVis = () => {
-      if (document.hidden) hiddenAt = Date.now()
-      else if (hiddenAt && Date.now() - hiddenAt > LOCK_AFTER_MS) setLocked(true)
-    }
+    // lock only after being away longer than the chosen time (backgrounded or closed)
+    const onVis = () => (document.hidden ? markActive() : idleTooLong() && setLocked(true))
     document.addEventListener('visibilitychange', onVis)
-    return () => document.removeEventListener('visibilitychange', onVis)
+    addEventListener('pagehide', markActive)
+    return () => { document.removeEventListener('visibilitychange', onVis); removeEventListener('pagehide', markActive) }
   }, [])
 
   useEffect(() => {
@@ -75,7 +71,7 @@ export default function App() {
           </div>
         </nav>
         <LogDay />
-        {user.pin_set && locked && <LockScreen onUnlock={() => setLocked(false)} />}
+        {user.pin_set && locked && <LockScreen onUnlock={() => { markActive(); setLocked(false) }} />}
         {toast && (
           <div role="status" className="sheet-in fixed inset-x-3 bottom-[calc(var(--nav-h)+0.75rem)] z-40 mx-auto flex max-w-md items-start gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
             <span className="text-lg">💬</span><span className="flex-1">{toast}<span className="mt-1 block text-xs opacity-60">Saved to today's insights</span></span>

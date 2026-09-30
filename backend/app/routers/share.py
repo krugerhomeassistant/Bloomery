@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from sqlmodel import Session
 
+from .. import VERSION
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..models import Setting, User
 
@@ -107,7 +108,10 @@ def ha_state(token: str, db: SessionDep, tz: str | None = None):
     ov, st = eng.overview(), eng.status()
     cur = eng.current
     nxt = eng.next_period
+    preg = ov["pregnancy"] or {}
     return {
+        "user_id": user.id, "name": user.display_name or user.username, "version": VERSION,
+        "mode": ov["mode"], "pregnancy_week": preg.get("week"), "due_date": preg.get("due"),
         "state": st.get("state"), "label": st.get("label"), "headline": st.get("headline"), "summary": st.get("sub"),
         "cycle_day": st.get("cycle_day"), "phase": st.get("phase"), "pregnancy_chance": st.get("chance"),
         "in_period": st.get("state") == "period", "fertile": st.get("phase") in ("fertile", "ovulation"),

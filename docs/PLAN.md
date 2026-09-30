@@ -108,6 +108,13 @@
 - [x] Profile "Life stage" switch + LMP date; AI system prompt + context include life stage; daily AI cache cleared on change
 - [x] Tests 26/26; E2E pregnancy (13w 0d, due Apr 7, clean week strip) + perimenopause + back to cycle
 
+## Phase 14 — HA integration + gentler lock (v1.1.0)
+- [x] `custom_components/bloomery` (HACS custom repo, `hacs.json` at root): config flow (paste feed URL, validates, unique id = host+user id), reconfigure for new tokens, coordinator 15 min + midnight refresh, 12 sensors + 2 binary sensors, `icons.json`, `translations/en.json`, `brand/` icons (HA 2026.3+)
+- [x] HA JSON adds user_id, name, version, mode, pregnancy_week, due_date; `VERSION` moved to `app/__init__.py`
+- [x] Profile HA section: integration steps + URL (YAML removed); calendar ICS kept
+- [x] `tests_ha/` with pytest-homeassistant-custom-component (HA 2026.2): flow errors, entities, abort, reconfigure; CI job with hassfest
+- [x] App lock: only after N min away (per-device choice 1 min–4 h, default 15, `lastActive` in localStorage, survives app close); 10 wrong PINs before sign-out
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

@@ -57,6 +57,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   )
 }
 
+// ---------------------------------------------------------------- app lock timing (per device)
+export const LOCK_CHOICES: [number, string][] = [[1, '1 minute'], [5, '5 minutes'], [15, '15 minutes'], [60, '1 hour'], [240, '4 hours']]
+const ls = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
+export const lockAfterMin = () => Number(ls('lockAfter')) || 15
+export const setLockAfter = (m: number) => { try { localStorage.setItem('lockAfter', String(m)) } catch {} }
+export const markActive = () => { try { localStorage.setItem('lastActive', String(Date.now())) } catch {} }
+export const idleTooLong = () => Date.now() - Number(ls('lastActive') || 0) > lockAfterMin() * 60_000
+
 /** Fetch JSON, refetching whenever deps or global data version change. */
 export function useFetch<T>(path: string | null, deps: unknown[] = []) {
   const { version } = useApp()
