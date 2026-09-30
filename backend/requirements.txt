@@ -1,0 +1,7 @@
+fastapi==0.142.1
+uvicorn[standard]==0.54.0
+sqlmodel==0.0.47
+argon2-cffi==25.1.0
+httpx==0.28.1
+pydantic-settings==2.15.0
+itsdangerous==2.2.0

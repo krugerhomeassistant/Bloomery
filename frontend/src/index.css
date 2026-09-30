@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/nunito';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Nunito Variable', ui-rounded, system-ui, sans-serif;
+  --color-pink-50: #fff5f8;
+  --color-pink-100: #ffe3ec;
+  --color-pink-200: #ffc5d6;
+  --color-pink-300: #ff9ab6;
+  --color-pink-400: #ff6f96;
+  --color-pink-500: #ff4a7d;
+  --color-pink-600: #eb2f65;
+  --color-teal-50: #eafaf8;
+  --color-teal-100: #cdf2ee;
+  --color-teal-400: #3cc4bb;
+  --color-teal-500: #22ada5;
+  --color-teal-600: #148f88;
+  --color-ink: #2d2a3e;
+  --color-muted: #8c8a9b;
+  --color-canvas: #fff7f9;
+  --color-card: #ffffff;
+  --color-line: #f1e6ea;
+}
+
+.dark {
+  --color-ink: #f4eef3;
+  --color-muted: #a39cab;
+  --color-canvas: #16131c;
+  --color-card: #221e2a;
+  --color-line: #342d3d;
+  --color-pink-50: #2a1b25;
+  --color-pink-100: #3a2130;
+  --color-teal-50: #152624;
+  --color-teal-100: #1c3532;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  @apply bg-canvas text-ink font-sans antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+@utility card {
+  @apply bg-card rounded-3xl shadow-[0_2px_16px_rgba(255,74,125,0.07)];
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-bold transition active:scale-[0.97] disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-pink-500 text-white shadow-lg shadow-pink-500/25 hover:bg-pink-600;
+}
+@utility btn-ghost {
+  @apply btn bg-pink-100 text-pink-600 hover:bg-pink-200;
+}
+@utility input {
+  @apply w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-pink-400;
+}
+.sheet-in {
+  animation: sheet-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+.fade-in {
+  animation: fade 0.35s ease;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}

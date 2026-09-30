@@ -1,0 +1,35 @@
+# RESOURCES
+
+## Key paths
+| What | Path |
+|---|---|
+| Cycle engine | `backend/app/cycles.py` |
+| Tag catalog | `backend/app/catalog.py` |
+| AI provider + prompts | `backend/app/ai.py` |
+| API routers | `backend/app/routers/{auth,tracking,assistant}.py` |
+| Settings/env | `backend/app/config.py`, `.env.example` |
+| Tests | `backend/tests/` |
+| Theme tokens | `frontend/src/index.css` |
+| API client/types | `frontend/src/api.ts` |
+| Global state | `frontend/src/state.tsx` |
+| Screens | `frontend/src/pages/*.tsx` |
+| Cycle ring | `frontend/src/components/CycleRing.tsx` |
+| PWA config | `frontend/vite.config.ts` |
+| Demo seeder | `scripts/seed_demo.py` (user demo / demodemo) |
+| Data (runtime) | `./data/bloomery.db`, `./data/secret.key` |
+
+## Endpoints (all under `/api`, docs at `/api/docs`)
+`GET health` · `GET catalog` · auth: `GET status, POST register, POST login, POST logout, GET me, POST password` · `PUT profile` · `GET logs?start&end`, `GET|PUT logs/{day}` · `PUT period`, `POST period/start`, `POST period/end` · `GET cycle/overview`, `GET cycle/calendar?start&end` · `GET insights` · `GET export`, `POST import`, `DELETE account` · `GET ai/status`, `GET ai/daily[?refresh=true]`, `GET|POST|DELETE ai/chat`. Cycle endpoints accept `?today=`.
+
+## External docs
+- FastAPI https://fastapi.tiangolo.com · SQLModel https://sqlmodel.tiangolo.com
+- Vite https://vite.dev · Tailwind v4 https://tailwindcss.com/docs · vite-plugin-pwa https://vite-pwa-org.netlify.app
+- React Router https://reactrouter.com · date-fns https://date-fns.org · lucide https://lucide.dev
+- Ollama OpenAI compat https://github.com/ollama/ollama/blob/main/docs/openai.md · models https://ollama.com/library
+- Anthropic Messages API https://platform.claude.com/docs/en/api/overview · versioning https://platform.claude.com/docs/en/api/versioning
+- Flo UI references: https://screensdesign.com/showcase/flo-period-pregnancy-tracker , https://dribbble.com/tags/period-tracker-app
+- Clinical context: ACOG — menstruation as a vital sign (normal cycle 21–35 d, bleeding ≤7 d)
+
+## Local
+- Host folder: `E:\Projects\Personal\Bloomery`
+- Default URL: http://localhost:8420

@@ -1,0 +1,9 @@
+data/
+ollama/
+.env
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/.pytest_cache
+.git
