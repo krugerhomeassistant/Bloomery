@@ -10,6 +10,7 @@ import RecapSheet from '../components/RecapSheet'
 
 type Card = { kind: string; emoji: string; title: string; text: string; start?: string }
 const CARD_BG: Record<string, string> = {
+  note: 'bg-gradient-to-br from-[#F4ECFF] to-card dark:from-[#2B2340]',
   forecast: 'bg-gradient-to-br from-[#FFF4E5] to-card dark:from-[#3A2A1A]',
   milestone: 'bg-gradient-to-br from-teal-50 to-card',
   recap: 'bg-gradient-to-br from-[#EEF2FF] to-card dark:from-[#1E2340]',

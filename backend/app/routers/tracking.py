@@ -1,3 +1,4 @@
+import json
 from datetime import date, timedelta
 from typing import Literal
 
@@ -9,7 +10,7 @@ from ..catalog import LABELS, VALID, catalog_json
 from .. import feed as feed_mod
 from ..cycles import symptom_patterns
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
-from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, User, now
+from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, Setting, User, now
 from .auth import public_user
 
 router = APIRouter(prefix="/api", tags=["tracking"])
@@ -114,6 +115,9 @@ def put_log(day: date, body: LogIn, user: UserDep, db: SessionDep):
         for c, vs in l.tags.items():
             added[c] = [v for v in vs if f"{c}:{v}" not in before]
         out["note"] = feed_mod.log_note(eng, pats, day, added)
+        if out["note"]:  # keep the latest note so Today can show it again as a card
+            db.merge(Setting(key=f"lognote:{user.id}", value=json.dumps({"day": day.isoformat(), "text": out["note"]})))
+            db.commit()
     return out
 
 
@@ -201,7 +205,11 @@ def calendar(user: UserDep, db: SessionDep, today: TodayDep, start: date, end: d
 def daily_feed(user: UserDep, db: SessionDep, today: TodayDep):
     """Rule-based cards for Today: milestones, recap, symptom forecasts, phase tip."""
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day <= today)).all()
-    return feed_mod.feed(build_engine(db, user, today), logs, today, user.goal)
+    cards = feed_mod.feed(build_engine(db, user, today), logs, today, user.goal)
+    note = db.get(Setting, f"lognote:{user.id}")
+    if note and (n := json.loads(note.value))["day"] == today.isoformat():
+        cards.insert(0, {"kind": "note", "emoji": "💬", "title": "About today's log", "text": n["text"]})
+    return cards
 
 
 @router.get("/insights")

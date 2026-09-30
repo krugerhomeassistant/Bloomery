@@ -29,7 +29,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [toast, notify] = useState<string | null>(null)
   useEffect(() => {
     if (!toast) return
-    const t = setTimeout(() => notify(null), 6000)
+    const t = setTimeout(() => notify(null), Math.max(10000, toast.length * 90))  // ~reading speed, min 10 s
     return () => clearTimeout(t)
   }, [toast])
 

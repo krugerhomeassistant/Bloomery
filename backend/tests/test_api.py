@@ -26,6 +26,9 @@ def test_full_flow():
         assert c.put("/api/logs/2026-01-02", json={"tags": {"symptoms": ["nope"]}}).status_code == 422
         r = c.put("/api/logs/2026-01-02", json={"flow": "heavy", "tags": {"symptoms": ["cramps", "headache"], "mood": ["sad"]}}).json()
         assert r["note"].startswith("Headache")  # only the newly added tag is commented on
+        feed = c.get("/api/feed?today=2026-01-02").json()
+        assert feed[0]["kind"] == "note" and feed[0]["text"] == r["note"]  # note persists as a Today card
+        assert all(x["kind"] != "note" for x in c.get("/api/feed?today=2026-01-03").json())  # only on that day
 
         c.post("/api/period/end", json={"day": "2026-01-03"})
         cal = c.get("/api/cycle/calendar?start=2026-01-01&end=2026-01-31&today=2026-01-10").json()

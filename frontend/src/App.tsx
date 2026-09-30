@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, NavLink, Navigate, Route, Routes } from 'react-router-dom'
-import { BarChart3, CalendarDays, Flower2, Sparkles, User as UserIcon } from 'lucide-react'
+import { BarChart3, CalendarDays, Flower2, Sparkles, User as UserIcon, X } from 'lucide-react'
 import { api, type User } from './api'
 import { useApp } from './state'
 import { Spinner } from './components/ui'
@@ -61,9 +61,10 @@ export default function App() {
         </nav>
         <LogDay />
         {toast && (
-          <button onClick={() => notify(null)} className="sheet-in fixed inset-x-3 bottom-[calc(var(--nav-h)+0.75rem)] z-40 mx-auto flex max-w-md gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
-            <span className="text-lg">💬</span><span>{toast}</span>
-          </button>
+          <div role="status" className="sheet-in fixed inset-x-3 bottom-[calc(var(--nav-h)+0.75rem)] z-40 mx-auto flex max-w-md items-start gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
+            <span className="text-lg">💬</span><span className="flex-1">{toast}<span className="mt-1 block text-xs opacity-60">Saved to today's insights</span></span>
+            <button onClick={() => notify(null)} className="-m-1 rounded-full p-1 opacity-70 hover:opacity-100" aria-label="Dismiss"><X size={18} /></button>
+          </div>
         )}
       </div>
     </BrowserRouter>
