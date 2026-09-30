@@ -69,11 +69,18 @@
 - [x] Tests 17/17 (`test_notify.py`: validation, ntfy/discord/gotify payloads, once-per-day scheduling)
 - [ ] User: make GHCR package public (anonymous pull was still 401 on 2026-09-30)
 
+## Phase 8 — Internet-ready + migration (v0.5.0)
+- [x] Login throttling (per IP), security headers, no-store API caching
+- [x] Import Flo / Clue / CSV period history (`importers.py` + self-check; UI auto-routes by file)
+- [x] Tests 19/19
+- [ ] User: set `BLOOMERY_SECURE_COOKIES=true` if only accessed via HTTPS domain
+- [ ] Verify Clue format against a real `.cluedata` (format inferred from community converters)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
 - [ ] App lock PIN / passkey (WebAuthn)
-- [ ] Import from Flo / Clue / Apple Health CSV exports
+- [x] Import from Flo / Clue / CSV (Apple Health still open)
 - [ ] Pregnancy mode (weeks, due date) & perimenopause mode
 - [ ] Partner read-only sharing link
 - [ ] Streaming AI responses (SSE)

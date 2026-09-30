@@ -25,4 +25,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 22. **`ZoneInfo('Bad/Zone')` in a pydantic validator gave 500 not 422** → `ZoneInfoNotFoundError` subclasses KeyError, which pydantic doesn't convert → catch and re-raise `ValueError`.
 23. **Emoji in HTTP headers (ntfy `Title:`) fail** → headers are latin-1 → use ntfy JSON publish (`POST /` with `topic`).
 24. **ZimaOS "Failed to pull image after 5 mirror methods"** → GHCR package private by default (separate from repo visibility) → Package settings → Change visibility → Public. Verify: `curl ghcr.io/token?scope=repository:<owner>/<img>:pull` returns 200.
+25. **Per-username login lockout = DoS on a public instance** → anyone can burn the owner's attempts → throttle per client IP only (uvicorn `--proxy-headers` makes `request.client.host` the real IP behind a proxy).
+26. **No official Clue export spec** → inferred `.cluedata` = `{"data":[{"day","period",...}]}` from community converters; Flo verified via flo-to-drip (`operationalData.cycles`). Keep importer tolerant and report "no period days found" clearly.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

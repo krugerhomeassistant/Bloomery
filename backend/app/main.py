@@ -12,7 +12,7 @@ from .db import init_db
 from .notify import scheduler
 from .routers import assistant, auth, notifications, tracking
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 
 
 @asynccontextmanager
@@ -29,6 +29,17 @@ def create_app() -> FastAPI:
     app.add_middleware(
         SessionMiddleware, secret_key=s.resolved_secret(), session_cookie="bloomery_session",
         max_age=s.session_max_age_days * 86400, same_site="lax", https_only=s.secure_cookies)
+    @app.middleware("http")
+    async def security_headers(request, call_next):
+        resp = await call_next(request)
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("Referrer-Policy", "no-referrer")
+        resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        if request.url.path.startswith("/api/"):
+            resp.headers.setdefault("Cache-Control", "no-store")  # health data must not sit in shared caches
+        return resp
+
     for r in (auth.router, tracking.router, assistant.router, notifications.router):
         app.include_router(r)
 

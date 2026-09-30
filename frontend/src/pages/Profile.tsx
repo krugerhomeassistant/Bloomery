@@ -32,9 +32,16 @@ export default function Profile() {
   }
   const importData = async (f: File) => {
     try {
-      const j = JSON.parse(await f.text())
-      const r = await api<{ imported: number }>('/api/import', { body: { logs: j.logs ?? [], replace: false }, today: false })
-      setMsg(`Imported ${r.imported} days`)
+      const text = await f.text()
+      let j: any = null
+      try { j = JSON.parse(text) } catch {}
+      if (j?.app === 'bloomery') {
+        const r = await api<{ imported: number }>('/api/import', { body: { logs: j.logs ?? [], replace: false }, today: false })
+        setMsg(`Imported ${r.imported} days`)
+      } else {
+        const r = await api<{ source: string; days: number; first: string; last: string }>('/api/import/other', { body: { content: text }, today: false })
+        setMsg(`Imported ${r.days} period days from ${r.source} (${r.first} → ${r.last})`)
+      }
       bump()
     } catch (e: any) {
       setMsg(`Import failed: ${e.message}`)
@@ -106,12 +113,12 @@ export default function Profile() {
       <SectionTitle>Your data</SectionTitle>
       <Group>
         <Row icon={<Download size={18} />} label="Export data (JSON)" onClick={exportData} />
-        <Row icon={<Upload size={18} />} label="Import data" onClick={() => file.current?.click()} />
+        <Row icon={<Upload size={18} />} label="Import data (Bloomery, Flo, Clue, CSV)" onClick={() => file.current?.click()} />
         <Row icon={<KeyRound size={18} />} label="Change password" onClick={() => setPw({ current: '', new: '' })} />
         <Row icon={<LogOut size={18} />} label="Log out" onClick={logout} />
         <Row icon={<Trash2 size={18} />} label="Delete account & all data" danger onClick={() => setConfirmDelete(true)} />
       </Group>
-      <input ref={file} type="file" accept="application/json" hidden onChange={(e) => e.target.files?.[0] && importData(e.target.files[0])} />
+      <input ref={file} type="file" accept=".json,.csv,.cluedata,application/json,text/csv" hidden onChange={(e) => e.target.files?.[0] && importData(e.target.files[0])} />
       {msg && <p className="mt-3 text-center text-sm font-bold text-pink-600">{msg}</p>}
       <p className="mt-8 text-center text-xs text-muted">Bloomery · self-hosted · your data stays yours</p>
 

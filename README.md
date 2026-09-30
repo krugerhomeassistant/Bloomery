@@ -67,7 +67,7 @@ A daily personalised insight, plus a chat that already knows your cycle history.
 <td valign="top">
 
 ### 🏠 Built for self-hosting
-Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · JSON export/import · one-tap account deletion.
+Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue or CSV** · JSON export · one-tap account deletion.
 
 </td>
 </tr>
@@ -153,7 +153,8 @@ Only the owner account can change AI settings. The API key is stored in your dat
 
 - **Your data never leaves your server** unless you enable a cloud AI provider. Even then, only a compact summary of your recent cycle (no username, no password) is sent, and only when you use an AI feature.
 - No analytics, no trackers, no external fonts or CDNs; everything is bundled.
-- Passwords hashed with **argon2id**; signed, HTTP-only session cookies.
+- Passwords hashed with **argon2id**; signed, HTTP-only session cookies; **login brute-force throttling** (10 failures / 15 min per IP).
+- Security headers on every response (no framing, no sniffing, no referrer); API responses are `no-store`, so health data never lands in shared caches.
 - **Export** everything as JSON at any time, or **delete** your account and all data in one tap.
 
 ## 🧠 How predictions work
@@ -204,6 +205,10 @@ All optional. Set in `.env` or the container environment ([full list](.env.examp
 | `BLOOMERY_SECRET_KEY` | auto-generated | Session signing key (stored in `/data/secret.key`) |
 | `BLOOMERY_AI_*` | — | Optional AI defaults; the in-app settings override them |
 
+**Exposing it on a domain?** Put it behind a reverse proxy with HTTPS (Nginx Proxy Manager, Caddy, Traefik, Cloudflare Tunnel) and set `BLOOMERY_SECURE_COOKIES=true`. Only do that if you *always* use the HTTPS address, because browsers won't send secure cookies over plain `http://`.
+
+**Moving from another app?** Profile → **Import data** accepts a Flo export (*Flo → Settings → Request my data*), a Clue backup (`.cluedata`) or a CSV (a `date` column plus a `period`/`flow` column, or `start`/`end` columns). Period history is imported, and days you've already logged are never overwritten.
+
 **Backups:** copy the `/data` volume (`bloomery.db` + `secret.key`), or use in-app **Export**.
 
 ## 🛠️ Development
@@ -229,7 +234,8 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] Multi-arch image on GHCR
 - [x] Notifications via ntfy / Gotify / Home Assistant / Discord
 - [ ] App lock (PIN / passkey)
-- [ ] Import from Flo, Clue and Apple Health
+- [x] Import from Flo, Clue and CSV
+- [ ] Import from Apple Health
 - [ ] Pregnancy and perimenopause modes
 - [ ] Partner sharing (read-only)
 - [ ] Translations

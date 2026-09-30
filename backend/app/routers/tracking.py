@@ -258,6 +258,26 @@ def import_data(body: ImportBody, user: UserDep, db: SessionDep):
     return {"imported": n}
 
 
+class OtherImport(BaseModel):
+    content: str = Field(max_length=20_000_000)
+
+
+@router.post("/import/other")
+def import_other(body: OtherImport, user: UserDep, db: SessionDep):
+    """Period history from Flo / Clue / CSV. Never overwrites days you already logged as bleeding."""
+    from ..importers import ImportFormatError, parse
+    try:
+        source, days = parse(body.content)
+    except ImportFormatError as e:
+        raise HTTPException(422, str(e)) from e
+    if not days:
+        raise HTTPException(422, f"Recognised a {source} file but found no period days in it.")
+    for d, flow in days.items():
+        _set_flow(db, user, d, flow)
+    db.commit()
+    return {"source": source, "days": len(days), "first": min(days).isoformat(), "last": max(days).isoformat()}
+
+
 @router.delete("/account")
 def delete_account(request: Request, user: UserDep, db: SessionDep):
     for m in (DayLog, ChatMessage, InsightCache):

@@ -1,3 +1,6 @@
+import time
+from collections import defaultdict, deque
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlmodel import func, select
@@ -48,11 +51,36 @@ def register(body: Credentials, request: Request, db: SessionDep):
     return public_user(u)
 
 
+# ponytail: in-memory, per process (we run 1 worker); resets on restart, which is fine for brute-force damping
+FAILS: dict[str, deque] = defaultdict(deque)
+WINDOW, MAX_FAILS = 15 * 60, 10
+
+
+def _throttled(*keys: str) -> bool:
+    now = time.monotonic()
+    for k in keys:
+        q = FAILS[k]
+        while q and now - q[0] > WINDOW:
+            q.popleft()
+        if len(q) >= MAX_FAILS:
+            return True
+    return False
+
+
 @router.post("/login")
 def login(body: Credentials, request: Request, db: SessionDep):
-    u = db.exec(select(User).where(User.username == body.username.strip().lower())).first()
+    uname = body.username.strip().lower()
+    # per-IP only: a per-username limit would let strangers lock the owner out of an internet-facing instance
+    keys = (f"ip:{request.client.host if request.client else '?'}",)
+    if _throttled(*keys):
+        raise HTTPException(429, "Too many failed attempts. Try again in 15 minutes.")
+    u = db.exec(select(User).where(User.username == uname)).first()
     if not u or not verify_pw(u.password_hash, body.password):
+        for k in keys:
+            FAILS[k].append(time.monotonic())
         raise HTTPException(401, "Invalid username or password")
+    for k in keys:
+        FAILS.pop(k, None)
     request.session["uid"] = u.id
     return public_user(u)
 

@@ -1,17 +1,16 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.4.0
+**Date:** 2026-09-30 · **Version:** 0.5.0
 
 ## Current subtask
-Notifications (ntfy/Gotify/HA/Discord) + MIT license — done. User installing on ZimaOS.
+User runs Bloomery on ZimaOS behind their own domain. Shipped v0.5.0: security hardening + Flo/Clue/CSV import.
 
 ## Last execution results
-- `app/notify.py` scheduler + `/api/notifications` (GET/PUT/test); Profile → Notifications sheet.
-- E2E: Send test posted `{"title":"💊 Pill reminder (+1 more)", ...}` to local webhook; settings persisted with browser tz.
-- Tests 17/17. MIT LICENSE added.
+- Per-IP login throttle, security headers, `no-store` on API; importer (`app/importers.py`) + `POST /api/import/other`; Profile import auto-routes.
+- Tests 19/19; importer self-check passes.
 
 ## Blockers
-- GHCR package still private → ZimaOS pull fails ("5 mirror methods"). User must set package visibility Public.
+None. AI + notifications not yet tested by user on a real provider.
 
 ## Immediate next step
-Confirm anonymous GHCR pull works; then candidates: Flo/Clue import, app lock (PIN), AI-written recap, Alembic before any schema change.
+User: update container, test AI (Claude key) + ntfy. Candidates next: app lock (PIN), AI-written recap, Apple Health import, Alembic before first schema change.

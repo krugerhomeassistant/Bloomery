@@ -58,3 +58,28 @@ def test_full_flow():
         c.post("/api/auth/logout")
         assert c.post("/api/auth/login", json={"username": "ana", "password": "wrongpass1"}).status_code == 401
         assert c.post("/api/auth/login", json={"username": "ana", "password": "supersecret"}).status_code == 200
+
+
+def test_login_throttle_and_headers():
+    from app.routers import auth
+    with TestClient(app) as c:
+        auth.FAILS.clear()
+        for _ in range(auth.MAX_FAILS):
+            assert c.post("/api/auth/login", json={"username": "ana", "password": "wrongpass1"}).status_code == 401
+        r = c.post("/api/auth/login", json={"username": "ana", "password": "supersecret"})
+        assert r.status_code == 429  # even the right password is blocked while throttled
+        assert r.headers["x-frame-options"] == "DENY" and r.headers["cache-control"] == "no-store"
+        auth.FAILS.clear()
+
+
+def test_import_other_apps():
+    import json as _j
+    with TestClient(app) as c:
+        c.post("/api/auth/login", json={"username": "ana", "password": "supersecret"})
+        flo = {"operationalData": {"cycles": [{"period_start_date": "2025-05-01T00:00:00", "period_end_date": "2025-05-04T00:00:00"},
+                                              {"period_start_date": "2025-05-29T00:00:00", "period_end_date": "2025-06-02T00:00:00"}]}}
+        r = c.post("/api/import/other", json={"content": _j.dumps(flo)}).json()
+        assert r == {"source": "Flo", "days": 9, "first": "2025-05-01", "last": "2025-06-02"}
+        cal = {d["date"]: d["kind"] for d in c.get("/api/cycle/calendar?start=2025-05-01&end=2025-05-02&today=2025-06-10").json()}
+        assert cal["2025-05-01"] == "period"
+        assert c.post("/api/import/other", json={"content": '{"foo": 1}'}).status_code == 422
