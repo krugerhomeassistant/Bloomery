@@ -58,7 +58,7 @@
 - [x] Living docs moved to `docs/`
 - [x] CI: pytest + frontend build on PR/push; multi-arch (amd64/arm64) image → `ghcr.io/krugerhomeassistant/bloomery` (`latest`, semver, sha)
 - [x] compose files default to GHCR image; `.env` optional
-- [ ] Push (blocked: Claude GitHub app lacks access to repo)
+- [x] Pushed `main`; first CI run green (tests + amd64/arm64 image to GHCR)
 - [ ] After first CI run: make GHCR package public (Package settings → Change visibility)
 - [ ] Choose a license (user decision)
 

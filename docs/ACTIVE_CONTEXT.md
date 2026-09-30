@@ -3,16 +3,15 @@
 **Date:** 2026-09-30 · **Version:** 0.3.0
 
 ## Current subtask
-Publish to https://github.com/krugerhomeassistant/Bloomery with a flashy README + CI/GHCR.
+Repo published: https://github.com/krugerhomeassistant/Bloomery
 
 ## Last execution results
-- README rewritten (hero, badges, screenshots, install, ZimaOS, AI, privacy, maths, architecture, roadmap).
-- 20 screenshots (light+dark) in `docs/screenshots`, hero in `docs/assets/hero.jpg` (~1.3 MB total).
-- `.github/workflows/ci.yml`: tests + build; multi-arch image to GHCR on push to main/tags.
-- Living docs moved to `docs/`. Compose files use `ghcr.io/krugerhomeassistant/bloomery:latest`.
+- `main` pushed; CI run 36705705457 green: tests + multi-arch image `ghcr.io/krugerhomeassistant/bloomery:latest`.
+- Anonymous pull returns 403 → GHCR package is private (GitHub default).
+- Local folder synced (docs moved to `docs/`); `.github/workflows/ci.yml` could not be written to the device (protected path) → user gets it via `git pull`.
 
 ## Blockers
-- Claude GitHub app has no access to `krugerhomeassistant/Bloomery` (user adjusting installation).
+- User: make GHCR package public; choose a license.
 
 ## Immediate next step
-Retry `add_repo`, push `main`, watch CI, then user makes GHCR package public and picks a license.
+User: package → Settings → Change visibility → Public. Then ZimaOS import of `docker-compose.zimaos.yml` works without building.
