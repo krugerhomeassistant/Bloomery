@@ -190,6 +190,41 @@ def fallback_insight(engine: Engine) -> str:
     return " ".join(p for p in parts if p)
 
 
+def recap_context(engine: Engine, logs: list, seg) -> str:
+    """Everything about one cycle, compact, for the recap prompt."""
+    days = []
+    for l in sorted(logs, key=lambda x: x.day):
+        if seg.start <= l.day <= seg.end:
+            row = {"cd": (l.day - seg.start).days + 1, "ph": engine.day_info(l.day)["phase"]}
+            if l.flow:
+                row["flow"] = l.flow
+            tags = [LABELS.get(f"{c}:{v}", v) for c, vs in (l.tags or {}).items() for v in vs]
+            if tags:
+                row["tags"] = tags
+            if l.temperature:
+                row["bbt"] = l.temperature
+            if l.notes:
+                row["note"] = l.notes[:200]
+            days.append(row)
+    st = engine.stats()
+    done = seg.end < engine.today
+    return json.dumps({
+        "cycle": {"start": seg.start.isoformat(), "length_days": seg.length if done else None,
+                  "days_so_far": None if done else (engine.today - seg.start).days + 1,
+                  "period_days": (seg.period_end - seg.start).days + 1, "ovulation": seg.ovulation.isoformat(),
+                  "ovulation_confirmed_by_bbt": seg.ovulation_confirmed},
+        "averages": {"cycle": st["avg_cycle_length"], "period": st["avg_period_length"], "regularity": st["regularity"]},
+        "recent_cycle_lengths": [h["length"] for h in st["history"] if h["length"]][:6],
+        "logs": days,
+    }, separators=(",", ":"))
+
+
+RECAP_PROMPT = ("Write a recap of this cycle for me. Use 3-5 short bullet points (start each with •): how its length compares "
+                "to my average, my period, which symptoms/moods showed up in which phase, and anything notable (e.g. a "
+                "temperature shift or unusual pattern). Only mention things in the data. Then one final line starting "
+                "'For next cycle:' with one practical, specific tip. Max 130 words. No greeting.")
+
+
 def daily_prompt(day: date) -> str:
     return (f"Write today's personal insight for {day.isoformat()} in 2-4 short sentences (max 90 words). "
             "Explain what's likely happening in my body in this phase, connect it to anything notable in my recent logs "

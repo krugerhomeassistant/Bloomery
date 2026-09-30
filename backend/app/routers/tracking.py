@@ -272,10 +272,24 @@ def import_other(body: OtherImport, user: UserDep, db: SessionDep):
         raise HTTPException(422, str(e)) from e
     if not days:
         raise HTTPException(422, f"Recognised a {source} file but found no period days in it.")
-    for d, flow in days.items():
-        _set_flow(db, user, d, flow)
+    periods = 0
+    for d, e in days.items():
+        if e.get("flow"):
+            _set_flow(db, user, d, e["flow"])
+            periods += 1
+        if e.get("tags") or e.get("temperature"):
+            db.flush()
+            l = _get_log(db, user, d) or DayLog(user_id=user.id, day=d)
+            tags = {c: set(v) for c, v in (l.tags or {}).items()}
+            for c, vs in (e.get("tags") or {}).items():
+                tags.setdefault(c, set()).update(vs)
+            l.tags = {c: sorted(v) for c, v in tags.items()}
+            if e.get("temperature") and not l.temperature:
+                l.temperature = e["temperature"]
+            db.add(l)
     db.commit()
-    return {"source": source, "days": len(days), "first": min(days).isoformat(), "last": max(days).isoformat()}
+    return {"source": source, "days": len(days), "period_days": periods,
+            "first": min(days).isoformat(), "last": max(days).isoformat()}
 
 
 @router.delete("/account")

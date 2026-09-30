@@ -3,6 +3,8 @@ import { AlertCircle } from 'lucide-react'
 import type { Overview } from '../api'
 import { useApp, useFetch } from '../state'
 import { LineChart, SectionTitle, Spinner } from '../components/ui'
+import RecapSheet from '../components/RecapSheet'
+import { useState } from 'react'
 
 type Hist = { start: string; length: number | null; days_so_far: number | null; period_length: number; ovulation: string; ovulation_confirmed: boolean }
 type Data = {
@@ -17,6 +19,7 @@ const PHASE_LABEL: Record<string, string> = { menstrual: 'during your period', f
 
 export default function Insights() {
   const { data } = useFetch<Data>('/api/insights')
+  const [recap, setRecap] = useState<string | null>(null)
   const { catalog, user } = useApp()
   if (!data) return <Spinner />
   const { stats, overview: ov } = data
@@ -59,7 +62,7 @@ export default function Insights() {
           const len = h.length ?? h.days_so_far ?? 0
           const ovDay = differenceInCalendarDays(parseISO(h.ovulation), parseISO(h.start))
           return (
-            <div key={h.start}>
+            <button key={h.start} onClick={() => setRecap(h.start)} className="block w-full rounded-2xl text-left transition hover:bg-pink-50/60 active:scale-[0.99]">
               <div className="mb-1.5 flex justify-between text-sm">
                 <span className="font-extrabold">{h.length ? `${h.length} days` : 'Current cycle'}</span>
                 <span className="text-muted">{format(parseISO(h.start), 'MMM d, yyyy')}</span>
@@ -71,11 +74,13 @@ export default function Insights() {
                     style={{ left: `calc(${(ovDay / Math.max(len, 1)) * 100}% - 7px)` }} title={h.ovulation_confirmed ? 'Ovulation (BBT-confirmed)' : 'Estimated ovulation'} />
                 )}
               </div>
-              <div className="mt-1 text-xs text-muted">Period {h.period_length} days</div>
-            </div>
+              <div className="mt-1 flex justify-between text-xs text-muted"><span>Period {h.period_length} days</span><span className="font-bold text-[#7C5CE0]">✨ Recap</span></div>
+            </button>
           )
         })}
       </div>
+
+      <RecapSheet start={recap} onClose={() => setRecap(null)} />
 
       <SectionTitle>Your body patterns</SectionTitle>
       <div className="card p-4">

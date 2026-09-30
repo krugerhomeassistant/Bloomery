@@ -6,8 +6,9 @@ import { api, iso, type DayInfo, type Overview } from '../api'
 import { useApp, useFetch } from '../state'
 import { CycleRing } from '../components/CycleRing'
 import { SectionTitle, Sheet } from '../components/ui'
+import RecapSheet from '../components/RecapSheet'
 
-type Card = { kind: string; emoji: string; title: string; text: string }
+type Card = { kind: string; emoji: string; title: string; text: string; start?: string }
 const CARD_BG: Record<string, string> = {
   forecast: 'bg-gradient-to-br from-[#FFF4E5] to-card dark:from-[#3A2A1A]',
   milestone: 'bg-gradient-to-br from-teal-50 to-card',
@@ -34,6 +35,7 @@ export default function Today() {
   const [showInsight, setShowInsight] = useState(false)
   const feed = useFetch<Card[]>('/api/feed').data
   const [card, setCard] = useState<Card | null>(null)
+  const [recapStart, setRecapStart] = useState<string | null>(null)
   const [confirmStart, setConfirmStart] = useState(false)
 
   const st = ov?.status
@@ -105,7 +107,7 @@ export default function Today() {
           <span className="line-clamp-4 text-sm font-semibold">{daily.loading && !daily.data ? 'Thinking…' : daily.data?.content}</span>
         </button>
         {feed?.map((c) => (
-          <button key={c.kind + c.title} onClick={() => setCard(c)}
+          <button key={c.kind + c.title} onClick={() => (c.kind === 'recap' && c.start ? setRecapStart(c.start) : setCard(c))}
             className={`card flex h-40 w-40 shrink-0 flex-col justify-between p-4 text-left ${CARD_BG[c.kind] ?? ''}`}>
             <span className="text-3xl">{c.emoji}</span>
             <span><span className="block font-extrabold leading-tight">{c.title}</span>
@@ -182,6 +184,8 @@ export default function Today() {
           <p className="mt-6 text-xs text-muted">Based on your own logs and cycle predictions. Not medical advice.</p>
         </div>
       </Sheet>
+
+      <RecapSheet start={recapStart} onClose={() => setRecapStart(null)} />
 
       <Sheet open={confirmStart} onClose={() => setConfirmStart(false)} title="Did your period start today?">
         <div className="space-y-3 px-5 pb-8">

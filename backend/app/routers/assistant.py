@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
@@ -6,7 +7,8 @@ from sqlmodel import delete, func, select
 
 from .. import ai
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
-from ..models import ChatMessage, DayLog, InsightCache, User
+from ..feed import cycle_summary
+from ..models import ChatMessage, DayLog, InsightCache, Setting, User
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
@@ -85,6 +87,33 @@ async def daily(user: UserDep, db: SessionDep, today: TodayDep, refresh: bool = 
     db.add(cached)
     db.commit()
     return {"source": "ai", "content": text}
+
+
+@router.get("/recap")
+async def recap(start: date, user: UserDep, db: SessionDep, today: TodayDep, refresh: bool = False):
+    """AI recap of the cycle starting on `start` (rules fallback). Completed cycles are cached."""
+    eng = build_engine(db, user, today)
+    seg = next((s for s in eng.segments if s.start == start and not s.predicted), None)
+    if not seg:
+        raise HTTPException(404, "No logged cycle starts on that date")
+    logs = _logs(db, user)
+    done = seg.end < today and seg is not eng.current
+    base = {"start": seg.start.isoformat(), "length": seg.length if done else None, "complete": done}
+    if not ai.enabled():
+        return {**base, "source": "rules", "content": cycle_summary(eng, logs, seg)}
+    key = f"recap:{user.id}:{seg.start.isoformat()}"
+    cached = db.get(Setting, key)
+    if cached and done and not refresh:
+        return {**base, "source": "ai", "content": cached.value, "cached": True}
+    try:
+        text = await ai.complete(ai.SYSTEM + "\n\nCYCLE DATA (JSON):\n" + ai.recap_context(eng, logs, seg),
+                                 [{"role": "user", "content": ai.RECAP_PROMPT}], max_tokens=450)
+    except ai.AIError as e:
+        return {**base, "source": "rules", "content": cycle_summary(eng, logs, seg), "error": str(e)}
+    if done:
+        db.merge(Setting(key=key, value=text))
+        db.commit()
+    return {**base, "source": "ai", "content": text}
 
 
 class ChatIn(BaseModel):

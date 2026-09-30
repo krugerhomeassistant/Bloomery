@@ -1,16 +1,16 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.5.0
+**Date:** 2026-09-30 · **Version:** 0.6.0
 
 ## Current subtask
-User runs Bloomery on ZimaOS, reachable only via Tailscale (private tailnet, not public internet) → no further hardening needed; v0.5.0 throttle/headers kept as harmless defaults. Shipped v0.5.0: security hardening + Flo/Clue/CSV import.
+Shipped AI cycle recap + Apple Health import. Deployment: ZimaOS, Tailscale-only (no extra hardening).
 
 ## Last execution results
-- Per-IP login throttle, security headers, `no-store` on API; importer (`app/importers.py`) + `POST /api/import/other`; Profile import auto-routes.
-- Tests 19/19; importer self-check passes.
+- `/api/ai/recap` (cached per completed cycle) + RecapSheet; Apple Health streaming import (`appleHealth.ts` + `importers._apple`).
+- Tests 21/21. E2E OK (synthetic export, fake LLM).
 
 ## Blockers
-None. AI + notifications not yet tested by user on a real provider.
+None. Real-provider AI, notifications, and real Apple/Clue exports still untested by user.
 
 ## Immediate next step
-User: update container, test AI (Claude key) + ntfy. Candidates next: app lock (PIN), AI-written recap, Apple Health import, Alembic before first schema change.
+User updates container and tests. Remaining backlog: app lock (PIN), pregnancy/perimenopause modes, partner sharing, i18n, Alembic before first schema change.

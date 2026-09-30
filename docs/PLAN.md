@@ -76,6 +76,12 @@
 - [x] Deployment context: owner's instance is Tailscale-only → no further hardening planned
 - [ ] Verify Clue format against a real `.cluedata` (format inferred from community converters)
 
+## Phase 9 — AI recap + Apple Health (v0.6.0)
+- [x] `/api/ai/recap` + RecapSheet (Insights history + Today recap card), cached per completed cycle
+- [x] Apple Health: client-side streaming extraction + server mapping/merge
+- [x] Tests 21/21; E2E: 4.7 MB synthetic export → 63 days (35 period), 6 cycles, BBT °F→°C; recap sheet via fake LLM
+- [ ] Verify against a real iPhone export (value strings inferred from HealthKit enums)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

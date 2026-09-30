@@ -27,4 +27,7 @@ Format: [Problem] → [Root cause] → [Verified solution]
 24. **ZimaOS "Failed to pull image after 5 mirror methods"** → GHCR package private by default (separate from repo visibility) → Package settings → Change visibility → Public. Verify: `curl ghcr.io/token?scope=repository:<owner>/<img>:pull` returns 200.
 25. **Per-username login lockout = DoS on a public instance** → anyone can burn the owner's attempts → throttle per client IP only (uvicorn `--proxy-headers` makes `request.client.host` the real IP behind a proxy).
 26. **No official Clue export spec** → inferred `.cluedata` = `{"data":[{"day","period",...}]}` from community converters; Flo verified via flo-to-drip (`operationalData.cycles`). Keep importer tolerant and report "no period days found" clearly.
+27. **Apple Health export.xml can be GBs** → never upload it; stream in browser (`file.stream().pipeThrough(new TextDecoderStream())`), scan only up to last `<` per chunk so no tag is split, send compact records.
+28. **HealthKit renamed MenstrualFlow values to VaginalBleeding (iOS 18)** → match value by suffix (Light/Medium/Heavy/Unspecified), not full string.
+29. **New test registering first user broke `test_full_flow` (expects empty DB)** → tests share one data dir; put tests that create the first account in files sorting after `test_api.py` (e.g. `test_recap.py`).
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

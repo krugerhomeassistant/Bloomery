@@ -79,7 +79,23 @@ def test_import_other_apps():
         flo = {"operationalData": {"cycles": [{"period_start_date": "2025-05-01T00:00:00", "period_end_date": "2025-05-04T00:00:00"},
                                               {"period_start_date": "2025-05-29T00:00:00", "period_end_date": "2025-06-02T00:00:00"}]}}
         r = c.post("/api/import/other", json={"content": _j.dumps(flo)}).json()
-        assert r == {"source": "Flo", "days": 9, "first": "2025-05-01", "last": "2025-06-02"}
+        assert r == {"source": "Flo", "days": 9, "period_days": 9, "first": "2025-05-01", "last": "2025-06-02"}
         cal = {d["date"]: d["kind"] for d in c.get("/api/cycle/calendar?start=2025-05-01&end=2025-05-02&today=2025-06-10").json()}
         assert cal["2025-05-01"] == "period"
         assert c.post("/api/import/other", json={"content": '{"foo": 1}'}).status_code == 422
+
+
+def test_import_apple_health_merges():
+    import json as _j
+    with TestClient(app) as c:
+        c.post("/api/auth/login", json={"username": "ana", "password": "supersecret"})
+        c.put("/api/logs/2025-07-01", json={"tags": {"mood": ["happy"]}, "temperature": 36.2})
+        data = {"format": "apple_health", "records": [
+            ["MenstrualFlow", "2025-07-01", "HKCategoryValueMenstrualFlowLight", ""],
+            ["AbdominalCramps", "2025-07-01", "HKCategoryValueSeverityMild", ""],
+            ["BasalBodyTemperature", "2025-07-01", "36.9", "degC"]]}
+        r = c.post("/api/import/other", json={"content": _j.dumps(data)}).json()
+        assert r["source"] == "Apple Health" and r["period_days"] == 1
+        log = c.get("/api/logs/2025-07-01").json()
+        assert log["flow"] == "light" and log["tags"] == {"mood": ["happy"], "symptoms": ["cramps"]}
+        assert log["temperature"] == 36.2  # existing value kept

@@ -140,16 +140,21 @@ def recap(eng: Engine, logs: list, today: date) -> dict | None:
     prev = next((s for s in reversed(eng.segments) if not s.predicted and s.end < cur.start), None)
     if not prev:
         return None
+    return {**_card("recap", "📊", "Last cycle recap", cycle_summary(eng, logs, prev)), "start": prev.start.isoformat()}
+
+
+def cycle_summary(eng: Engine, logs: list, seg: Segment) -> str:
+    """Rule-based one-paragraph recap of a (completed) cycle; also the AI recap fallback."""
     avg = eng.stats()["avg_cycle_length"]
-    top = Counter(t for l in logs if prev.start <= l.day <= prev.end for t in _tags(l.tags)).most_common(3)
-    text = f"It lasted {prev.length} days"
+    top = Counter(t for l in logs if seg.start <= l.day <= seg.end for t in _tags(l.tags)).most_common(3)
+    text = f"It lasted {seg.length} days"
     if avg:
-        diff = prev.length - avg
+        diff = seg.length - avg
         text += " — right on your average." if abs(diff) < 1.5 else f" — {abs(diff):.0f} days {'longer' if diff > 0 else 'shorter'} than your average of {avg:g}."
-    text += f" Your period was {(prev.period_end - prev.start).days + 1} days."
+    text += f" Your period was {(seg.period_end - seg.start).days + 1} days."
     if top:
         text += " Most logged: " + ", ".join(LABELS.get(t, t).lower() for t, _ in top) + "."
-    return _card("recap", "📊", "Last cycle recap", text)
+    return text
 
 
 def tip(eng: Engine, today: date) -> dict | None:

@@ -61,13 +61,13 @@ Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature
 <td valign="top">
 
 ### ✨ AI assistant *(optional)*
-A daily personalised insight, plus a chat that already knows your cycle history. Connect **Claude, OpenAI, OpenRouter, Ollama** or any OpenAI-compatible server, **right from the app**.
+A daily personalised insight, a **written recap of every cycle** (tap any cycle in Insights), plus a chat that already knows your cycle history. Connect **Claude, OpenAI, OpenRouter, Ollama** or any OpenAI-compatible server, **right from the app**.
 
 </td>
 <td valign="top">
 
 ### 🏠 Built for self-hosting
-Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue or CSV** · JSON export · one-tap account deletion.
+Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue, Apple Health or CSV** · JSON export · one-tap account deletion.
 
 </td>
 </tr>
@@ -207,7 +207,11 @@ All optional. Set in `.env` or the container environment ([full list](.env.examp
 
 **Exposing it on a domain?** Put it behind a reverse proxy with HTTPS (Nginx Proxy Manager, Caddy, Traefik, Cloudflare Tunnel) and set `BLOOMERY_SECURE_COOKIES=true`. Only do that if you *always* use the HTTPS address, because browsers won't send secure cookies over plain `http://`.
 
-**Moving from another app?** Profile → **Import data** accepts a Flo export (*Flo → Settings → Request my data*), a Clue backup (`.cluedata`) or a CSV (a `date` column plus a `period`/`flow` column, or `start`/`end` columns). Period history is imported, and days you've already logged are never overwritten.
+**Moving from another app?** Profile → **Import data** accepts:
+- **Apple Health**: *Health → your picture → Export All Health Data*, unzip it, and pick `export.xml`. Your phone reads the file itself and uploads only periods, cycle symptoms, basal temperature, cervical mucus and test results; the rest of your health data never leaves the device.
+- **Flo** (*Settings → Request my data*), a **Clue** backup (`.cluedata`), or a **CSV** (a `date` column plus a `period`/`flow` column, or `start`/`end` columns). These import period history.
+
+Days you've already logged are never overwritten; imported symptoms are added to them.
 
 **Backups:** copy the `/data` volume (`bloomery.db` + `secret.key`), or use in-app **Export**.
 
@@ -234,8 +238,8 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] Multi-arch image on GHCR
 - [x] Notifications via ntfy / Gotify / Home Assistant / Discord
 - [ ] App lock (PIN / passkey)
-- [x] Import from Flo, Clue and CSV
-- [ ] Import from Apple Health
+- [x] Import from Flo, Clue, Apple Health and CSV
+- [x] AI-written cycle recaps
 - [ ] Pregnancy and perimenopause modes
 - [ ] Partner sharing (read-only)
 - [ ] Translations

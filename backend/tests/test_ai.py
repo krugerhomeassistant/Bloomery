@@ -41,3 +41,4 @@ def test_providers(monkeypatch, mock_http, provider, expect_url, expect):
         assert mock_http["body"]["messages"][0]["role"] == "system"
     if provider == "openai":  # GPT-5 family rejects max_tokens/temperature
         assert "max_completion_tokens" in mock_http["body"] and "temperature" not in mock_http["body"]
+

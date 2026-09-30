@@ -1,8 +1,10 @@
-"""Import period history from other apps. Periods only (the part predictions need); symptoms differ too much per app.
+"""Import history from other apps. Flo/Clue/CSV: periods only. Apple Health: periods + symptoms + BBT + tests.
 
 Supported (auto-detected):
 * Flo "Download my data" JSON: operationalData.cycles[] with period_start_date / period_end_date
 * Clue backup (.cluedata JSON): {"data": [{"day": "YYYY-MM-DD", "period": "light|medium|heavy|spotting", ...}]}
+* Apple Health: the browser pre-extracts relevant <Record>s from export.xml (can be GBs) and sends
+  {"format": "apple_health", "records": [[type, "YYYY-MM-DD", value, unit], ...]}
 * CSV with a date column + a flow column (period/flow/bleeding/menstruation; words or drip's 0-3),
   or CSV with start/end columns (one row per period)
 """
@@ -24,6 +26,49 @@ START_COLS, END_COLS = ("start", "period start", "start date", "period_start_dat
 
 class ImportFormatError(ValueError):
     pass
+
+
+# Apple HealthKit type (without HKCategoryTypeIdentifier prefix) -> Bloomery tag
+APPLE_SYMPTOMS = {
+    "AbdominalCramps": "symptoms:cramps", "BreastPain": "symptoms:tender_breasts", "Headache": "symptoms:headache",
+    "Acne": "symptoms:acne", "LowerBackPain": "symptoms:backache", "Fatigue": "symptoms:fatigue",
+    "SleepChanges": "symptoms:insomnia", "HotFlashes": "symptoms:hot_flashes", "Dizziness": "symptoms:dizziness",
+    "PelvicPain": "symptoms:abdominal_pain", "AppetiteChanges": "symptoms:cravings", "Bloating": "digestion:bloating",
+    "Nausea": "digestion:nausea", "Constipation": "digestion:constipation", "Diarrhea": "digestion:diarrhea",
+    "MoodChanges": "mood:mood_swings",
+}
+APPLE_MUCUS = {"Dry": "none", "Sticky": "sticky", "Creamy": "creamy", "Watery": "watery", "EggWhite": "egg_white"}
+
+
+def _apple(records: list) -> dict[date, dict]:
+    days: dict[date, dict] = {}
+    for rec in records:
+        typ, day, value = rec[0], _d(rec[1]), str(rec[2] or "")
+        unit = rec[3] if len(rec) > 3 else ""
+        e = days.setdefault(day, {})
+        tag = None
+        if typ == "MenstrualFlow":  # value ends Light/Medium/Heavy/Unspecified/None (…MenstrualFlow… or …VaginalBleeding…)
+            f = next((w.lower() for w in ("Light", "Medium", "Heavy") if value.endswith(w)), "medium" if value.endswith("Unspecified") else None)
+            if f:
+                e["flow"] = f
+        elif typ == "IntermenstrualBleeding":
+            e.setdefault("flow", "spotting")
+        elif typ == "BasalBodyTemperature":
+            t = float(value)
+            e["temperature"] = round((t - 32) * 5 / 9, 2) if unit.lower() == "degf" else t
+        elif typ == "CervicalMucusQuality":
+            m = next((v for k, v in APPLE_MUCUS.items() if value.endswith(k)), None)
+            tag = m and f"discharge:{m}"
+        elif typ == "OvulationTestResult":
+            tag = "ovulation_test:negative" if value.endswith("Negative") else None if value.endswith("Indeterminate") else "ovulation_test:positive"
+        elif typ == "PregnancyTestResult":
+            tag = {"Positive": "pregnancy_test:positive", "Negative": "pregnancy_test:negative"}.get(next((w for w in ("Positive", "Negative") if value.endswith(w)), ""))
+        elif typ in APPLE_SYMPTOMS and not value.endswith("NotPresent"):
+            tag = APPLE_SYMPTOMS[typ]
+        if tag:
+            cat, v = tag.split(":")
+            e.setdefault("tags", {}).setdefault(cat, set()).add(v)
+    return {d: e for d, e in days.items() if e}
 
 
 def _d(v) -> date:
@@ -51,13 +96,21 @@ def _flow(v) -> str | None:
     return WORDS.get(str(v).strip().lower())
 
 
-def parse(content: str) -> tuple[str, dict[date, str]]:
-    """Returns (source name, {day: flow})."""
+def parse(content: str) -> tuple[str, dict[date, dict]]:
+    """Returns (source name, {day: {"flow"?, "tags"?: {cat: set}, "temperature"?}})."""
+    src, days = _parse(content)
+    return src, {d: (v if isinstance(v, dict) else {"flow": v}) for d, v in days.items()}
+
+
+def _parse(content: str):
     content = content.lstrip("﻿")
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
         data = None
+
+    if isinstance(data, dict) and data.get("format") == "apple_health":
+        return "Apple Health", _apple(data.get("records") or [])
 
     if isinstance(data, dict) and isinstance(data.get("operationalData"), dict):
         days: dict[date, str] = {}
@@ -102,9 +155,18 @@ def parse(content: str) -> tuple[str, dict[date, str]]:
 
 if __name__ == "__main__":  # self-check
     flo = json.dumps({"operationalData": {"cycles": [{"period_start_date": "2024-01-01T00:00:00", "period_end_date": "2024-01-04T00:00:00"}]}})
-    assert parse(flo) == ("Flo", {date(2024, 1, d): "medium" for d in range(1, 5)})
+    assert parse(flo) == ("Flo", {date(2024, 1, d): {"flow": "medium"} for d in range(1, 5)})
+    apple = json.dumps({"format": "apple_health", "records": [
+        ["MenstrualFlow", "2024-04-01", "HKCategoryValueVaginalBleedingHeavy", ""],
+        ["AbdominalCramps", "2024-04-01", "HKCategoryValueSeverityModerate", ""],
+        ["Headache", "2024-04-01", "HKCategoryValueSeverityNotPresent", ""],
+        ["BasalBodyTemperature", "2024-04-02", "97.7", "degF"],
+        ["CervicalMucusQuality", "2024-04-12", "HKCategoryValueCervicalMucusQualityEggWhite", ""]]})
+    src, d = parse(apple)
+    assert src == "Apple Health" and d[date(2024, 4, 1)] == {"flow": "heavy", "tags": {"symptoms": {"cramps"}}}
+    assert d[date(2024, 4, 2)] == {"temperature": 36.5} and d[date(2024, 4, 12)]["tags"] == {"discharge": {"egg_white"}}
     clue = json.dumps({"data": [{"day": "2024-02-01", "period": "heavy"}, {"day": "2024-02-02", "pain": ["cramps"]}]})
-    assert parse(clue) == ("Clue", {date(2024, 2, 1): "heavy"})
-    assert parse("date,bleeding.value\n2024-03-01,3\n2024-03-02,\n")[1] == {date(2024, 3, 1): "heavy"}
+    assert parse(clue) == ("Clue", {date(2024, 2, 1): {"flow": "heavy"}})
+    assert parse("date,bleeding.value\n2024-03-01,3\n2024-03-02,\n")[1] == {date(2024, 3, 1): {"flow": "heavy"}}
     assert len(parse("Start,End\n05/04/2024,08/04/2024\n")[1]) == 4
     print("ok")
