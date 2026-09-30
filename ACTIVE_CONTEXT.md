@@ -1,19 +1,19 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.1.0 (MVP complete)
+**Date:** 2026-09-30 · **Version:** 0.1.0
 
 ## Current subtask
-Delivered v0.1.0 to `E:\Projects\Personal\Bloomery`. Awaiting user run on host + reference-image feedback for visual tuning.
+ZimaOS deployment support + memory sizing for a 0.5–1 GB free-RAM home server.
 
 ## Last execution results
-- Backend: 11/11 pytest passing (engine, API flow, AI provider mocks).
-- Frontend: `tsc` clean, Vite build OK (~107 kB gz JS).
-- Docker image built & ran healthy; demo seeded; screenshots verified Today (fertile, light+dark), Log sheet, Calendar (+edit), Insights, Assistant (off + fake-LLM chat), insight sheet.
+- Added `backend/entrypoint.sh` (chown bind mount → drop to uid 10001); tested with root-owned mount: OK.
+- Added `docker-compose.zimaos.yml` (image-only, /DATA/AppData/bloomery, mem_limit 256m, x-casaos metadata).
+- Measured: 60 MiB idle, 72 MiB after 600 concurrent requests under 256 MiB cap; image 274 MB.
+- README: ZimaOS section (build on PC → docker save/scp/load → dashboard Import).
+- 11/11 tests pass.
 
 ## Blockers
-None. (Sandbox-only CA workaround documented in LESSONS #2.)
+None. Ollama not viable on user's server (RAM) → cloud AI or none.
 
 ## Immediate next step
-1. User: `cp .env.example .env && docker compose up -d --build` → http://localhost:8420.
-2. Optionally enable Ollama (README).
-3. Pick next backlog item from PLAN (suggest: reminders, Alembic, Flo data import).
+User deploys on ZimaOS. Then: GHCR multi-arch image (removes manual build), reminders, Alembic.

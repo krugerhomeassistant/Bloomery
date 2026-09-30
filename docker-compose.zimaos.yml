@@ -1,0 +1,29 @@
+# ZimaOS: App Store → "+" → Install a customized app → Import (paste this file).
+# Requires the image to exist on the box first (see README "ZimaOS"): ZimaOS import can't build.
+name: bloomery
+services:
+  bloomery:
+    image: bloomery:latest
+    container_name: bloomery
+    restart: unless-stopped
+    ports:
+      - "8420:8000"
+    environment:
+      BLOOMERY_ALLOW_REGISTRATION: "auto"
+      BLOOMERY_AI_PROVIDER: "none"   # none | openai | anthropic  (skip ollama on low-RAM boxes)
+      BLOOMERY_AI_MODEL: ""
+      BLOOMERY_AI_API_KEY: ""
+    volumes:
+      - /DATA/AppData/bloomery:/data
+    mem_limit: 256m
+x-casaos:
+  architectures: [amd64, arm64]
+  main: bloomery
+  title:
+    en_us: Bloomery
+  tagline:
+    en_us: Private period & cycle tracker
+  category: Health
+  port_map: "8420"
+  scheme: http
+  index: /

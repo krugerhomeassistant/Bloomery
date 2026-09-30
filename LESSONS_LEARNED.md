@@ -11,4 +11,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 7. **Calendar sticky header showed content bleeding through** → `bg-canvas/95` + backdrop blur → solid `bg-canvas` + subtle shadow.
 8. **Multi-drop emoji (💧💧💧) overflow chip circles** → emoji strings wider than 56px → render flow intensity with lucide `Droplet` icons (Chip `emoji` accepts ReactNode).
 9. **Qwen3-style models emit `<think>` blocks** → reasoning tokens in content → strip `<think>…</think>` in `ai.complete`.
+11. **Bind-mounted `/data` created root-owned by host (ZimaOS `/DATA/AppData`, Linux `./data`) → non-root container can't write DB** → `USER bloomery` in Dockerfile + host-created dir → `entrypoint.sh` runs as root, `chown -R` data dir, then `setpriv` drops to uid 10001 (verified PID 1 Uid 10001, files owned by bloomery).
+12. **ZimaOS compose import doesn't build images** → dashboard import only pulls/uses images → pre-build (`docker build` + `docker save`/`load`) and reference `image: bloomery:latest`; `docker-compose.zimaos.yml`.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

@@ -30,7 +30,11 @@
 - [x] docker-compose with `ai` profile (Ollama)
 - [x] E2E in container: seed demo, Playwright screenshots of all screens, fake OpenAI server → chat/insight verified
 - [x] Copy project to `E:\Projects\Personal\Bloomery`
-- [ ] User: `docker compose up -d --build` on host and log in
+- [x] Privilege-dropping entrypoint (root-owned bind mounts)
+- [x] ZimaOS compose (`docker-compose.zimaos.yml`, /DATA/AppData, 256 MiB cap) + README guide
+- [x] Memory profile: ~60 MiB idle, ~72 MiB under load
+- [ ] User: deploy on ZimaOS and log in
+- [ ] Publish multi-arch image to GHCR so ZimaOS can pull directly (removes manual build)
 
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)

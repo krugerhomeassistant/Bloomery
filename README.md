@@ -27,6 +27,28 @@ docker compose restart bloomery
 
 Cloud alternatives: `BLOOMERY_AI_PROVIDER=openai` (any OpenAI-compatible API) or `anthropic`, plus `BLOOMERY_AI_API_KEY`.
 
+## ZimaOS
+
+ZimaOS "Install a customized app → Import" can't build images, so get the image onto the box first.
+
+**Option A — build on your PC (recommended for low-RAM servers; the build step needs ~1 GB):**
+```powershell
+# Windows, Docker Desktop, in the project folder
+docker build -t bloomery:latest .
+docker save bloomery:latest -o bloomery.tar
+scp bloomery.tar root@<zima-ip>:/DATA/
+ssh root@<zima-ip> "docker load -i /DATA/bloomery.tar && rm /DATA/bloomery.tar"
+```
+(ZimaOS: Settings → General → Developer mode → enable SSH.)
+
+**Option B — build on ZimaOS:** copy the folder to `/DATA/AppData/bloomery-src`, SSH in, `cd` there, `docker build -t bloomery:latest .`
+
+Then in the ZimaOS dashboard: App Store → **+** → *Install a customized app* → **Import** → paste `docker-compose.zimaos.yml` → Install. Open `http://<zima-ip>:8420`. Data lives in `/DATA/AppData/bloomery`.
+
+### Resource usage (measured)
+~60 MiB RAM idle, ~72 MiB after 600 concurrent API requests; image 274 MB; ~0% CPU idle. The ZimaOS compose caps it at 256 MiB.
+Local AI (Ollama) needs ≥3–4 GB RAM for a 3B model — on small servers use `BLOOMERY_AI_PROVIDER=anthropic` or `openai` (cloud; cycle summaries leave the box) or `none`.
+
 ## Features
 
 - **Today**: cycle ring with period/fertile arcs, "Period in N days" / "Ovulation in N days" / "Late by N", week strip, daily insight cards

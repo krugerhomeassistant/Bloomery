@@ -15,10 +15,11 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app ./app
 COPY --from=web /web/dist ./static
-RUN useradd -r -u 10001 bloomery && mkdir -p /data && chown bloomery /data
-USER bloomery
+COPY backend/entrypoint.sh /entrypoint.sh
+RUN useradd -r -u 10001 -U bloomery && mkdir -p /data && chown bloomery:bloomery /data
 VOLUME /data
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD python -c "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health').status==200 else 1)"
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*", "--workers", "1", "--no-access-log"]

@@ -8,7 +8,9 @@ Browser/PWA ──HTTP──▶ bloomery container :8000 (host :8420)
                         ├─ SQLite  /data/bloomery.db (WAL)
                         └─ httpx ──▶ LLM: ollama:11434/v1 | OpenAI-compat | api.anthropic.com
 ```
-Single image, multi-stage: `node:24-alpine` (build SPA) → `python:3.13-slim` (runtime, uid 10001).
+Single image, multi-stage: `node:24-alpine` (build SPA) → `python:3.13-slim` (runtime). `entrypoint.sh` starts as root, chowns `$BLOOMERY_DATA_DIR`, drops to uid 10001 via `setpriv`. 1 uvicorn worker, access log off. Footprint: ~60 MiB RAM idle, image 274 MB.
+
+Deploy targets: `docker-compose.yml` (generic, builds locally, optional Ollama profile) · `docker-compose.zimaos.yml` (prebuilt image, `/DATA/AppData/bloomery`, `mem_limit: 256m`, `x-casaos` metadata).
 
 ## Stack (pinned 2026-09-30)
 | Layer | Tech |
