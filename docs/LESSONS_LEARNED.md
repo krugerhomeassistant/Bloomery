@@ -38,4 +38,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 35. **Streaming via proxies buffers** → nginx-style proxies hold chunks → send `X-Accel-Buffering: no`; plain-text chunked body (not SSE) keeps the client to a few lines of `TextDecoderStream`.
 36. **Account delete left Setting rows behind** (log notes, share/HA tokens) → per-user keys weren't tied to `user_id` → delete `%:<uid>`, `%:<uid>:%` and token rows whose value is the uid.
 37. **Tests needing a throwaway account** → registration is closed after the first user → `monkeypatch.setattr(auth, "registration_open", lambda db: True)` instead of depending on file order.
+38. **Pregnancy mode still showed fertile days** → current segment (from last period) keeps its fertile window → `day_info` returns no phase/kind for days ≥ LMP in pregnancy mode.
+39. **Daily AI insight stale after life-stage switch** → cached per user/day → clear `InsightCache` for the user on `PUT /api/life-stage`.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

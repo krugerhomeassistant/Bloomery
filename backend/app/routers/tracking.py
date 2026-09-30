@@ -45,6 +45,20 @@ def update_profile(body: ProfileIn, user: UserDep, db: SessionDep):
     return public_user(user)
 
 
+class LifeStageIn(BaseModel):
+    mode: Literal["cycle", "pregnancy", "perimenopause"]
+    lmp: date | None = None
+
+
+@router.put("/life-stage")
+def set_life_stage(body: LifeStageIn, user: UserDep, db: SessionDep):
+    lmp = body.lmp.isoformat() if body.mode == "pregnancy" and body.lmp else None
+    db.merge(Setting(key=f"mode:{user.id}", value=json.dumps({"mode": body.mode, "lmp": lmp})))
+    db.exec(delete(InsightCache).where(InsightCache.user_id == user.id))  # daily AI insight was written for the old stage
+    db.commit()
+    return public_user(user)
+
+
 # ---------------------------------------------------------------- day logs
 class LogIn(BaseModel):
     flow: Literal["spotting", "light", "medium", "heavy"] | None = None

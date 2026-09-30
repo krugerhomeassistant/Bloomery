@@ -1,15 +1,21 @@
 import { useRef, useState, type ReactNode } from 'react'
 import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock } from 'lucide-react'
-import { api, type User } from '../api'
+import { api, iso, type LifeStage, type Overview, type User } from '../api'
 import { useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
 import { extractAppleHealth } from '../appleHealth'
 import AiSettings from '../components/AiSettings'
 import NotifySettings from '../components/NotifySettings'
 
+const STAGE_HELP: Record<LifeStage, string> = {
+  cycle: 'Period and fertility predictions from your logs.',
+  pregnancy: 'Shows your pregnancy week, due date and weekly tips instead of period predictions. Your cycle history is kept.',
+  perimenopause: 'Expects irregular cycles: wider prediction ranges, days since your last period and the 12-month menopause marker.',
+}
+
 export default function Profile() {
   const { user, setUser, bump, theme, setTheme } = useApp()
-  const ov = useFetch<{ predicted_cycle_length: number; predicted_period_length: number; luteal_length: number }>('/api/cycle/overview').data
+  const ov = useFetch<Overview>('/api/cycle/overview').data
   const share = useFetch<{ token: string | null }>('/api/tokens/share')
   const ha = useFetch<{ token: string | null }>('/api/tokens/ha')
   const [copied, setCopied] = useState(false)
@@ -25,6 +31,10 @@ export default function Profile() {
   const file = useRef<HTMLInputElement>(null)
   if (!user) return null
 
+  const setStage = async (mode: LifeStage, lmp: string | null) => {
+    setUser(await api<User>('/api/life-stage', { method: 'PUT', body: { mode, lmp }, today: false }))
+    bump()
+  }
   const save = async (patch: Partial<User>) => {
     setUser(await api<User>('/api/profile', { method: 'PUT', body: patch, today: false }))
     bump()
@@ -88,6 +98,21 @@ export default function Profile() {
           <div className="text-sm text-muted">@{user.username}</div>
         </div>
       </div>
+
+      <SectionTitle>Life stage</SectionTitle>
+      <Group>
+        <div className="px-4 py-3">
+          <Segmented value={user.mode} onChange={(v) => setStage(v as LifeStage, v === 'pregnancy' ? user.lmp : null)}
+            options={[['cycle', 'Cycle'], ['pregnancy', 'Pregnancy'], ['perimenopause', 'Perimenopause']]} />
+          {user.mode === 'pregnancy' && (
+            <label className="mt-3 flex items-center justify-between gap-3 text-sm font-bold text-muted">First day of last period
+              <input type="date" className="input w-auto py-1.5" value={user.lmp ?? ov?.pregnancy?.lmp ?? ''} max={iso(new Date())}
+                onChange={(e) => e.target.value && setStage('pregnancy', e.target.value)} />
+            </label>
+          )}
+        </div>
+      </Group>
+      <p className="mt-2 px-2 text-xs text-muted">{STAGE_HELP[user.mode]}</p>
 
       <SectionTitle>Cycle settings</SectionTitle>
       <Group>

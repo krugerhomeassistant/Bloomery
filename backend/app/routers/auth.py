@@ -7,7 +7,7 @@ from sqlalchemy.orm import object_session
 from sqlmodel import func, select
 
 from ..config import get_settings
-from ..deps import SessionDep, UserDep, hash_pw, verify_pw
+from ..deps import SessionDep, UserDep, hash_pw, life_stage, verify_pw
 from ..models import Setting, User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -30,7 +30,8 @@ def registration_open(db) -> bool:
 
 def public_user(u: User) -> dict:
     db = object_session(u)
-    return u.model_dump(exclude={"password_hash"}) | {"pin_set": bool(db and db.get(Setting, f"pin:{u.id}"))}
+    extra = {"pin_set": bool(db.get(Setting, f"pin:{u.id}")), **life_stage(db, u.id)} if db else {}
+    return u.model_dump(exclude={"password_hash"}) | extra
 
 
 @router.get("/status")

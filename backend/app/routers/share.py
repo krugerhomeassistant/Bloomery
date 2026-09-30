@@ -23,6 +23,8 @@ PARTNER_TIPS = {
     "luteal": "PMS can show up in this phase: tiredness, bloating or a shorter fuse. Extra patience and comfort food are appreciated.",
 }
 
+PREGNANCY_TIP = "Pregnancy is hard work for the body. Help with meals, chores and appointments, and ask how she's feeling today."
+
 
 # ---------------------------------------------------------------- token helpers
 def _revoke(db: Session, kind: str, uid: int) -> None:
@@ -83,7 +85,8 @@ def partner_view(token: str, db: SessionDep, today: TodayDep):
         "name": user.display_name or user.username,
         "today": ov["today"], "status": ov["status"], "current_cycle": ov["current_cycle"],
         "predicted_cycle_length": ov["predicted_cycle_length"], "next_period": ov["next_period"],
-        "phase": phase, "tip": PARTNER_TIPS.get(phase or ""), "days": days,
+        "phase": phase, "tip": PARTNER_TIPS.get(phase or "") or (PREGNANCY_TIP if ov["pregnancy"] else None), "days": days,
+        "pregnancy": ov["pregnancy"],
     }
 
 

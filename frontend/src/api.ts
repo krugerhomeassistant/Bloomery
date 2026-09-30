@@ -44,7 +44,11 @@ export type User = {
   temp_unit: 'C' | 'F'
   weight_unit: 'kg' | 'lb'
   pin_set: boolean
+  mode: LifeStage
+  lmp: string | null
 }
+export type LifeStage = 'cycle' | 'pregnancy' | 'perimenopause'
+export type Pregnancy = { lmp: string; days: number; week: number; day: number; due: string; days_left: number; trimester: number; size: string | null }
 export type Item = { id: string; label: string; emoji: string }
 export type Catalog = { flow: Item[]; categories: { id: string; title: string; color: string; items: Item[] }[] }
 export type Status = { state: string; label: string; headline: string; sub: string; cycle_day?: number; phase?: string; chance?: string }
@@ -53,7 +57,7 @@ export type Segment = {
   fertile_start: string; fertile_end: string; predicted: boolean; ovulation_confirmed: boolean
 }
 export type Overview = {
-  today: string; status: Status; predicted_cycle_length: number; predicted_period_length: number
+  today: string; mode: LifeStage; pregnancy: Pregnancy | null; status: Status; predicted_cycle_length: number; predicted_period_length: number
   luteal_length: number; uncertainty_days: number; next_period: string | null
   current_cycle: Segment | null; upcoming: Segment[]
 }

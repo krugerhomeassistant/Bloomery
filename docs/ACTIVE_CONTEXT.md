@@ -1,15 +1,15 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.9.0
+**Date:** 2026-09-30 · **Version:** 1.0.0
 
 ## Current subtask
-v0.9.0 app lock shipped (after v0.8.0 HA feeds + streaming AI). Next: v1.0 life stages (pregnancy + perimenopause), PLAN Phase 13.
+All five agreed items shipped: v0.8.0 HA feeds + streaming AI, v0.9.0 app lock, v1.0.0 pregnancy + perimenopause modes.
 
 ## Last execution results
-- Tests 25/25. E2E PIN flow OK (screens in scratchpad pin1.png).
+- Tests 26/26. E2E life stages OK (scratchpad ls0–ls2.png).
 
 ## Blockers
-None.
+None. Waiting for user feedback from ZimaOS.
 
 ## Immediate next step
-Phase 13: Setting `mode:<uid>`; engine/overview mode-aware; Today pregnancy view; perimenopause tweaks; Profile Life stage.
+Backlog: symptom predictions, i18n, Alembic before first schema change, passkeys (needs HTTPS), SQLCipher option.

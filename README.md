@@ -55,6 +55,9 @@ A daily message on your phone with milestones, heads-ups, recaps, tips or a **pi
 ### 💞 Partner sharing
 A private read-only link for your partner showing where you are in your cycle, the next 5 weeks and tips on how to support you. Symptoms, moods, sex and notes are never shared, and one tap revokes the link.
 
+### 🤰 Life stages
+Switch to **Pregnancy** mode for your week, due date, baby-size cards and trimester tips, or **Perimenopause** mode for wider prediction ranges, days since your last period and the 12-month menopause marker. Your history stays intact.
+
 ### 🔐 App lock
 Optional 4-digit PIN when the app opens or comes back from the background. Five wrong tries sign you out.
 
@@ -258,7 +261,7 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] App lock (PIN)
 - [x] Import from Flo, Clue, Apple Health and CSV
 - [x] AI-written cycle recaps
-- [ ] Pregnancy and perimenopause modes
+- [x] Pregnancy and perimenopause modes
 - [x] Partner sharing (read-only link)
 - [x] Home Assistant sensors + calendar feed
 - [x] Streaming AI replies

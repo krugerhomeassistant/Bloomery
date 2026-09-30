@@ -8,6 +8,7 @@ const THEMES: Record<string, { bg: string; fg: string; accent: string }> = {
   due: { bg: 'radial-gradient(circle at 30% 25%, #FFA3B9 0%, #FF6F96 70%)', fg: '#fff', accent: '#fff' },
   fertile: { bg: 'radial-gradient(circle at 30% 25%, #7FE0D6 0%, #22ADA5 70%, #148F88 100%)', fg: '#fff', accent: '#fff' },
   cycle: { bg: 'radial-gradient(circle at 30% 25%, var(--color-card) 0%, var(--color-pink-50) 55%, var(--color-pink-100) 100%)', fg: 'var(--color-ink)', accent: '#FF4A7D' },
+  pregnancy: { bg: 'radial-gradient(circle at 30% 25%, #C9B6FF 0%, #9B7BF0 65%, #7C5CE0 100%)', fg: '#fff', accent: '#fff' },
   empty: { bg: 'radial-gradient(circle at 30% 25%, var(--color-card) 0%, var(--color-pink-50) 55%, var(--color-pink-100) 100%)', fg: 'var(--color-ink)', accent: '#FF4A7D' },
 }
 
@@ -17,7 +18,17 @@ export function CycleRing({ ov, children }: { ov: Overview | null; children?: Re
   const S = 320, C = S / 2, R = 150
   const cur = ov?.current_cycle
   let arcs: ReactNode = null
-  if (cur) {
+  const preg = ov?.pregnancy
+  if (preg) {  // progress through 280 days
+    const pt = (day: number) => { const a = (day / 280) * 2 * Math.PI - Math.PI / 2; return [C + R * Math.cos(a), C + R * Math.sin(a)] }
+    const d = Math.min(preg.days, 279), [x, y] = pt(d)
+    arcs = (
+      <>
+        <path d={`M${C},${C - R} A${R},${R} 0 ${d > 140 ? 1 : 0} 1 ${x},${y}`} stroke="#9B7BF0" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <circle cx={x} cy={y} r="12" fill="var(--color-card)" stroke="#7C5CE0" strokeWidth="4" />
+      </>
+    )
+  } else if (cur) {
     const len = cur.length
     const s0 = parseISO(cur.start)
     const pos = (iso: string) => differenceInCalendarDays(parseISO(iso), s0)

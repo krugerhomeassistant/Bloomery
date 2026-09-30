@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { addDays, format, getDay, parseISO } from 'date-fns'
 import { Heart } from 'lucide-react'
-import { api, type Overview, type Status } from '../api'
+import { api, type Overview, type Pregnancy, type Status } from '../api'
 import { CycleRing } from '../components/CycleRing'
 import { Logo, Spinner } from '../components/ui'
 
 type View = {
   name: string; today: string; status: Status; current_cycle: Overview['current_cycle']; predicted_cycle_length: number
-  next_period: string | null; phase: string | null; tip: string | null; days: { date: string; kind: string | null }[]
+  next_period: string | null; phase: string | null; tip: string | null; pregnancy?: Pregnancy | null; days: { date: string; kind: string | null }[]
 }
 const KIND: Record<string, string> = {
   period: 'bg-pink-500 text-white', predicted_period: 'border-2 border-dashed border-pink-400 text-pink-500',
@@ -32,7 +32,7 @@ export default function SharePage({ token }: { token: string }) {
         <div><div className="text-sm font-semibold text-muted">Shared with you</div><h1 className="text-2xl font-black">{v.name}'s cycle</h1></div>
       </header>
 
-      <CycleRing ov={{ ...v, luteal_length: 14, predicted_period_length: 5, uncertainty_days: 2, upcoming: [] } as Overview} />
+      <CycleRing ov={{ ...v, luteal_length: 14, predicted_period_length: 5, uncertainty_days: 2, upcoming: [], mode: v.pregnancy ? 'pregnancy' : 'cycle', pregnancy: v.pregnancy ?? null } as Overview} />
 
       {v.tip && (
         <div className="card mt-6 flex gap-3 p-4">

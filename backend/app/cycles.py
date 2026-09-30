@@ -64,6 +64,8 @@ class Profile:
     period_length: int = 5
     luteal_length: int = 14
     goal: str = "track"
+    mode: str = "cycle"  # cycle | pregnancy | perimenopause
+    lmp: date | None = None  # pregnancy: first day of last period (defaults to last logged period)
 
 
 @dataclass
@@ -96,6 +98,8 @@ class Engine:
             if len(self.cycle_lengths) >= 2
             else 2
         )
+        if self.profile.mode == "perimenopause":
+            self.variability = max(self.variability, 5)  # cycles swing a lot; don't promise precision
         self.segments = self._build_segments()
 
     # ------------------------------------------------------------------ building
@@ -132,7 +136,7 @@ class Engine:
                 ov = bbt or self._ovulation_for(p.start, self.predicted_cycle)
                 period_end = max(p.end, p.start + D(days=self.predicted_period - 1)) if p.end >= self.today else p.end
                 segs.append(Segment(p.start, length, period_end, ov, False, bool(bbt)))
-        if segs:
+        if segs and self.profile.mode != "pregnancy":
             nxt = segs[-1].end + D(days=1)
             for _ in range(12):
                 segs.append(
@@ -174,8 +178,8 @@ class Engine:
         info: dict = {"date": d.isoformat(), "cycle_day": None, "phase": None, "kind": None, "chance": None}
         if d in bleeding:
             info["kind"] = "period"
-        if not s:
-            return info
+        if not s or (self.profile.mode == "pregnancy" and (p := self.pregnancy()) and d >= date.fromisoformat(p["lmp"])):
+            return info  # no cycle phases during pregnancy
         info["cycle_day"] = (d - s.start).days + 1
         in_period = d <= s.period_end
         if in_period:
@@ -200,8 +204,23 @@ class Engine:
         info["chance"] = "high" if 0 <= delta <= 2 else "medium" if 3 <= delta <= 5 or delta == -1 else "low"
         return info
 
+    def pregnancy(self) -> dict | None:
+        lmp = self.profile.lmp or (self.periods[-1].start if self.periods else None)
+        if self.profile.mode != "pregnancy" or not lmp or lmp > self.today:
+            return None
+        days = (self.today - lmp).days
+        w = days // 7
+        due = lmp + D(days=280)  # Naegele's rule
+        return {"lmp": lmp.isoformat(), "days": days, "week": w, "day": days % 7, "due": due.isoformat(),
+                "days_left": (due - self.today).days, "trimester": 1 if w < 13 else 2 if w < 27 else 3,
+                "size": BABY_SIZE[min(max(w, 4), 40)] if w >= 4 else None}
+
     def status(self) -> dict:
         t = self.today
+        if p := self.pregnancy():
+            due = date.fromisoformat(p["due"])
+            return {"state": "pregnancy", "label": "Pregnant", "headline": f"{p['week']}w {p['day']}d",
+                    "sub": f"Due {due:%b} {due.day}", "cycle_day": None, "phase": None, "chance": None}
         if not self.periods:
             return {"state": "empty", "label": "Welcome", "headline": "Log your period", "sub": "to get predictions"}
         s = self.current
@@ -215,6 +234,9 @@ class Engine:
         if late == 0 and s is last:
             return {**base, "state": "due", "label": "Period expected", "headline": "Today",
                     "sub": "Log your period when it starts"}
+        if late > 0 and s is last and self.profile.mode == "perimenopause":
+            return {**base, "state": "late", "label": "Days since period", "headline": _days((t - last.start).days),
+                    "sub": "Longer gaps are common now"}
         if late > 0 and s is last:
             return {**base, "state": "late", "label": "Period late by", "headline": _days(late),
                     "sub": "Log your period when it starts"}
@@ -231,6 +253,8 @@ class Engine:
         cur = self.current
         return {
             "today": self.today.isoformat(),
+            "mode": self.profile.mode,
+            "pregnancy": self.pregnancy(),
             "status": self.status(),
             "predicted_cycle_length": self.predicted_cycle,
             "predicted_period_length": self.predicted_period,
@@ -278,7 +302,19 @@ class Engine:
 
     def flags(self) -> list[dict]:
         f = []
+        mode = self.profile.mode
+        if mode == "pregnancy":
+            return f
         cl, pl = self.cycle_lengths[-6:], [p.length for p in self.periods if p.end < self.today][-6:]
+        if mode == "perimenopause":
+            cl = []  # short/long/variable cycles are expected; gap-based guidance below instead
+            gap = (self.today - max(self.bleeding)).days if self.bleeding else 0
+            if gap >= 365:
+                f.append({"level": "warn", "title": "12 months without a period",
+                          "text": "A full year without a period usually marks menopause. Any bleeding from now on should be checked by a doctor."})
+            elif gap >= 60:
+                f.append({"level": "info", "title": f"No period for {gap} days",
+                          "text": f"Gaps of 60+ days are common in late perimenopause. You're {gap // 30} of the 12 months that usually mark menopause. Pregnancy is still possible until then."})
         if any(c < TYPICAL_CYCLE[0] for c in cl):
             f.append({"level": "info", "title": "Short cycles",
                       "text": "Some of your recent cycles were shorter than 21 days. Worth mentioning to a healthcare provider if it keeps happening."})
@@ -292,7 +328,7 @@ class Engine:
             f.append({"level": "warn", "title": "Long periods",
                       "text": "At least one recent period lasted more than 7 days. Consider checking in with a healthcare provider."})
         st = self.status()
-        if st.get("state") == "late":
+        if st.get("state") == "late" and mode != "perimenopause":
             late = (self.today - self.segments[len(self.periods) - 1].start).days - self.predicted_cycle
             if late >= 7:
                 f.append({"level": "warn", "title": "Period is late",
@@ -301,6 +337,11 @@ class Engine:
 
 
 # ---------------------------------------------------------------------- helpers
+# Approximate baby size by pregnancy week (common produce comparisons).
+_SIZES = ("poppy seed|sesame seed|lentil|blueberry|raspberry|cherry|strawberry|lime|plum|lemon|peach|apple|avocado|pear|"
+          "bell pepper|mango|banana|carrot|papaya|grapefruit|ear of corn|cauliflower|lettuce|rutabaga|eggplant|butternut squash|"
+          "cabbage|coconut|pineapple|large jicama|cantaloupe|honeydew melon|romaine lettuce|swiss chard|leek|mini watermelon|small pumpkin").split("|")
+BABY_SIZE = dict(zip(range(4, 41), _SIZES))
 def derive_periods(bleeding: list[date]) -> list[Period]:
     out: list[Period] = []
     for d in sorted(set(bleeding)):

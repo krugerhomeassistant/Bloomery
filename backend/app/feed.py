@@ -165,14 +165,45 @@ def tip(eng: Engine, today: date) -> dict | None:
     return _card("tip", "💡", "Tip for this phase", tips[today.toordinal() % len(tips)])
 
 
+TRIMESTER_TIPS = {
+    1: ["Take a daily prenatal vitamin with folic acid, ideally 400 mcg.",
+        "Nausea? Small, frequent snacks and ginger often help. Seek care if you can't keep fluids down.",
+        "Tiredness is normal this trimester. Rest when you can.",
+        "Book your first prenatal appointment if you haven't yet."],
+    2: ["Many people feel more energetic now. A good time for gentle exercise like walking or swimming.",
+        "Sleeping on your side gets more comfortable as your bump grows; a pillow between the knees helps.",
+        "You may start feeling movements between weeks 16 and 22.",
+        "Ask about the anatomy scan, usually around weeks 18 to 22."],
+    3: ["Get to know your baby's movement pattern and call your provider if it changes or slows.",
+        "Swelling, heartburn and poor sleep are common now. Smaller meals and elevating your feet help.",
+        "Pack a hospital bag and plan your route by week 36.",
+        "Severe headache, vision changes or sudden swelling need a call to your provider right away."],
+}
+
+
+def pregnancy_cards(p: dict, today: date) -> list[dict]:
+    w, cards = p["week"], []
+    if p["size"]:
+        cards.append(_card("milestone", "👶", f"Week {w}", f"Your baby is about the size of a {p['size']}."))
+    due = date.fromisoformat(p["due"])
+    cards.append(_card("milestone", "📅", f"{p['days_left']} days to go", f"Due {due:%b} {due.day}, {due.year} · trimester {p['trimester']}. Only about 1 in 20 babies arrive on the due date itself."))
+    tips = TRIMESTER_TIPS[p["trimester"]]
+    cards.append(_card("tip", "💡", f"Trimester {p['trimester']} tip", tips[today.toordinal() % len(tips)]))
+    return cards
+
+
 def feed(eng: Engine, logs: list, today: date, goal: str) -> list[dict]:
+    if p := eng.pregnancy():
+        return pregnancy_cards(p, today)
     return [c for c in [*milestones(eng, today, goal), recap(eng, logs, today), *forecasts(eng, logs, today), tip(eng, today)] if c]
 
 
 def log_note(eng: Engine, patterns: list[dict], day: date, tags: dict) -> str | None:
     """Short note after saving a log: pattern match and/or a tip for the logged symptom."""
     logged = sorted(_tags(tags), key=lambda t: t not in SYMPTOM_TIPS)
-    if not logged:
+    if "positive" in (tags or {}).get("pregnancy_test", []) and eng.profile.mode != "pregnancy":
+        return "Positive pregnancy test logged. If this is happy news, congratulations! Switch to pregnancy mode in Profile → Life stage."
+    if not logged or eng.profile.mode == "pregnancy":
         return None
     phase = eng.day_info(day)["phase"]
     phase = "fertile" if phase == "ovulation" else phase

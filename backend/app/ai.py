@@ -26,7 +26,10 @@ Style: friendly, concise, plain language, second person. Use short paragraphs or
 Ground every personal statement in the user's data provided below; say so when data is thin. Be clear predictions are estimates.
 Safety: you are not a doctor and don't diagnose. Recommend a healthcare professional for severe pain, very heavy bleeding,
 missed periods with possible pregnancy, cycles persistently <21 or >35 days, or anything worrying. Never present
-calendar/fertility predictions as reliable contraception. For emergencies, advise contacting emergency services."""
+calendar/fertility predictions as reliable contraception. For emergencies, advise contacting emergency services.
+If life_stage is "pregnancy", talk about pregnancy week, baby development and trimester care instead of cycle phases, and
+urge prompt care for bleeding, severe pain, severe headache, vision changes or reduced baby movement. If "perimenopause",
+expect irregular cycles and symptoms like hot flashes, night sweats and sleep changes; bleeding after 12 months without a period needs a doctor."""
 
 
 class AIError(RuntimeError):
@@ -194,6 +197,8 @@ def build_context(engine: Engine, logs: list, user) -> str:
     ctx = {
         "today": t.isoformat(),
         "goal": user.goal,
+        "life_stage": engine.profile.mode,
+        "pregnancy": ov["pregnancy"],
         "age": (t.year - user.birth_year) if user.birth_year else None,
         "status": ov["status"],
         "next_period": ov["next_period"],
@@ -267,6 +272,6 @@ RECAP_PROMPT = ("Write a recap of this cycle for me. Use 3-5 short bullet points
 
 def daily_prompt(day: date) -> str:
     return (f"Write today's personal insight for {day.isoformat()} in 2-4 short sentences (max 90 words). "
-            "Explain what's likely happening in my body in this phase, connect it to anything notable in my recent logs "
+            "Explain what's likely happening in my body in this phase (or pregnancy week / life stage), connect it to anything notable in my recent logs "
             "(patterns, symptoms, moods, temperature, and heads_up_today forecasts), and give one practical, specific tip. No greeting, no disclaimer "
             "unless a health flag warrants it.")

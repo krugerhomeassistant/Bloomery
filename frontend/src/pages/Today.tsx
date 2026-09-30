@@ -85,7 +85,7 @@ export default function Today() {
       </div>
 
       <CycleRing ov={ov}>
-        {st && (
+        {st && !ov?.pregnancy && (
           <button
             onClick={() => (inPeriod ? nav('/calendar?edit=1') : setConfirmStart(true))}
             className={`btn px-5 py-2.5 text-sm shadow-md ${['period', 'late', 'due', 'fertile'].includes(st.state) ? 'bg-white text-pink-600' : 'bg-pink-500 text-white'}`}
@@ -151,7 +151,7 @@ export default function Today() {
         </>
       ) : null}
 
-      {ov?.current_cycle && (
+      {ov?.current_cycle && !ov.pregnancy && (
         <>
           <SectionTitle>Current cycle</SectionTitle>
           <div className="card grid grid-cols-3 divide-x divide-line p-4 text-center">

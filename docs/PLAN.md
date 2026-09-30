@@ -101,17 +101,19 @@
 - [x] Tests 25/25; E2E set PIN → reload locked → wrong PIN "4 tries left" → correct unlocks
 
 ## Phase 13 — Life stages (v1.0.0)
-- [ ] Setting `mode:<uid>` = {mode: cycle|pregnancy|perimenopause, lmp}
-- [ ] Pregnancy: week/day, due date (LMP+280), weekly cards, trimester tips, predictions hidden, suggest after positive test
-- [ ] Perimenopause: wider uncertainty, gentler flags, days-since-period, 12-month note; new symptoms
-- [ ] Profile "Life stage" switch; AI context includes mode
+- [x] Setting `mode:<uid>` = {mode: cycle|pregnancy|perimenopause, lmp}; `PUT /api/life-stage`; `/api/auth/me` returns mode+lmp
+- [x] Pregnancy: `Engine.pregnancy()` week/day, due (LMP+280), trimester, baby size; purple ring = progress/280; no predicted segments, no phases from LMP on, no flags; feed = size/countdown/trimester tip; partner page tip
+- [x] Positive pregnancy test log note suggests pregnancy mode
+- [x] Perimenopause: variability ≥5, "Days since period" instead of late, cycle-length flags replaced by 60-day gap + 12-month marker; symptoms night sweats, brain fog, joint pain, palpitations
+- [x] Profile "Life stage" switch + LMP date; AI system prompt + context include life stage; daily AI cache cleared on change
+- [x] Tests 26/26; E2E pregnancy (13w 0d, due Apr 7, clean week strip) + perimenopause + back to cycle
 
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
 - [x] App lock PIN (passkey/WebAuthn still open; needs HTTPS)
 - [x] Import from Flo / Clue / CSV (Apple Health still open)
-- [ ] Pregnancy mode (weeks, due date) & perimenopause mode
+- [x] Pregnancy mode (weeks, due date) & perimenopause mode
 - [x] Partner read-only sharing link
 - [x] Streaming AI responses
 - [ ] Symptom predictions ("cramps likely in 2 days") from patterns

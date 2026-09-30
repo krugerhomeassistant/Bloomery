@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from typing import Annotated
 
@@ -8,7 +9,7 @@ from sqlmodel import Session, select
 
 from .cycles import Engine, Profile
 from .db import get_session
-from .models import BLEEDING, DayLog, User
+from .models import BLEEDING, DayLog, Setting, User
 
 ph = PasswordHasher()
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -43,10 +44,18 @@ def today_param(today: date | None = Query(None, description="Client's local dat
 TodayDep = Annotated[date, Depends(today_param)]
 
 
+def life_stage(db: Session, uid: int) -> dict:
+    """{'mode': 'cycle'|'pregnancy'|'perimenopause', 'lmp': iso date | None} from Setting mode:<uid>."""
+    s = db.get(Setting, f"mode:{uid}")
+    return json.loads(s.value) if s else {"mode": "cycle", "lmp": None}
+
+
 def build_engine(db: Session, user: User, today: date) -> Engine:
+    st = life_stage(db, user.id)
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id)).all()
     return Engine(
-        Profile(user.cycle_length, user.period_length, user.luteal_length, user.goal),
+        Profile(user.cycle_length, user.period_length, user.luteal_length, user.goal,
+                st["mode"], date.fromisoformat(st["lmp"]) if st.get("lmp") else None),
         today,
         [l.day for l in logs if l.flow in BLEEDING],
         {l.day: l.temperature for l in logs if l.temperature},

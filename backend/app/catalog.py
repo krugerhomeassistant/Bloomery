@@ -7,6 +7,8 @@ CATALOG: list[dict] = [
         ("fatigue", "Fatigue", "🥱"), ("cravings", "Cravings", "🍫"), ("insomnia", "Insomnia", "🌙"),
         ("abdominal_pain", "Abdominal pain", "😣"), ("vaginal_itching", "Vaginal itching", "🌵"),
         ("vaginal_dryness", "Vaginal dryness", "🏜️"), ("dizziness", "Dizziness", "💫"), ("hot_flashes", "Hot flashes", "🔥"),
+        ("night_sweats", "Night sweats", "💦"), ("brain_fog", "Brain fog", "🌫️"), ("joint_pain", "Joint pain", "🦵"),
+        ("palpitations", "Palpitations", "💓"),
     ]},
     {"id": "mood", "title": "Mood", "color": "#FFA940", "items": [
         ("calm", "Calm", "😌"), ("happy", "Happy", "😊"), ("energetic", "Energetic", "⚡"), ("frisky", "Frisky", "😏"),
