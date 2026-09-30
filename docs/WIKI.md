@@ -38,6 +38,7 @@ Self-hosted, Docker-based menstrual cycle tracker modelled on the look & feel of
 - **AI daily insight**: `GET /api/ai/daily` → cached per user/day in `insightcache`; `?refresh=true` regenerates; falls back to rule text when AI off/errors.
 - **AI chat**: `POST /api/ai/chat` → system prompt + JSON context + last 12 messages; history stored; `DELETE` clears.
 - **AI setup (in-app)**: Profile → AI assistant sheet → `GET/PUT /api/ai/config`, `POST /api/ai/config/test` (admin only). Providers: anthropic (Haiku 4.5 default), openai (gpt-5-mini; uses `max_completion_tokens`, no temperature), openrouter (`openrouter/auto`), ollama, custom. Blank model/URL = provider default; blank key = keep saved key (same provider only).
+- **Notifications** (`app/notify.py`, `routers/notifications.py`): per-user config in `setting` key `notify:<uid>` (JSON: url, time HH:MM, tz from browser, kinds ⊂ milestone/forecast/recap/tip/pill, last-sent date). Background task (`lifespan`) ticks every 60 s; sends once per local day after `time`; marks sent before sending (no retry storms). Payload by URL: host contains `ntfy` → JSON publish to root `{topic,title,message,tags}`; `discord` → `{content}`; else `{title,message,priority:5}` (Gotify, HA webhook, generic). `GET/PUT /api/notifications`, `POST /api/notifications/test`.
 - **Data**: export JSON (`/api/export`), import (merge; `replace` flag), delete account.
 
 ## Registration policy

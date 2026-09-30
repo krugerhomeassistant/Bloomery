@@ -21,4 +21,8 @@ Format: [Problem] → [Root cause] → [Verified solution]
 18. **README screenshot run polluted demo data** → a failed earlier Playwright run had already saved a log, so the rerun toggled chips off/on → always reseed a fresh data dir before screenshot runs; scope chip clicks to `[role=dialog]`.
 19. **`rm -rf dir/*` in workspace blocked by safety check** → glob removal inside workspace → overwrite files instead of deleting.
 20. **GitHub API from sandbox returns "access not enabled"** until repo attached → use `git ls-remote --tags` on public action repos to find latest majors (checkout v7, setup-python v7, setup-node v7, qemu/buildx/login v4, metadata v6, build-push v7).
+21. **Web Push impossible on typical ZimaOS install** → service workers/push need a secure context (HTTPS), LAN is `http://ip:8420` → notifications via ntfy/Gotify/HA/Discord webhooks instead.
+22. **`ZoneInfo('Bad/Zone')` in a pydantic validator gave 500 not 422** → `ZoneInfoNotFoundError` subclasses KeyError, which pydantic doesn't convert → catch and re-raise `ValueError`.
+23. **Emoji in HTTP headers (ntfy `Title:`) fail** → headers are latin-1 → use ntfy JSON publish (`POST /` with `topic`).
+24. **ZimaOS "Failed to pull image after 5 mirror methods"** → GHCR package private by default (separate from repo visibility) → Package settings → Change visibility → Public. Verify: `curl ghcr.io/token?scope=repository:<owner>/<img>:pull` returns 200.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

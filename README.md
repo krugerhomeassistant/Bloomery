@@ -12,6 +12,7 @@
 ![RAM](https://img.shields.io/badge/RAM-~60%20MB-7C5CE0)
 ![Python](https://img.shields.io/badge/FastAPI-Python%203.13-3776AB?logo=python&logoColor=white)
 ![React](https://img.shields.io/badge/React%2019-PWA-61DAFB?logo=react&logoColor=black)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2D2A3E)](LICENSE)
 
 [Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install-in-60-seconds) · [ZimaOS](#-zimaos--casaos) · [AI](#-ai-assistant) · [Privacy](#-privacy) · [How it works](#-how-predictions-work) · [Roadmap](#-roadmap)
 
@@ -47,6 +48,9 @@ Recency-weighted cycle length, learned period length, **BBT thermal-shift ovulat
 - Milestones: period started, fertile window opens, period due, late
 - **Last-cycle recap** and rotating phase tips
 - A helpful note every time you log
+
+### 🔔 Notifications
+A daily message on your phone with milestones, heads-ups, recaps, tips or a **pill reminder**, via **ntfy, Gotify, Home Assistant or Discord**. Works on plain-HTTP home servers; no app store needed.
 
 ### 📊 Insights
 Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature and weight charts, plus gentle health-check flags.
@@ -134,6 +138,17 @@ Set it up in the app: **Profile → AI assistant → pick a provider → paste k
 
 Only the owner account can change AI settings. The API key is stored in your database and **never sent back to the browser**.
 
+## 🔔 Notifications
+
+**Profile → Daily reminders & heads-ups** → paste a URL → **Send test** → **Save**. You get at most one message a day at your chosen time, and nothing on quiet days.
+
+| Service | URL to paste |
+|---|---|
+| **ntfy** (easiest) | `https://ntfy.sh/<hard-to-guess-topic>` or your own ntfy server |
+| **Gotify** | `https://gotify.lan/message?token=<app-token>` |
+| **Home Assistant** | `http://homeassistant.local:8123/api/webhook/<id>` (`trigger.json.title` / `.message`) |
+| **Discord** | channel webhook URL |
+
 ## 🔒 Privacy
 
 - **Your data never leaves your server** unless you enable a cloud AI provider. Even then, only a compact summary of your recent cycle (no username, no password) is sent, and only when you use an AI feature.
@@ -212,7 +227,7 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] AI assistant with in-app provider setup
 - [x] Daily feed: heads-ups, milestones, recaps
 - [x] Multi-arch image on GHCR
-- [ ] Push notifications (period due, pill reminders)
+- [x] Notifications via ntfy / Gotify / Home Assistant / Discord
 - [ ] App lock (PIN / passkey)
 - [ ] Import from Flo, Clue and Apple Health
 - [ ] Pregnancy and perimenopause modes
@@ -220,6 +235,10 @@ python scripts/seed_demo.py http://localhost:8000
 - [ ] Translations
 
 Ideas and bug reports are welcome. [Open an issue](https://github.com/krugerhomeassistant/Bloomery/issues).
+
+## 📄 License
+
+[MIT](LICENSE): free to use, modify and share.
 
 <div align="center">
 <br>

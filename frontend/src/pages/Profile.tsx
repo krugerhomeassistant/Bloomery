@@ -1,9 +1,10 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound } from 'lucide-react'
+import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound } from 'lucide-react'
 import { api, type User } from '../api'
 import { useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
 import AiSettings from '../components/AiSettings'
+import NotifySettings from '../components/NotifySettings'
 
 export default function Profile() {
   const { user, setUser, bump, theme, setTheme } = useApp()
@@ -14,6 +15,7 @@ export default function Profile() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [msg, setMsg] = useState('')
   const [aiOpen, setAiOpen] = useState(false)
+  const [notifyOpen, setNotifyOpen] = useState(false)
   const file = useRef<HTMLInputElement>(null)
   if (!user) return null
 
@@ -94,6 +96,12 @@ export default function Profile() {
         </button>
       </Group>
       <AiSettings open={aiOpen} onClose={() => setAiOpen(false)} />
+
+      <SectionTitle>Notifications</SectionTitle>
+      <Group>
+        <Row icon={<Bell size={18} className="text-pink-500" />} label="Daily reminders & heads-ups" onClick={() => setNotifyOpen(true)} />
+      </Group>
+      <NotifySettings open={notifyOpen} onClose={() => setNotifyOpen(false)} />
 
       <SectionTitle>Your data</SectionTitle>
       <Group>

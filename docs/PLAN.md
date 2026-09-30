@@ -62,9 +62,16 @@
 - [ ] After first CI run: make GHCR package public (Package settings → Change visibility)
 - [ ] Choose a license (user decision)
 
+## Phase 7 — Notifications & license (v0.4.0)
+- [x] MIT LICENSE + README badge/section
+- [x] ntfy / Gotify / Home Assistant / Discord notifications, daily at user time + tz; kinds incl. pill reminder
+- [x] Profile → Notifications sheet (URL help, time, kinds, Send test)
+- [x] Tests 17/17 (`test_notify.py`: validation, ntfy/discord/gotify payloads, once-per-day scheduling)
+- [ ] User: make GHCR package public (anonymous pull was still 401 on 2026-09-30)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
-- [ ] Reminders/notifications (Web Push via VAPID; period due, pill, BBT)
+- [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
 - [ ] App lock PIN / passkey (WebAuthn)
 - [ ] Import from Flo / Clue / Apple Health CSV exports
 - [ ] Pregnancy mode (weeks, due date) & perimenopause mode

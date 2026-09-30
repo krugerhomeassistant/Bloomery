@@ -39,6 +39,7 @@ Deploy targets: `docker-compose.yml` (generic, builds locally, optional Ollama p
 - **daylog**: id, user_id→user (CASCADE), day (DATE), UNIQUE(user_id, day), flow(null|spotting|light|medium|heavy), tags JSON `{category:[ids]}`, temperature °C, weight kg, water_ml, sleep_hours, notes, updated_at
 - **chatmessage**: id, user_id, role(user|assistant), content, created_at
 - **setting**: key (PK), value — server-wide; `ai_provider|ai_base_url|ai_model|ai_api_key` (plaintext; DB file is the trust boundary)
+- `setting` also holds `notify:<uid>` JSON per user (notification config).
 - **insightcache**: id, user_id, day, content — UNIQUE(user_id, day)
 
 Migrations: none yet (`create_all` only). Adding columns requires Alembic or manual `ALTER TABLE` → see PLAN backlog.

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -8,15 +9,18 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from .config import get_settings
 from .db import init_db
-from .routers import assistant, auth, tracking
+from .notify import scheduler
+from .routers import assistant, auth, notifications, tracking
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    task = asyncio.create_task(scheduler())
     yield
+    task.cancel()
 
 
 def create_app() -> FastAPI:
@@ -25,7 +29,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         SessionMiddleware, secret_key=s.resolved_secret(), session_cookie="bloomery_session",
         max_age=s.session_max_age_days * 86400, same_site="lax", https_only=s.secure_cookies)
-    for r in (auth.router, tracking.router, assistant.router):
+    for r in (auth.router, tracking.router, assistant.router, notifications.router):
         app.include_router(r)
 
     @app.get("/api/health")

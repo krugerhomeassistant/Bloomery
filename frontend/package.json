@@ -1,7 +1,8 @@
 {
   "name": "bloomery-web",
   "private": true,
-  "version": "0.3.0",
+  "license": "MIT",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

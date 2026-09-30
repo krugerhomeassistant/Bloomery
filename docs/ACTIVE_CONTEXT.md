@@ -1,17 +1,17 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.3.0
+**Date:** 2026-09-30 · **Version:** 0.4.0
 
 ## Current subtask
-Repo published: https://github.com/krugerhomeassistant/Bloomery
+Notifications (ntfy/Gotify/HA/Discord) + MIT license — done. User installing on ZimaOS.
 
 ## Last execution results
-- `main` pushed; CI run 36705705457 green: tests + multi-arch image `ghcr.io/krugerhomeassistant/bloomery:latest`.
-- Anonymous pull returns 403 → GHCR package is private (GitHub default).
-- Local folder synced (docs moved to `docs/`); `.github/workflows/ci.yml` could not be written to the device (protected path) → user gets it via `git pull`.
+- `app/notify.py` scheduler + `/api/notifications` (GET/PUT/test); Profile → Notifications sheet.
+- E2E: Send test posted `{"title":"💊 Pill reminder (+1 more)", ...}` to local webhook; settings persisted with browser tz.
+- Tests 17/17. MIT LICENSE added.
 
 ## Blockers
-- User: make GHCR package public; choose a license.
+- GHCR package still private → ZimaOS pull fails ("5 mirror methods"). User must set package visibility Public.
 
 ## Immediate next step
-User: package → Settings → Change visibility → Public. Then ZimaOS import of `docker-compose.zimaos.yml` works without building.
+Confirm anonymous GHCR pull works; then candidates: Flo/Clue import, app lock (PIN), AI-written recap, Alembic before any schema change.
