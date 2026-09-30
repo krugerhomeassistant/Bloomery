@@ -44,6 +44,14 @@
 - [x] Tests 12/12; E2E: real Anthropic 401 surfaced cleanly, custom provider test+save+chat OK
 - [ ] User: rebuild (`docker compose up -d --build`), add Claude key, then build image for ZimaOS
 
+## Phase 5 — Daily feed & proactive insights (v0.3.0)
+- [x] `app/feed.py`: forecasts, milestones, recap, phase tips, after-log note
+- [x] `GET /api/feed`; `note` on `PUT /api/logs`; forecasts in AI context
+- [x] Today: feed cards + detail sheet ("Log how you feel"); global toast for log notes
+- [x] Tests 15/15 (`test_feed.py`); E2E cards/sheet/toast verified
+- [ ] Optional: AI-written recap/notes (currently rules; cheap to add via ai.complete)
+- [ ] Push notifications for milestones (needs Web Push; see backlog)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [ ] Reminders/notifications (Web Push via VAPID; period due, pill, BBT)

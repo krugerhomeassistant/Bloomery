@@ -10,7 +10,7 @@ from .config import get_settings
 from .db import init_db
 from .routers import assistant, auth, tracking
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 
 @asynccontextmanager

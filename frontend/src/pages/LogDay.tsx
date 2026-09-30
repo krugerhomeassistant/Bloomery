@@ -10,7 +10,7 @@ const fToC = (f: number) => +((f - 32) * 5 / 9).toFixed(2)
 const LB = 2.20462
 
 export default function LogDay() {
-  const { logDay, openLog, catalog, user, bump } = useApp()
+  const { logDay, openLog, catalog, user, bump, notify } = useApp()
   const [log, setLog] = useState<DayLog | null>(null)
   const [q, setQ] = useState('')
   const [nums, setNums] = useState({ temperature: '', weight: '', water: '', sleep: '' })
@@ -61,7 +61,7 @@ export default function LogDay() {
     const n = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')))
     const t = n(nums.temperature), w = n(nums.weight)
     try {
-      await api(`/api/logs/${logDay}`, {
+      const r = await api<{ note?: string | null }>(`/api/logs/${logDay}`, {
         method: 'PUT', today: false,
         body: {
           flow: log.flow, tags: log.tags, notes: log.notes ?? '',
@@ -72,6 +72,7 @@ export default function LogDay() {
       })
       bump()
       openLog(null)
+      if (r.note) notify(r.note)
     } catch (e: any) {
       setErr(e.message)
     } finally {

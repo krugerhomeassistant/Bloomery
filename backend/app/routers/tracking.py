@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 from sqlmodel import delete, select
 
 from ..catalog import LABELS, VALID, catalog_json
+from .. import feed as feed_mod
 from ..cycles import symptom_patterns
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, User, now
@@ -92,6 +93,7 @@ def get_log(day: date, user: UserDep, db: SessionDep):
 @router.put("/logs/{day}")
 def put_log(day: date, body: LogIn, user: UserDep, db: SessionDep):
     l = _get_log(db, user, day) or DayLog(user_id=user.id, day=day)
+    before = {f"{c}:{v}" for c, vs in (l.tags or {}).items() for v in vs}
     for k, v in body.model_dump().items():
         setattr(l, k, v)
     l.updated_at = now()
@@ -103,7 +105,16 @@ def put_log(day: date, body: LogIn, user: UserDep, db: SessionDep):
     db.add(l)
     db.commit()
     db.refresh(l)
-    return l.model_dump(exclude={"user_id", "id"})
+    out = l.model_dump(exclude={"user_id", "id"})
+    if l.tags:
+        eng = build_engine(db, user, day)
+        logs = db.exec(select(DayLog).where(DayLog.user_id == user.id)).all()
+        pats = symptom_patterns(eng, [(x.day, x.tags) for x in logs], LABELS)["patterns"]
+        added: dict[str, list[str]] = {}  # comment only on what was just added
+        for c, vs in l.tags.items():
+            added[c] = [v for v in vs if f"{c}:{v}" not in before]
+        out["note"] = feed_mod.log_note(eng, pats, day, added)
+    return out
 
 
 # ---------------------------------------------------------------- period editing
@@ -184,6 +195,13 @@ def calendar(user: UserDep, db: SessionDep, today: TodayDep, start: date, end: d
         d["flow"] = l.flow if l else None
         d["has_log"] = bool(l and (l.tags or l.notes or l.temperature or l.weight))
     return days
+
+
+@router.get("/feed")
+def daily_feed(user: UserDep, db: SessionDep, today: TodayDep):
+    """Rule-based cards for Today: milestones, recap, symptom forecasts, phase tip."""
+    logs = db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day <= today)).all()
+    return feed_mod.feed(build_engine(db, user, today), logs, today, user.goal)
 
 
 @router.get("/insights")

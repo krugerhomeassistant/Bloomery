@@ -7,6 +7,13 @@ import { useApp, useFetch } from '../state'
 import { CycleRing } from '../components/CycleRing'
 import { SectionTitle, Sheet } from '../components/ui'
 
+type Card = { kind: string; emoji: string; title: string; text: string }
+const CARD_BG: Record<string, string> = {
+  forecast: 'bg-gradient-to-br from-[#FFF4E5] to-card dark:from-[#3A2A1A]',
+  milestone: 'bg-gradient-to-br from-teal-50 to-card',
+  recap: 'bg-gradient-to-br from-[#EEF2FF] to-card dark:from-[#1E2340]',
+}
+
 const PHASE: Record<string, { name: string; emoji: string; text: string }> = {
   menstrual: { name: 'Menstrual phase', emoji: '🌺', text: 'Rest, warmth and iron-rich foods help.' },
   follicular: { name: 'Follicular phase', emoji: '🌱', text: 'Energy tends to rise as estrogen climbs.' },
@@ -25,6 +32,8 @@ export default function Today() {
   const [refresh, setRefresh] = useState(0)
   const daily = useFetch<{ source: string; content: string; error?: string }>(`/api/ai/daily${refresh ? '?refresh=true' : ''}`, [refresh])
   const [showInsight, setShowInsight] = useState(false)
+  const feed = useFetch<Card[]>('/api/feed').data
+  const [card, setCard] = useState<Card | null>(null)
   const [confirmStart, setConfirmStart] = useState(false)
 
   const st = ov?.status
@@ -95,6 +104,14 @@ export default function Today() {
           <span className="flex items-center gap-1.5 text-xs font-extrabold uppercase text-[#7C5CE0]"><Sparkles size={14} /> {daily.data?.source === 'ai' ? 'AI insight' : 'Insight'}</span>
           <span className="line-clamp-4 text-sm font-semibold">{daily.loading && !daily.data ? 'Thinking…' : daily.data?.content}</span>
         </button>
+        {feed?.map((c) => (
+          <button key={c.kind + c.title} onClick={() => setCard(c)}
+            className={`card flex h-40 w-40 shrink-0 flex-col justify-between p-4 text-left ${CARD_BG[c.kind] ?? ''}`}>
+            <span className="text-3xl">{c.emoji}</span>
+            <span><span className="block font-extrabold leading-tight">{c.title}</span>
+              <span className="line-clamp-2 text-xs text-muted">{c.text}</span></span>
+          </button>
+        ))}
         {phase && (
           <div className="card flex h-40 w-36 shrink-0 flex-col justify-between p-4">
             <span className="text-3xl">{phase.emoji}</span>
@@ -153,6 +170,16 @@ export default function Today() {
             </button>
           )}
           <p className="mt-6 text-xs text-muted">Insights are informational and not medical advice.</p>
+        </div>
+      </Sheet>
+
+      <Sheet open={!!card} onClose={() => setCard(null)} title={card && <span className="flex items-center gap-2"><span>{card.emoji}</span>{card.title}</span>}>
+        <div className="px-5 pb-8">
+          <p className="leading-relaxed">{card?.text}</p>
+          {card?.kind === 'forecast' && (
+            <button className="btn-ghost mt-5 text-sm" onClick={() => { setCard(null); openLog(iso(new Date())) }}>Log how you feel</button>
+          )}
+          <p className="mt-6 text-xs text-muted">Based on your own logs and cycle predictions. Not medical advice.</p>
         </div>
       </Sheet>
 

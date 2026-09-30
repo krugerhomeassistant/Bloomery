@@ -11,6 +11,8 @@ type Ctx = {
   openLog: (d: string | null) => void
   theme: Theme
   setTheme: (t: Theme) => void
+  toast: string | null
+  notify: (msg: string | null) => void
 }
 type Theme = 'system' | 'light' | 'dark'
 
@@ -24,6 +26,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [logDay, openLog] = useState<string | null>(null)
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system')
   const bump = useCallback(() => setVersion((v) => v + 1), [])
+  const [toast, notify] = useState<string | null>(null)
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => notify(null), 6000)
+    return () => clearTimeout(t)
+  }, [toast])
 
   useEffect(() => {
     api<Catalog>('/api/catalog', { today: false }).then(setCatalog).catch(() => {})
@@ -45,7 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppCtx.Provider value={{ user, setUser, catalog, version, bump, logDay, openLog, theme, setTheme }}>{children}</AppCtx.Provider>
+    <AppCtx.Provider value={{ user, setUser, catalog, version, bump, logDay, openLog, theme, setTheme, toast, notify }}>{children}</AppCtx.Provider>
   )
 }
 

@@ -17,6 +17,7 @@ from sqlmodel import Session, select
 from .catalog import LABELS
 from .config import get_settings
 from .cycles import Engine
+from .feed import forecasts
 from .db import get_engine
 from .models import Setting
 
@@ -162,6 +163,7 @@ def build_context(engine: Engine, logs: list, user) -> str:
         "stats": {k: v for k, v in engine.stats().items() if k != "history"},
         "recent_cycles": engine.stats()["history"][:6],
         "flags": [f["title"] for f in engine.flags()],
+        "heads_up_today": [f["title"] for f in forecasts(engine, logs, t)],  # symptoms likely today from history
         "logs_last_60_days": recent,
     }
     return json.dumps(ctx, separators=(",", ":"), default=str)
@@ -191,5 +193,5 @@ def fallback_insight(engine: Engine) -> str:
 def daily_prompt(day: date) -> str:
     return (f"Write today's personal insight for {day.isoformat()} in 2-4 short sentences (max 90 words). "
             "Explain what's likely happening in my body in this phase, connect it to anything notable in my recent logs "
-            "(patterns, symptoms, moods, temperature), and give one practical, specific tip. No greeting, no disclaimer "
+            "(patterns, symptoms, moods, temperature, and heads_up_today forecasts), and give one practical, specific tip. No greeting, no disclaimer "
             "unless a health flag warrants it.")

@@ -62,6 +62,7 @@ Local AI (Ollama) needs ≥3–4 GB RAM for a 3B model — on small servers use 
 - **Daily log**: flow, 10 categories (symptoms, mood, sex, discharge, digestion, activity, pill, tests…), BBT, weight, water, sleep, notes
 - **Predictions**: recency-weighted cycle length, learned period length, BBT thermal-shift ovulation detection, learned luteal length
 - **Insights**: averages, regularity, cycle history bars, phase-linked symptom patterns, BBT & weight charts, health-check flags
+- **Daily feed**: symptom heads-ups learned from your history ("you might notice tender breasts today"), milestones (period started, fertile window, period due/late), last-cycle recap, rotating phase tips, a note after each log — rule-based, works with AI off
 - **AI**: daily personalised insight + chat grounded in your data (Ollama / OpenAI-compatible / Anthropic)
 - Multi-user, argon2 passwords, JSON export/import, account deletion, dark mode
 

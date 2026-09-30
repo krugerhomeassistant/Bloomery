@@ -22,7 +22,7 @@ const TABS = [
 ]
 
 export default function App() {
-  const { user, setUser } = useApp()
+  const { user, setUser, toast, notify } = useApp()
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -60,6 +60,11 @@ export default function App() {
           </div>
         </nav>
         <LogDay />
+        {toast && (
+          <button onClick={() => notify(null)} className="sheet-in fixed inset-x-3 bottom-[84px] z-40 mx-auto flex max-w-md gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
+            <span className="text-lg">💬</span><span>{toast}</span>
+          </button>
+        )}
       </div>
     </BrowserRouter>
   )

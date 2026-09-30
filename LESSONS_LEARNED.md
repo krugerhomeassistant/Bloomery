@@ -16,4 +16,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 13. **Switching AI provider in settings carried the old API key over (Claude key → custom URL)** → key kept when field blank regardless of provider → backend clears key/url/model on provider change unless given (both in `config()` merge and `save()`); UI resets fields on provider pick. Test asserts it.
 14. **`pkill -f pattern` / `pgrep -f` inside a bash -c killed the shell itself** → the pattern appears in the shell's own command line → use `fuser -k PORT/tcp` to stop servers.
 15. **GPT-5 family rejects `max_tokens`/`temperature`** → reasoning models → for provider `openai` send `max_completion_tokens` (×4 headroom for reasoning tokens), no temperature.
+16. **After-log note commented on a tag that was already logged** → note computed from full tag set → diff against previous tags; comment only on newly added ones.
+17. **Forecasts looked "missing" in demo** → by design, tags already logged today are skipped → verify forecasts via `/api/feed?today=<PMS date>`.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
