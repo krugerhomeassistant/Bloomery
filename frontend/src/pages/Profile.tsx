@@ -9,6 +9,9 @@ import NotifySettings from '../components/NotifySettings'
 
 export default function Profile() {
   const { user, setUser, bump, theme, setTheme } = useApp()
+  const ov = useFetch<{ predicted_cycle_length: number; predicted_period_length: number; luteal_length: number }>('/api/cycle/overview').data
+  const share = useFetch<{ token: string | null }>('/api/share')
+  const [copied, setCopied] = useState(false)
   const ai = useFetch<{ enabled: boolean; provider: string; model: string | null; local: boolean }>('/api/ai/status').data
   const [editing, setEditing] = useState<null | 'cycle_length' | 'period_length' | 'luteal_length'>(null)
   const [val, setVal] = useState(0)
@@ -62,6 +65,9 @@ export default function Profile() {
     await api('/api/auth/logout', { body: {}, today: false })
     setUser(null)
   }
+  const LEARNED = { cycle_length: (o: any) => o.predicted_cycle_length, period_length: (o: any) => o.predicted_period_length, luteal_length: (o: any) => o.luteal_length }
+  const shareUrl = share.data?.token ? `${location.origin}/share/${share.data.token}` : ''
+  const shareAct = async (method: 'POST' | 'DELETE') => { share.setData(await api('/api/share', { method, body: method === 'POST' ? {} : undefined, today: false }).then((r: any) => ({ token: r.token ?? null }))); setCopied(false) }
   const LABEL = { cycle_length: 'Cycle length', period_length: 'Period length', luteal_length: 'Luteal phase length' }
   const RANGE = { cycle_length: [15, 90], period_length: [1, 15], luteal_length: [8, 20] } as const
 
@@ -80,7 +86,8 @@ export default function Profile() {
       <SectionTitle>Cycle settings</SectionTitle>
       <Group>
         {(['cycle_length', 'period_length', 'luteal_length'] as const).map((k) => (
-          <Row key={k} label={LABEL[k]} value={`${user[k]} days`} onClick={() => { setVal(user[k]); setEditing(k) }} />
+          <Row key={k} label={LABEL[k]} onClick={() => { setVal(user[k]); setEditing(k) }}
+            value={`${user[k]} days${ov && LEARNED[k](ov) !== user[k] ? ` · using ${LEARNED[k](ov)}` : ''}`} />
         ))}
         <div className="px-4 py-3">
           <div className="mb-2 text-sm font-bold text-muted">Goal</div>
@@ -88,7 +95,7 @@ export default function Profile() {
             options={[['track', 'Track cycle'], ['conceive', 'Get pregnant'], ['avoid', 'Understand fertility']]} />
         </div>
       </Group>
-      <p className="mt-2 px-2 text-xs text-muted">Defaults are used until you have logged enough cycles; after that Bloomery learns from your history.</p>
+      <p className="mt-2 px-2 text-xs text-muted">These are your starting defaults. Once you've logged enough cycles, Bloomery uses what it learned from your history ("using …").</p>
 
       <SectionTitle>Preferences</SectionTitle>
       <Group>
@@ -120,6 +127,27 @@ export default function Profile() {
         <Row icon={<Bell size={18} className="text-pink-500" />} label="Daily reminders & heads-ups" onClick={() => setNotifyOpen(true)} />
       </Group>
       <NotifySettings open={notifyOpen} onClose={() => setNotifyOpen(false)} />
+
+      <SectionTitle>Partner sharing</SectionTitle>
+      <Group>
+        <div className="space-y-3 px-4 py-4 text-sm">
+          <p className="text-muted">A private, read-only link showing where you are in your cycle, your predicted period and fertile days, plus tips for your partner. Symptoms, moods, sex and notes are never shared.</p>
+          {shareUrl ? (
+            <>
+              <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{shareUrl}</div>
+              <div className="flex flex-wrap gap-2">
+                {window.isSecureContext && navigator.clipboard && (
+                  <button className="btn-primary px-4 py-2 text-sm" onClick={() => navigator.clipboard.writeText(shareUrl).then(() => setCopied(true))}>{copied ? 'Copied!' : 'Copy link'}</button>
+                )}
+                <button className="btn-ghost px-4 py-2 text-sm" onClick={() => shareAct('POST')}>New link</button>
+                <button className="btn-ghost px-4 py-2 text-sm" onClick={() => shareAct('DELETE')}>Stop sharing</button>
+              </div>
+            </>
+          ) : (
+            <button className="btn-ghost px-4 py-2 text-sm" onClick={() => shareAct('POST')}>Create share link</button>
+          )}
+        </div>
+      </Group>
 
       <SectionTitle>Your data</SectionTitle>
       <Group>

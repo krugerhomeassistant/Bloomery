@@ -52,6 +52,9 @@ Recency-weighted cycle length, learned period length, **BBT thermal-shift ovulat
 ### 🔔 Notifications
 A daily message on your phone with milestones, heads-ups, recaps, tips or a **pill reminder**, via **ntfy, Gotify, Home Assistant or Discord**. Works on plain-HTTP home servers; no app store needed.
 
+### 💞 Partner sharing
+A private read-only link for your partner showing where you are in your cycle, the next 5 weeks and tips on how to support you. Symptoms, moods, sex and notes are never shared, and one tap revokes the link.
+
 ### 📊 Insights
 Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature and weight charts, plus gentle health-check flags.
 
@@ -241,7 +244,7 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] Import from Flo, Clue, Apple Health and CSV
 - [x] AI-written cycle recaps
 - [ ] Pregnancy and perimenopause modes
-- [ ] Partner sharing (read-only)
+- [x] Partner sharing (read-only link)
 - [ ] Translations
 
 Ideas and bug reports are welcome. [Open an issue](https://github.com/krugerhomeassistant/Bloomery/issues).

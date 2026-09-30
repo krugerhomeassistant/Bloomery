@@ -82,13 +82,18 @@
 - [x] Tests 21/21; E2E: 4.7 MB synthetic export → 63 days (35 period), 6 cycles, BBT °F→°C; recap sheet via fake LLM
 - [ ] Verify against a real iPhone export (value strings inferred from HealthKit enums)
 
+## Phase 10 — Partner sharing + learned settings (v0.7.0)
+- [x] Share link create/regenerate/revoke; public partner page (ring, tip, 5-week calendar); privacy test asserts no symptoms/moods/sex/notes leak
+- [x] Profile cycle settings show learned values ("using …")
+- [x] Tests 22/22; E2E partner page in anonymous browser context
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
 - [ ] App lock PIN / passkey (WebAuthn)
 - [x] Import from Flo / Clue / CSV (Apple Health still open)
 - [ ] Pregnancy mode (weeks, due date) & perimenopause mode
-- [ ] Partner read-only sharing link
+- [x] Partner read-only sharing link
 - [ ] Streaming AI responses (SSE)
 - [ ] Symptom predictions ("cramps likely in 2 days") from patterns
 - [ ] Localisation (i18n)

@@ -31,4 +31,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 28. **HealthKit renamed MenstrualFlow values to VaginalBleeding (iOS 18)** → match value by suffix (Light/Medium/Heavy/Unspecified), not full string.
 29. **New test registering first user broke `test_full_flow` (expects empty DB)** → tests share one data dir; put tests that create the first account in files sorting after `test_api.py` (e.g. `test_recap.py`).
 30. **Calendar day panel hidden behind bottom nav on iPhone** → nav height grows by `env(safe-area-inset-bottom)` (home indicator) but panel/chat/toast used hard-coded 68–84px → single CSS var `--nav-h: calc(56px + max(env(safe-area-inset-bottom), .5rem))` on `:root`; nav gets that height and everything anchored to it uses `var(--nav-h)`. Verified by emulating a 34px inset in Playwright (panel bottom 746 ≤ nav top 754).
+31. **`navigator.clipboard` undefined over plain http (Tailscale IP)** → Clipboard API requires a secure context → show Copy only when `window.isSecureContext`; make link text `select-all` for manual copy.
+32. **Dev server dies between turns** (sandbox resets background processes) → always health-check `localhost:8500` and restart + reseed before E2E.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

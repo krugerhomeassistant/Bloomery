@@ -1,17 +1,16 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.6.1
+**Date:** 2026-09-30 · **Version:** 0.7.0
 
 ## Current subtask
-Shipped AI cycle recap + Apple Health import. Deployment: ZimaOS, Tailscale-only (no extra hardening).
+Partner sharing + learned cycle settings shipped. User confirmed v0.6.x (AI, notifications, imports, iPhone fix) works on ZimaOS via Tailscale.
 
 ## Last execution results
-- v0.6.1: fixed iPhone bottom cut-off (calendar panel/chat/toast now anchored to `--nav-h` incl. safe area).
-- `/api/ai/recap` (cached per completed cycle) + RecapSheet; Apple Health streaming import (`appleHealth.ts` + `importers._apple`).
-- Tests 21/21. E2E OK (synthetic export, fake LLM).
+- `routers/share.py` + `SharePage.tsx`; Profile partner section + "using N" learned values.
+- Tests 22/22; E2E share link opened anonymously, no private data.
 
 ## Blockers
-None. Real-provider AI, notifications, and real Apple/Clue exports still untested by user.
+None.
 
 ## Immediate next step
-User updates container and tests. Remaining backlog: app lock (PIN), pregnancy/perimenopause modes, partner sharing, i18n, Alembic before first schema change.
+Remaining backlog: app lock (PIN), pregnancy/perimenopause modes, i18n, Alembic before first schema change, streaming AI replies.

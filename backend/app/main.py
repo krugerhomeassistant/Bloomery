@@ -10,9 +10,9 @@ from starlette.middleware.sessions import SessionMiddleware
 from .config import get_settings
 from .db import init_db
 from .notify import scheduler
-from .routers import assistant, auth, notifications, tracking
+from .routers import assistant, auth, notifications, share, tracking
 
-VERSION = "0.6.1"
+VERSION = "0.7.0"
 
 
 @asynccontextmanager
@@ -40,7 +40,7 @@ def create_app() -> FastAPI:
             resp.headers.setdefault("Cache-Control", "no-store")  # health data must not sit in shared caches
         return resp
 
-    for r in (auth.router, tracking.router, assistant.router, notifications.router):
+    for r in (auth.router, tracking.router, assistant.router, notifications.router, share.router):
         app.include_router(r)
 
     @app.get("/api/health")
