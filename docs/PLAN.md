@@ -87,6 +87,23 @@
 - [x] Profile cycle settings show learned values ("using …")
 - [x] Tests 22/22; E2E partner page in anonymous browser context
 
+## Phase 11 — Home Assistant + streaming AI (v0.8.0)
+- [x] Generic tokens `/api/tokens/{share|ha}`; HA JSON `/api/ha/{token}?tz=`; ICS `/api/ha/{token}/calendar.ics`
+- [x] Profile section: generated `rest:` YAML (parsed OK with PyYAML) + ICS URL, new/revoke
+- [x] `ai.stream()` (Anthropic SSE + OpenAI deltas) → `POST /api/ai/chat/stream` (text/plain chunks, history saved at end, `<think>` stripped)
+- [x] Assistant reads body via `TextDecoderStream`, updates bubble live
+- [x] Tests 24/24; E2E: partial reply visible mid-stream (fake SSE LLM), final saved clean
+
+## Phase 12 — App lock (v0.9.0)
+- [ ] PIN hashed (argon2) in Setting `pin:<uid>`; `GET/PUT/DELETE /api/lock`, `POST /api/lock/verify` (throttled; 5 fails → logout)
+- [ ] Lock screen on app open + after ~1 min hidden; Profile set/change/remove
+
+## Phase 13 — Life stages (v1.0.0)
+- [ ] Setting `mode:<uid>` = {mode: cycle|pregnancy|perimenopause, lmp}
+- [ ] Pregnancy: week/day, due date (LMP+280), weekly cards, trimester tips, predictions hidden, suggest after positive test
+- [ ] Perimenopause: wider uncertainty, gentler flags, days-since-period, 12-month note; new symptoms
+- [ ] Profile "Life stage" switch; AI context includes mode
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
@@ -94,7 +111,7 @@
 - [x] Import from Flo / Clue / CSV (Apple Health still open)
 - [ ] Pregnancy mode (weeks, due date) & perimenopause mode
 - [x] Partner read-only sharing link
-- [ ] Streaming AI responses (SSE)
+- [x] Streaming AI responses
 - [ ] Symptom predictions ("cramps likely in 2 days") from patterns
 - [ ] Localisation (i18n)
 - [ ] Encrypted-at-rest DB (SQLCipher) option

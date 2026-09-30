@@ -55,6 +55,9 @@ A daily message on your phone with milestones, heads-ups, recaps, tips or a **pi
 ### 💞 Partner sharing
 A private read-only link for your partner showing where you are in your cycle, the next 5 weeks and tips on how to support you. Symptoms, moods, sex and notes are never shared, and one tap revokes the link.
 
+### 🏠 Home Assistant & calendar
+Ready-to-paste YAML for **Home Assistant sensors** (cycle day, phase, days until period, period / fertile binary sensors) plus a private **iCalendar feed** of periods, fertile windows and ovulation for HA, Google, Apple or Outlook calendars.
+
 ### 📊 Insights
 Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature and weight charts, plus gentle health-check flags.
 
@@ -152,6 +155,15 @@ Only the owner account can change AI settings. The API key is stored in your dat
 | **Home Assistant** | `http://homeassistant.local:8123/api/webhook/<id>` (`trigger.json.title` / `.message`) |
 | **Discord** | channel webhook URL |
 
+## 🏠 Home Assistant & calendar
+
+**Profile → Home Assistant & calendar → Create feed.**
+
+1. **Sensors**: paste the generated `rest:` YAML into `configuration.yaml` and restart HA. You get `sensor.bloomery_cycle_day`, `sensor.bloomery_phase`, `sensor.bloomery_days_until_period`, `binary_sensor.bloomery_period` and `binary_sensor.bloomery_fertile_window` (refresh every 15 min).
+2. **Calendar**: add the `.ics` URL with HA's **Remote Calendar** integration (HA 2025.4+), or subscribe from Google / Apple / Outlook.
+
+Feeds contain cycle dates only, never symptoms or notes. **New token** invalidates the old URLs; **Turn off** removes them.
+
 ## 🔒 Privacy
 
 - **Your data never leaves your server** unless you enable a cloud AI provider. Even then, only a compact summary of your recent cycle (no username, no password) is sent, and only when you use an AI feature.
@@ -240,11 +252,13 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] Daily feed: heads-ups, milestones, recaps
 - [x] Multi-arch image on GHCR
 - [x] Notifications via ntfy / Gotify / Home Assistant / Discord
-- [ ] App lock (PIN / passkey)
+- [ ] App lock (PIN / passkey) *(next)*
 - [x] Import from Flo, Clue, Apple Health and CSV
 - [x] AI-written cycle recaps
 - [ ] Pregnancy and perimenopause modes
 - [x] Partner sharing (read-only link)
+- [x] Home Assistant sensors + calendar feed
+- [x] Streaming AI replies
 - [ ] Translations
 
 Ideas and bug reports are welcome. [Open an issue](https://github.com/krugerhomeassistant/Bloomery/issues).

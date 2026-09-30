@@ -42,3 +42,23 @@ def test_recap_endpoint(monkeypatch, mock_http):
         assert r["source"] == "ai" and r["content"] == "hi from llm"
         assert "CYCLE DATA" in mock_http["body"]["messages"][0]["content"]
         assert c.get("/api/ai/recap?start=2025-08-01&today=2025-09-05").json().get("cached")  # completed → cached
+
+
+def test_chat_stream(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app import ai as ai_mod
+    import httpx as _h
+    sse = ("event: content_block_delta\ndata: " + json.dumps({"type": "content_block_delta", "delta": {"type": "text_delta", "text": "Hel"}}) +
+           "\n\nevent: content_block_delta\ndata: " + json.dumps({"type": "content_block_delta", "delta": {"type": "text_delta", "text": "lo!"}}) +
+           "\n\nevent: message_stop\ndata: {\"type\":\"message_stop\"}\n\n")
+    real = _h.AsyncClient
+    monkeypatch.setattr(_h, "AsyncClient", lambda **kw: real(transport=_h.MockTransport(
+        lambda req: _h.Response(200, text=sse, headers={"content-type": "text/event-stream"})), **kw))
+    monkeypatch.setattr(ai_mod, "config", lambda override=None: {"provider": "anthropic", "base_url": "https://api.anthropic.com", "model": "m", "api_key": "k"})
+    with TestClient(app) as c:
+        c.post("/api/auth/login", json={"username": "ana", "password": "supersecret"})
+        c.delete("/api/ai/chat")
+        r = c.post("/api/ai/chat/stream", json={"message": "hi"})
+        assert r.text == "Hello!"
+        assert [m["content"] for m in c.get("/api/ai/chat").json()] == ["hi", "Hello!"]  # saved after stream

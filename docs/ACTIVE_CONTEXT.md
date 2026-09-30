@@ -1,17 +1,15 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.7.1
+**Date:** 2026-09-30 · **Version:** 0.8.0
 
 ## Current subtask
-Partner sharing + learned cycle settings shipped. User confirmed v0.6.x (AI, notifications, imports, iPhone fix) works on ZimaOS via Tailscale.
+v0.8.0 shipped: Home Assistant sensors + ICS calendar feed, streaming AI chat. Order agreed with user: v0.8 HA+streaming → v0.9 app lock → v1.0 pregnancy/perimenopause modes.
 
 ## Last execution results
-- v0.7.1: log note toast stays ≥10 s w/ close button; latest note persists as "About today's log" card on Today.
-- `routers/share.py` + `SharePage.tsx`; Profile partner section + "using N" learned values.
-- Tests 22/22; E2E share link opened anonymously, no private data.
+- Tests 24/24. E2E: streamed reply visible mid-stream; HA YAML parses, its resource URL returns sensor JSON; ICS validated earlier with `icalendar`.
 
 ## Blockers
 None.
 
 ## Immediate next step
-Remaining backlog: app lock (PIN), pregnancy/perimenopause modes, i18n, Alembic before first schema change, streaming AI replies.
+PLAN Phase 12 (app lock PIN).

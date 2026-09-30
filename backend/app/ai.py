@@ -94,40 +94,80 @@ def info() -> dict:
 _THINK = re.compile(r"<think>.*?</think>", re.S)
 
 
-async def complete(system: str, messages: list[dict], max_tokens: int = 700, cfg: dict | None = None) -> str:
-    cfg = cfg or config()
+def _request(cfg: dict, system: str, messages: list[dict], max_tokens: int, stream: bool) -> tuple[str, dict, dict]:
+    """(url, headers, json body) for the configured provider."""
     provider, base, model, key = cfg["provider"], cfg["base_url"], cfg["model"], cfg["api_key"]
     if provider not in PROVIDERS:
         raise AIError("AI is turned off. Enable it in Profile → AI assistant.")
     if not base or not model:
         raise AIError("Base URL and model are required for this provider.")
+    if provider == "anthropic":
+        return (f"{base}/v1/messages",
+                {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                {"model": model, "max_tokens": max_tokens, "system": system, "messages": messages, "stream": stream})
+    body = {"model": model, "messages": [{"role": "system", "content": system}, *messages], "stream": stream}
+    if provider == "openai":  # GPT-5 family: no temperature; reasoning tokens count toward the cap
+        body["max_completion_tokens"] = max_tokens * 4
+    else:
+        body.update(max_tokens=max_tokens, temperature=0.6)
+    return f"{base}/chat/completions", ({"Authorization": f"Bearer {key}"} if key else {}), body
+
+
+def _status_error(r: httpx.Response) -> AIError:
+    try:  # Anthropic & OpenAI both use {"error": {"message": ...}}
+        detail = r.json()["error"]["message"]
+    except Exception:
+        detail = r.text[:300]
+    return AIError(f"AI provider returned {r.status_code}: {detail}")
+
+
+async def complete(system: str, messages: list[dict], max_tokens: int = 700, cfg: dict | None = None) -> str:
+    cfg = cfg or config()
+    url, headers, body = _request(cfg, system, messages, max_tokens, stream=False)
     try:
         async with httpx.AsyncClient(timeout=get_settings().ai_timeout) as c:
-            if provider == "anthropic":
-                r = await c.post(f"{base}/v1/messages", headers={
-                    "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                    json={"model": model, "max_tokens": max_tokens, "system": system, "messages": messages})
-                r.raise_for_status()
-                text = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
-            else:
-                body = {"model": model, "messages": [{"role": "system", "content": system}, *messages]}
-                if provider == "openai":  # GPT-5 family: no temperature; reasoning tokens count toward the cap
-                    body["max_completion_tokens"] = max_tokens * 4
-                else:
-                    body.update(max_tokens=max_tokens, temperature=0.6)
-                r = await c.post(f"{base}/chat/completions", json=body,
-                                 headers={"Authorization": f"Bearer {key}"} if key else {})
-                r.raise_for_status()
-                text = r.json()["choices"][0]["message"]["content"] or ""
-    except httpx.HTTPStatusError as e:
-        try:  # Anthropic & OpenAI both use {"error": {"message": ...}}
-            detail = e.response.json()["error"]["message"]
-        except Exception:
-            detail = e.response.text[:300]
-        raise AIError(f"AI provider returned {e.response.status_code}: {detail}") from e
+            r = await c.post(url, json=body, headers=headers)
     except httpx.HTTPError as e:
-        raise AIError(f"Could not reach AI provider at {base}: {e.__class__.__name__}") from e
+        raise AIError(f"Could not reach AI provider at {cfg['base_url']}: {e.__class__.__name__}") from e
+    if r.status_code >= 400:
+        raise _status_error(r)
+    j = r.json()
+    if cfg["provider"] == "anthropic":
+        text = "".join(b.get("text", "") for b in j.get("content", []) if b.get("type") == "text")
+    else:
+        text = j["choices"][0]["message"]["content"] or ""
     return _THINK.sub("", text).strip()
+
+
+async def stream(system: str, messages: list[dict], max_tokens: int = 700, cfg: dict | None = None):
+    """Yields text chunks as the provider produces them (SSE from Anthropic or OpenAI-compatible APIs)."""
+    cfg = cfg or config()
+    url, headers, body = _request(cfg, system, messages, max_tokens, stream=True)
+    anthropic = cfg["provider"] == "anthropic"
+    try:
+        async with httpx.AsyncClient(timeout=get_settings().ai_timeout) as c, c.stream("POST", url, json=body, headers=headers) as r:
+            if r.status_code >= 400:
+                await r.aread()
+                raise _status_error(r)
+            async for line in r.aiter_lines():
+                if not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    j = json.loads(data)
+                except json.JSONDecodeError:
+                    continue
+                if anthropic:
+                    if j.get("type") == "error":
+                        raise AIError(f"AI provider error: {j.get('error', {}).get('message', 'unknown')}")
+                    if j.get("type") == "content_block_delta" and j["delta"].get("type") == "text_delta":
+                        yield j["delta"]["text"]
+                elif (ch := j.get("choices")) and (t := (ch[0].get("delta") or {}).get("content")):
+                    yield t
+    except httpx.HTTPError as e:
+        raise AIError(f"Could not reach AI provider at {cfg['base_url']}: {e.__class__.__name__}") from e
 
 
 def build_context(engine: Engine, logs: list, user) -> str:

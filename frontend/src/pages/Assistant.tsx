@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowUp, Sparkles, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { api } from '../api'
+import { api, todayIso } from '../api'
 import { useFetch } from '../state'
 
 type Msg = { role: 'user' | 'assistant'; content: string }
@@ -29,9 +29,21 @@ export default function Assistant() {
     setText('')
     setMsgs((x) => [...x, { role: 'user', content: m }])
     setBusy(true)
+    const put = (content: string) => setMsgs((x) => [...x.slice(0, -1), { role: 'assistant', content }])
     try {
-      const r = await api<Msg>('/api/ai/chat', { body: { message: m } })
-      setMsgs((x) => [...x, r])
+      const r = await fetch(`/api/ai/chat/stream?today=${todayIso()}`, {
+        method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: m }),
+      })
+      if (!r.ok || !r.body) throw new Error(r.status === 401 ? 'Signed out' : r.statusText)
+      setMsgs((x) => [...x, { role: 'assistant', content: '' }])
+      const rd = r.body.pipeThrough(new TextDecoderStream()).getReader()
+      let acc = ''
+      for (;;) {
+        const { done, value } = await rd.read()
+        if (done) break
+        acc += value
+        put(acc.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trimStart())
+      }
     } catch (e: any) {
       setMsgs((x) => [...x, { role: 'assistant', content: `⚠️ ${e.message}` }])
     } finally {
@@ -76,14 +88,14 @@ export default function Assistant() {
             </div>
           </div>
         )}
-        {msgs.map((m, i) => (
+        {msgs.map((m, i) => m.content && (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] whitespace-pre-wrap rounded-3xl px-4 py-3 text-[15px] leading-relaxed ${m.role === 'user' ? 'rounded-br-lg bg-pink-500 text-white' : 'card rounded-bl-lg'}`}>
               {m.content}
             </div>
           </div>
         ))}
-        {busy && (
+        {busy && (msgs.at(-1)?.role === 'user' || !msgs.at(-1)?.content) && (
           <div className="card inline-flex gap-1 rounded-3xl rounded-bl-lg px-4 py-4">
             {[0, 1, 2].map((i) => <span key={i} className="h-2 w-2 animate-bounce rounded-full bg-pink-300" style={{ animationDelay: `${i * 0.15}s` }} />)}
           </div>

@@ -3,9 +3,11 @@ from typing import Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from sqlmodel import delete, func, select
+from fastapi.responses import StreamingResponse
+from sqlmodel import Session, delete, func, select
 
 from .. import ai
+from ..db import get_engine
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..feed import cycle_summary
 from ..models import ChatMessage, DayLog, InsightCache, Setting, User
@@ -143,6 +145,36 @@ async def chat(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
     db.add(ChatMessage(user_id=user.id, role="assistant", content=reply))
     db.commit()
     return {"role": "assistant", "content": reply}
+
+
+@router.post("/chat/stream")
+async def chat_stream(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
+    """Same as /chat but streams the reply as plain-text chunks; saves both messages when done."""
+    if not ai.enabled():
+        raise HTTPException(503, "AI is disabled on this server. Enable it in Profile → AI assistant.")
+    eng = build_engine(db, user, today)
+    prev = db.exec(select(ChatMessage).where(ChatMessage.user_id == user.id)
+                   .order_by(ChatMessage.id.desc()).limit(12)).all()[::-1]
+    msgs = [{"role": m.role, "content": m.content} for m in prev] + [{"role": "user", "content": body.message}]
+    system = ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user)
+    uid = user.id
+
+    async def gen():
+        parts: list[str] = []
+        try:
+            async for chunk in ai.stream(system, msgs):
+                parts.append(chunk)
+                yield chunk
+        except ai.AIError as e:
+            yield f"{chr(10) * 2 if parts else ''}⚠️ {e}"
+            return
+        reply = ai._THINK.sub("", "".join(parts)).strip()
+        with Session(get_engine()) as s:  # request-scoped session may already be closed while streaming
+            s.add(ChatMessage(user_id=uid, role="user", content=body.message))
+            s.add(ChatMessage(user_id=uid, role="assistant", content=reply))
+            s.commit()
+
+    return StreamingResponse(gen(), media_type="text/plain; charset=utf-8", headers={"X-Accel-Buffering": "no"})
 
 
 @router.delete("/chat")

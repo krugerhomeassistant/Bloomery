@@ -34,4 +34,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 31. **`navigator.clipboard` undefined over plain http (Tailscale IP)** → Clipboard API requires a secure context → show Copy only when `window.isSecureContext`; make link text `select-all` for manual copy.
 32. **Dev server dies between turns** (sandbox resets background processes) → always health-check `localhost:8500` and restart + reseed before E2E.
 33. **After-log note "flashed" and was lost** → 6 s toast that dismissed on any tap, not stored anywhere → toast ≥10 s (≈90 ms/char) with an explicit close button + persist latest note per user/day as a Today feed card.
+34. **Seed/app failed with `No module named fastapi`** → system python used instead of the backend venv → run servers and scripts with `backend/.venv/bin/python`.
+35. **Streaming via proxies buffers** → nginx-style proxies hold chunks → send `X-Accel-Buffering: no`; plain-text chunked body (not SSE) keeps the client to a few lines of `TextDecoderStream`.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

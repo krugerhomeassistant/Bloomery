@@ -10,7 +10,8 @@ import NotifySettings from '../components/NotifySettings'
 export default function Profile() {
   const { user, setUser, bump, theme, setTheme } = useApp()
   const ov = useFetch<{ predicted_cycle_length: number; predicted_period_length: number; luteal_length: number }>('/api/cycle/overview').data
-  const share = useFetch<{ token: string | null }>('/api/share')
+  const share = useFetch<{ token: string | null }>('/api/tokens/share')
+  const ha = useFetch<{ token: string | null }>('/api/tokens/ha')
   const [copied, setCopied] = useState(false)
   const ai = useFetch<{ enabled: boolean; provider: string; model: string | null; local: boolean }>('/api/ai/status').data
   const [editing, setEditing] = useState<null | 'cycle_length' | 'period_length' | 'luteal_length'>(null)
@@ -67,7 +68,11 @@ export default function Profile() {
   }
   const LEARNED = { cycle_length: (o: any) => o.predicted_cycle_length, period_length: (o: any) => o.predicted_period_length, luteal_length: (o: any) => o.luteal_length }
   const shareUrl = share.data?.token ? `${location.origin}/share/${share.data.token}` : ''
-  const shareAct = async (method: 'POST' | 'DELETE') => { share.setData(await api('/api/share', { method, body: method === 'POST' ? {} : undefined, today: false }).then((r: any) => ({ token: r.token ?? null }))); setCopied(false) }
+  const tokenAct = async (kind: 'share' | 'ha', method: 'POST' | 'DELETE') => { (kind === 'share' ? share : ha).setData(await api<{ token: string | null }>(`/api/tokens/${kind}`, { method, body: method === 'POST' ? {} : undefined, today: false })); setCopied(false) }
+  const shareAct = (m: 'POST' | 'DELETE') => tokenAct('share', m)
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const haUrl = ha.data?.token ? `${location.origin}/api/ha/${ha.data.token}` : ''
+  const haYaml = haUrl ? HA_YAML(`${haUrl}?tz=${tz}`) : ''
   const LABEL = { cycle_length: 'Cycle length', period_length: 'Period length', luteal_length: 'Luteal phase length' }
   const RANGE = { cycle_length: [15, 90], period_length: [1, 15], luteal_length: [8, 20] } as const
 
@@ -149,6 +154,30 @@ export default function Profile() {
         </div>
       </Group>
 
+      <SectionTitle>Home Assistant & calendar</SectionTitle>
+      <Group>
+        <div className="space-y-3 px-4 py-4 text-sm">
+          <p className="text-muted">Private read-only feeds: sensors for Home Assistant (cycle day, phase, days until period, fertile window) and a calendar of your periods, fertile windows and ovulation. No symptoms or notes.</p>
+          {haUrl ? (
+            <>
+              <div className="font-bold">1. Sensors: add to <code>configuration.yaml</code> and restart HA</div>
+              <pre className="select-all overflow-x-auto rounded-2xl bg-pink-50 p-3 font-mono text-[11px] leading-snug">{haYaml}</pre>
+              <div className="font-bold">2. Calendar: HA → Settings → Devices & services → Add → <i>Remote Calendar</i> (or subscribe in any calendar app)</div>
+              <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{haUrl}/calendar.ics?tz={tz}</div>
+              <div className="flex flex-wrap gap-2">
+                {window.isSecureContext && navigator.clipboard && (
+                  <button className="btn-primary px-4 py-2 text-sm" onClick={() => navigator.clipboard.writeText(haYaml).then(() => setCopied(true))}>{copied ? 'Copied!' : 'Copy YAML'}</button>
+                )}
+                <button className="btn-ghost px-4 py-2 text-sm" onClick={() => tokenAct('ha', 'POST')}>New token</button>
+                <button className="btn-ghost px-4 py-2 text-sm" onClick={() => tokenAct('ha', 'DELETE')}>Turn off</button>
+              </div>
+            </>
+          ) : (
+            <button className="btn-ghost px-4 py-2 text-sm" onClick={() => tokenAct('ha', 'POST')}>Create feed</button>
+          )}
+        </div>
+      </Group>
+
       <SectionTitle>Your data</SectionTitle>
       <Group>
         <Row icon={<Download size={18} />} label="Export data (JSON)" onClick={exportData} />
@@ -195,6 +224,34 @@ export default function Profile() {
     </div>
   )
 }
+
+const HA_YAML = (url: string) => `rest:
+  - resource: ${url}
+    scan_interval: 900
+    sensor:
+      - name: Bloomery cycle day
+        unique_id: bloomery_cycle_day
+        icon: mdi:flower
+        value_template: "{{ value_json.cycle_day }}"
+        json_attributes: [phase, label, headline, summary, next_period, ovulation, pregnancy_chance]
+      - name: Bloomery phase
+        unique_id: bloomery_phase
+        icon: mdi:moon-waning-crescent
+        value_template: "{{ value_json.phase }}"
+      - name: Bloomery days until period
+        unique_id: bloomery_days_until_period
+        icon: mdi:calendar-heart
+        unit_of_measurement: d
+        value_template: "{{ value_json.days_until_period }}"
+    binary_sensor:
+      - name: Bloomery period
+        unique_id: bloomery_period
+        icon: mdi:water
+        value_template: "{{ value_json.in_period }}"
+      - name: Bloomery fertile window
+        unique_id: bloomery_fertile
+        icon: mdi:flower-tulip
+        value_template: "{{ value_json.fertile }}"`
 
 const Group = ({ children }: { children: ReactNode }) => <div className="card divide-y divide-line overflow-hidden">{children}</div>
 
