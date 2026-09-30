@@ -1,6 +1,7 @@
 """LLM provider abstraction (httpx, no SDKs) + context building.
 
-Providers: ollama / openai (any OpenAI-compatible /chat/completions) / anthropic (/v1/messages).
+Providers: anthropic (/v1/messages) · openai / openrouter / ollama / custom (OpenAI /chat/completions).
+Config: env BLOOMERY_AI_* < in-app settings (Setting table, admin-only) < per-call override (connection test).
 Only aggregated stats + recent logs are sent; nothing leaves the box when provider=none or ollama.
 """
 from __future__ import annotations
@@ -10,10 +11,14 @@ import re
 from datetime import date, timedelta
 
 import httpx
+from sqlalchemy.exc import OperationalError
+from sqlmodel import Session, select
 
 from .catalog import LABELS
 from .config import get_settings
 from .cycles import Engine
+from .db import get_engine
+from .models import Setting
 
 SYSTEM = """You are Bloomery, a warm, knowledgeable menstrual-health companion inside a private, self-hosted period tracker.
 Style: friendly, concise, plain language, second person. Use short paragraphs or brief bullet lists. No markdown headings.
@@ -27,43 +32,98 @@ class AIError(RuntimeError):
     pass
 
 
-def enabled() -> bool:
-    return get_settings().ai_provider.lower() in {"ollama", "openai", "anthropic"}
+# provider -> (default base_url, default model). openrouter/ollama/custom speak the OpenAI chat schema.
+PROVIDERS: dict[str, tuple[str, str]] = {
+    "anthropic": ("https://api.anthropic.com", "claude-haiku-4-5-20251001"),
+    "openai": ("https://api.openai.com/v1", "gpt-5-mini"),
+    "openrouter": ("https://openrouter.ai/api/v1", "openrouter/auto"),
+    "ollama": ("http://ollama:11434/v1", "llama3.2:3b"),
+    "custom": ("", ""),
+}
+KEYS = ("provider", "base_url", "model", "api_key")
+
+
+def stored() -> dict[str, str]:
+    """In-app settings (DB), empty dict if the table isn't there yet."""
+    try:
+        with Session(get_engine()) as db:
+            return {r.key.removeprefix("ai_"): r.value for r in db.exec(select(Setting)).all() if r.key.startswith("ai_")}
+    except OperationalError:
+        return {}
+
+
+def config(override: dict | None = None) -> dict[str, str]:
+    """Effective config: env < DB < override. Blank base_url/model fall back to provider defaults."""
+    s = get_settings()
+    cfg = {"provider": s.ai_provider, "base_url": s.ai_base_url, "model": s.ai_model, "api_key": s.ai_api_key}
+    for src in (stored(), override or {}):
+        if src.get("provider") and src["provider"] != cfg["provider"]:  # never reuse another provider's url/model/key
+            cfg.update(provider=src["provider"], base_url="", model="", api_key="")
+        cfg.update({k: v for k, v in src.items() if k in KEYS and k != "provider" and v is not None})
+    cfg["provider"] = cfg["provider"].lower()
+    base, model = PROVIDERS.get(cfg["provider"], ("", ""))
+    cfg["base_url"] = (cfg["base_url"] or base).rstrip("/")
+    cfg["model"] = cfg["model"] or model
+    return cfg
+
+
+def save(values: dict) -> None:
+    if values.get("provider"):  # blank url/model = provider defaults
+        values = {**values, "base_url": values.get("base_url") or "", "model": values.get("model") or ""}
+        if values["provider"] != config()["provider"] and values.get("api_key") is None:
+            values["api_key"] = ""  # don't carry a key over to a different provider
+    with Session(get_engine()) as db:
+        for k in KEYS:
+            if values.get(k) is not None:
+                db.merge(Setting(key=f"ai_{k}", value=values[k]))
+        db.commit()
+
+
+def enabled(cfg: dict | None = None) -> bool:
+    return (cfg or config())["provider"] in PROVIDERS
 
 
 def info() -> dict:
-    s = get_settings()
-    base, model = s.ai_defaults
-    return {"enabled": enabled(), "provider": s.ai_provider.lower(), "model": model if enabled() else None,
-            "local": s.ai_provider.lower() == "ollama"}
+    cfg = config()
+    on = enabled(cfg)
+    return {"enabled": on, "provider": cfg["provider"], "model": cfg["model"] if on else None,
+            "local": cfg["provider"] == "ollama"}
 
 
 _THINK = re.compile(r"<think>.*?</think>", re.S)
 
 
-async def complete(system: str, messages: list[dict], max_tokens: int = 700) -> str:
-    s = get_settings()
-    provider = s.ai_provider.lower()
-    base, model = s.ai_defaults
+async def complete(system: str, messages: list[dict], max_tokens: int = 700, cfg: dict | None = None) -> str:
+    cfg = cfg or config()
+    provider, base, model, key = cfg["provider"], cfg["base_url"], cfg["model"], cfg["api_key"]
+    if provider not in PROVIDERS:
+        raise AIError("AI is turned off. Enable it in Profile → AI assistant.")
+    if not base or not model:
+        raise AIError("Base URL and model are required for this provider.")
     try:
-        async with httpx.AsyncClient(timeout=s.ai_timeout) as c:
+        async with httpx.AsyncClient(timeout=get_settings().ai_timeout) as c:
             if provider == "anthropic":
                 r = await c.post(f"{base}/v1/messages", headers={
-                    "x-api-key": s.ai_api_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                    "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                     json={"model": model, "max_tokens": max_tokens, "system": system, "messages": messages})
                 r.raise_for_status()
                 text = "".join(b.get("text", "") for b in r.json().get("content", []) if b.get("type") == "text")
-            elif provider in {"openai", "ollama"}:
-                headers = {"Authorization": f"Bearer {s.ai_api_key}"} if s.ai_api_key else {}
-                r = await c.post(f"{base}/chat/completions", headers=headers, json={
-                    "model": model, "max_tokens": max_tokens, "temperature": 0.6,
-                    "messages": [{"role": "system", "content": system}, *messages]})
+            else:
+                body = {"model": model, "messages": [{"role": "system", "content": system}, *messages]}
+                if provider == "openai":  # GPT-5 family: no temperature; reasoning tokens count toward the cap
+                    body["max_completion_tokens"] = max_tokens * 4
+                else:
+                    body.update(max_tokens=max_tokens, temperature=0.6)
+                r = await c.post(f"{base}/chat/completions", json=body,
+                                 headers={"Authorization": f"Bearer {key}"} if key else {})
                 r.raise_for_status()
                 text = r.json()["choices"][0]["message"]["content"] or ""
-            else:
-                raise AIError("AI is disabled. Set BLOOMERY_AI_PROVIDER to enable it.")
     except httpx.HTTPStatusError as e:
-        raise AIError(f"AI provider returned {e.response.status_code}: {e.response.text[:300]}") from e
+        try:  # Anthropic & OpenAI both use {"error": {"message": ...}}
+            detail = e.response.json()["error"]["message"]
+        except Exception:
+            detail = e.response.text[:300]
+        raise AIError(f"AI provider returned {e.response.status_code}: {detail}") from e
     except httpx.HTTPError as e:
         raise AIError(f"Could not reach AI provider at {base}: {e.__class__.__name__}") from e
     return _THINK.sub("", text).strip()

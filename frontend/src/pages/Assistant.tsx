@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowUp, Sparkles, Trash2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useFetch } from '../state'
 
@@ -45,13 +46,8 @@ export default function Assistant() {
       <div className="px-6 pt-16 text-center">
         <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-[#F1EBFF] text-[#7C5CE0]"><Sparkles size={36} /></div>
         <h1 className="text-2xl font-black">AI assistant is off</h1>
-        <p className="mt-2 text-muted">Your server admin can enable it with a local model (Ollama) or a cloud provider. Set these in your <code>.env</code>:</p>
-        <pre className="card mt-5 whitespace-pre-wrap break-all p-4 text-left text-xs">{`# ollama | openai | anthropic
-BLOOMERY_AI_PROVIDER=ollama
-BLOOMERY_AI_MODEL=llama3.2:3b
-BLOOMERY_AI_BASE_URL=http://ollama:11434/v1
-# cloud providers only:
-BLOOMERY_AI_API_KEY=`}</pre>
+        <p className="mt-2 text-muted">Connect Claude, OpenAI or another AI provider to get personal answers about your cycle.</p>
+        <Link to="/profile" className="btn-primary mt-6">Set up AI</Link>
       </div>
     )
   }

@@ -3,6 +3,7 @@ import { ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRoun
 import { api, type User } from '../api'
 import { useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
+import AiSettings from '../components/AiSettings'
 
 export default function Profile() {
   const { user, setUser, bump, theme, setTheme } = useApp()
@@ -12,6 +13,7 @@ export default function Profile() {
   const [pw, setPw] = useState<null | { current: string; new: string; msg?: string }>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [msg, setMsg] = useState('')
+  const [aiOpen, setAiOpen] = useState(false)
   const file = useRef<HTMLInputElement>(null)
   if (!user) return null
 
@@ -82,14 +84,16 @@ export default function Profile() {
 
       <SectionTitle>AI assistant</SectionTitle>
       <Group>
-        <div className="flex items-center gap-3 px-4 py-4">
-          <Sparkles className="text-[#7C5CE0]" />
-          <div className="text-sm">
-            {ai?.enabled ? <><b>Enabled</b> · {ai.provider} · {ai.model}<div className="text-muted">{ai.local ? 'Runs on your server — data never leaves it.' : 'Cycle summaries are sent to the configured cloud provider.'}</div></>
-              : <><b>Disabled</b><div className="text-muted">Set BLOOMERY_AI_PROVIDER in the server .env to enable.</div></>}
+        <button onClick={() => setAiOpen(true)} className="flex w-full items-center gap-3 px-4 py-4 text-left hover:bg-pink-50">
+          <Sparkles className="shrink-0 text-[#7C5CE0]" />
+          <div className="flex-1 text-sm">
+            {ai?.enabled ? <><b>On</b> · {ai.provider} · {ai.model}<div className="text-muted">{ai.local ? 'Runs on your server — data never leaves it.' : 'Cycle summaries are sent to this cloud provider.'}</div></>
+              : <><b>Off</b><div className="text-muted">Tap to connect Claude, OpenAI or another provider.</div></>}
           </div>
-        </div>
+          <ChevronRight size={18} className="text-muted" />
+        </button>
       </Group>
+      <AiSettings open={aiOpen} onClose={() => setAiOpen(false)} />
 
       <SectionTitle>Your data</SectionTitle>
       <Group>

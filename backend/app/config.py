@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     secure_cookies: bool = False  # set true behind HTTPS
     static_dir: Path = Path("./static")
 
-    # AI: none | ollama | openai | anthropic  (openai = any OpenAI-compatible endpoint)
+    # AI defaults; overridden by in-app settings (Profile → AI assistant). See ai.PROVIDERS.
     ai_provider: str = "none"
     ai_base_url: str = ""
     ai_api_key: str = ""
@@ -37,23 +37,6 @@ class Settings(BaseSettings):
             f.write_text(secrets.token_urlsafe(48))
             f.chmod(0o600)
         return f.read_text().strip()
-
-    @property
-    def ai_defaults(self) -> tuple[str, str]:
-        """(base_url, model) with provider-specific defaults."""
-        p = self.ai_provider.lower()
-        base = self.ai_base_url
-        model = self.ai_model
-        if p == "ollama":
-            base = base or "http://ollama:11434/v1"
-            model = model or "llama3.2:3b"
-        elif p == "openai":
-            base = base or "https://api.openai.com/v1"
-            model = model or "gpt-4o-mini"
-        elif p == "anthropic":
-            base = base or "https://api.anthropic.com"
-            model = model or "claude-sonnet-5-5"
-        return base.rstrip("/"), model
 
 
 @lru_cache

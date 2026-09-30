@@ -1,8 +1,4 @@
-import os
-import tempfile
 
-os.environ["BLOOMERY_DATA_DIR"] = tempfile.mkdtemp()
-os.environ["BLOOMERY_STATIC_DIR"] = "/nonexistent"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -40,6 +36,19 @@ def test_full_flow():
         d = c.get("/api/ai/daily?today=2026-01-10").json()
         assert d["source"] == "rules" and d["content"]
         assert c.post("/api/ai/chat", json={"message": "hi"}).status_code == 503
+
+        # in-app AI config: first user is admin, key never returned
+        r = c.put("/api/ai/config", json={"provider": "anthropic", "api_key": "sk-ant-secret-1234"}).json()
+        assert r["model"] == "claude-haiku-4-5-20251001" and r["has_key"] and r["key_hint"] == "1234"
+        assert "secret" not in c.get("/api/ai/config").text
+        assert c.get("/api/ai/status").json()["enabled"] is True
+        r = c.put("/api/ai/config", json={"provider": "custom", "base_url": "http://x/v1", "model": "m"}).json()
+        assert r["base_url"] == "http://x/v1" and not r["has_key"]  # key not carried to another provider
+        assert c.put("/api/ai/config", json={"provider": "custom", "api_key": "k-123456789"}).json()["has_key"]
+        assert c.put("/api/ai/config", json={"provider": "custom", "model": "m2"}).json()["has_key"]  # kept, same provider
+        assert c.put("/api/ai/config", json={"provider": "openai"}).json()["base_url"] == "https://api.openai.com/v1"
+        c.put("/api/ai/config", json={"provider": "none", "api_key": ""})
+        assert c.get("/api/ai/status").json()["enabled"] is False
 
         exp = c.get("/api/export").json()
         assert len(exp["logs"]) == 3

@@ -38,6 +38,7 @@ Deploy targets: `docker-compose.yml` (generic, builds locally, optional Ollama p
 - **user**: id, username (unique, lowercased), password_hash (argon2id), display_name, created_at, onboarded, cycle_length=28, period_length=5, luteal_length=14, goal(track|conceive|avoid), birth_year?, temp_unit(C|F), weight_unit(kg|lb)
 - **daylog**: id, user_id→user (CASCADE), day (DATE), UNIQUE(user_id, day), flow(null|spotting|light|medium|heavy), tags JSON `{category:[ids]}`, temperature °C, weight kg, water_ml, sleep_hours, notes, updated_at
 - **chatmessage**: id, user_id, role(user|assistant), content, created_at
+- **setting**: key (PK), value — server-wide; `ai_provider|ai_base_url|ai_model|ai_api_key` (plaintext; DB file is the trust boundary)
 - **insightcache**: id, user_id, day, content — UNIQUE(user_id, day)
 
 Migrations: none yet (`create_all` only). Adding columns requires Alembic or manual `ALTER TABLE` → see PLAN backlog.
@@ -52,6 +53,7 @@ Migrations: none yet (`create_all` only). Adding columns requires Alembic or man
 4. Spotting never starts/extends a period; only light/medium/heavy = bleeding.
 5. A DayLog with no data is deleted, not stored empty.
 6. Tag ids validated against `catalog.VALID`; renaming an id orphans old data → only add, never rename.
+9. AI config precedence: env `BLOOMERY_AI_*` < `setting` table < per-call override (Test button). Changing provider never reuses the previous provider's url/model/key. Admin = lowest user id. API key never returned (only `has_key` + last 4).
 7. LLM receives only a compact JSON summary (≤60 days logs + stats); never credentials/usernames.
 8. `/api/*` never falls through to SPA (404 instead).
 

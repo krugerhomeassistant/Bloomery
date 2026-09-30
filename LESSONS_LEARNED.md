@@ -13,4 +13,7 @@ Format: [Problem] → [Root cause] → [Verified solution]
 9. **Qwen3-style models emit `<think>` blocks** → reasoning tokens in content → strip `<think>…</think>` in `ai.complete`.
 11. **Bind-mounted `/data` created root-owned by host (ZimaOS `/DATA/AppData`, Linux `./data`) → non-root container can't write DB** → `USER bloomery` in Dockerfile + host-created dir → `entrypoint.sh` runs as root, `chown -R` data dir, then `setpriv` drops to uid 10001 (verified PID 1 Uid 10001, files owned by bloomery).
 12. **ZimaOS compose import doesn't build images** → dashboard import only pulls/uses images → pre-build (`docker build` + `docker save`/`load`) and reference `image: bloomery:latest`; `docker-compose.zimaos.yml`.
+13. **Switching AI provider in settings carried the old API key over (Claude key → custom URL)** → key kept when field blank regardless of provider → backend clears key/url/model on provider change unless given (both in `config()` merge and `save()`); UI resets fields on provider pick. Test asserts it.
+14. **`pkill -f pattern` / `pgrep -f` inside a bash -c killed the shell itself** → the pattern appears in the shell's own command line → use `fuser -k PORT/tcp` to stop servers.
+15. **GPT-5 family rejects `max_tokens`/`temperature`** → reasoning models → for provider `openai` send `max_completion_tokens` (×4 headroom for reasoning tokens), no temperature.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

@@ -1,19 +1,17 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.1.0
+**Date:** 2026-09-30 · **Version:** 0.2.0
 
 ## Current subtask
-ZimaOS deployment support + memory sizing for a 0.5–1 GB free-RAM home server.
+In-app AI configuration (done). User tested v0.1 locally via Docker Desktop and liked it.
 
 ## Last execution results
-- Added `backend/entrypoint.sh` (chown bind mount → drop to uid 10001); tested with root-owned mount: OK.
-- Added `docker-compose.zimaos.yml` (image-only, /DATA/AppData/bloomery, mem_limit 256m, x-casaos metadata).
-- Measured: 60 MiB idle, 72 MiB after 600 concurrent requests under 256 MiB cap; image 274 MB.
-- README: ZimaOS section (build on PC → docker save/scp/load → dashboard Import).
-- 11/11 tests pass.
+- AI provider/key/model now set in Profile → AI assistant (admin = first account); stored in `setting` table; env still works as default.
+- Tests 12/12. E2E via Playwright: real Anthropic endpoint returned clean "401: API key is invalid." for a bogus key; custom provider Test → Save → chat OK.
+- Fixed: key no longer carried across provider switch.
 
 ## Blockers
-None. Ollama not viable on user's server (RAM) → cloud AI or none.
+None.
 
 ## Immediate next step
-User deploys on ZimaOS. Then: GHCR multi-arch image (removes manual build), reminders, Alembic.
+User: `docker compose up -d --build`, Profile → AI assistant → Claude + key → Test → Save. Then build/save/load image to ZimaOS (README).

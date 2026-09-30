@@ -35,6 +35,7 @@ Self-hosted, Docker-based menstrual cycle tracker modelled on the look & feel of
 - **Insights**: `GET /api/insights` → stats, flags, symptom patterns (tag ≥3 logs and ≥60% in one phase), BBT (current cycle), weight (180 d).
 - **AI daily insight**: `GET /api/ai/daily` → cached per user/day in `insightcache`; `?refresh=true` regenerates; falls back to rule text when AI off/errors.
 - **AI chat**: `POST /api/ai/chat` → system prompt + JSON context + last 12 messages; history stored; `DELETE` clears.
+- **AI setup (in-app)**: Profile → AI assistant sheet → `GET/PUT /api/ai/config`, `POST /api/ai/config/test` (admin only). Providers: anthropic (Haiku 4.5 default), openai (gpt-5-mini; uses `max_completion_tokens`, no temperature), openrouter (`openrouter/auto`), ollama, custom. Blank model/URL = provider default; blank key = keep saved key (same provider only).
 - **Data**: export JSON (`/api/export`), import (merge; `replace` flag), delete account.
 
 ## Registration policy

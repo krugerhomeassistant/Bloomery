@@ -13,7 +13,13 @@ docker compose up -d --build
 
 On a phone: open the URL → browser menu → **Add to Home Screen**.
 
-### Enable local AI (Ollama)
+### Enable AI (in the app)
+
+Profile → **AI assistant** → pick Claude / OpenAI / OpenRouter / Ollama / any OpenAI-compatible server → paste API key → **Test** → **Save**.
+Only the first account (server owner) can change it. Keys are stored in `data/bloomery.db` and never sent back to the browser.
+`.env` `BLOOMERY_AI_*` values still work as defaults; in-app settings override them.
+
+### Local AI (Ollama)
 
 ```bash
 # .env

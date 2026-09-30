@@ -26,6 +26,7 @@ def mock_http(monkeypatch):
 @pytest.mark.parametrize("provider,expect_url,expect", [
     ("ollama", "http://ollama:11434/v1/chat/completions", "hi from llm"),
     ("anthropic", "https://api.anthropic.com/v1/messages", "hi from claude"),
+    ("openai", "https://api.openai.com/v1/chat/completions", "hi from llm"),
 ])
 def test_providers(monkeypatch, mock_http, provider, expect_url, expect):
     s = get_settings()
@@ -38,3 +39,5 @@ def test_providers(monkeypatch, mock_http, provider, expect_url, expect):
         assert mock_http["body"]["system"] == "sys" and mock_http["headers"]["x-api-key"] == "k"
     else:
         assert mock_http["body"]["messages"][0]["role"] == "system"
+    if provider == "openai":  # GPT-5 family rejects max_tokens/temperature
+        assert "max_completion_tokens" in mock_http["body"] and "temperature" not in mock_http["body"]

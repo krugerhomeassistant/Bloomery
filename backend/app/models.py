@@ -62,3 +62,10 @@ class InsightCache(SQLModel, table=True):
     day: date
     content: str
     created_at: datetime = Field(default_factory=now)
+
+
+class Setting(SQLModel, table=True):
+    """Server-wide key/value settings (e.g. AI provider), editable in-app by the admin."""
+
+    key: str = Field(primary_key=True)
+    value: str = ""

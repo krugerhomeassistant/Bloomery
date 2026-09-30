@@ -1,10 +1,12 @@
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from sqlmodel import delete, select
+from sqlmodel import delete, func, select
 
 from .. import ai
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
-from ..models import ChatMessage, DayLog, InsightCache
+from ..models import ChatMessage, DayLog, InsightCache, User
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
@@ -12,6 +14,50 @@ router = APIRouter(prefix="/api/ai", tags=["ai"])
 @router.get("/status")
 def status():
     return ai.info()
+
+
+# ---------------------------------------------------------------- in-app configuration (admin = first account)
+def require_admin(user: User, db) -> None:
+    if user.id != db.exec(select(func.min(User.id))).one():
+        raise HTTPException(403, "Only the server owner (first account) can change AI settings")
+
+
+class ConfigIn(BaseModel):
+    provider: Literal["none", "anthropic", "openai", "openrouter", "ollama", "custom"]
+    base_url: str | None = Field(None, max_length=500)
+    model: str | None = Field(None, max_length=200)
+    api_key: str | None = Field(None, max_length=500)  # None = keep stored key, "" = clear
+
+
+def _public(cfg: dict) -> dict:
+    k = cfg.pop("api_key")
+    return {**cfg, "has_key": bool(k), "key_hint": k[-4:] if len(k) > 8 else "",
+            "providers": {p: {"base_url": b, "model": m} for p, (b, m) in ai.PROVIDERS.items()}}
+
+
+@router.get("/config")
+def get_config(user: UserDep, db: SessionDep):
+    require_admin(user, db)
+    return _public(ai.config())
+
+
+@router.put("/config")
+def put_config(body: ConfigIn, user: UserDep, db: SessionDep):
+    require_admin(user, db)
+    ai.save(body.model_dump())
+    return _public(ai.config())
+
+
+@router.post("/config/test")
+async def test_config(body: ConfigIn, user: UserDep, db: SessionDep):
+    """Try unsaved settings (falls back to the stored key when api_key is omitted)."""
+    require_admin(user, db)
+    try:
+        reply = await ai.complete("Reply with exactly: OK", [{"role": "user", "content": "ping"}],
+                                  max_tokens=20, cfg=ai.config(body.model_dump()))
+        return {"ok": True, "reply": reply[:200]}
+    except ai.AIError as e:
+        return {"ok": False, "error": str(e)}
 
 
 def _logs(db, user):

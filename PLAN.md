@@ -36,6 +36,14 @@
 - [ ] User: deploy on ZimaOS and log in
 - [ ] Publish multi-arch image to GHCR so ZimaOS can pull directly (removes manual build)
 
+## Phase 4 — In-app AI settings (v0.2.0)
+- [x] `setting` table (new table → no migration needed on existing DBs)
+- [x] `ai.config()` precedence env < DB < override; provider presets (anthropic/openai/openrouter/ollama/custom)
+- [x] Admin-only `GET/PUT /api/ai/config`, `POST /api/ai/config/test`; key never returned
+- [x] Profile → AI assistant sheet (provider, key, model w/ suggestions, advanced base URL, Test, Save); Assistant "Set up AI" CTA
+- [x] Tests 12/12; E2E: real Anthropic 401 surfaced cleanly, custom provider test+save+chat OK
+- [ ] User: rebuild (`docker compose up -d --build`), add Claude key, then build image for ZimaOS
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [ ] Reminders/notifications (Web Push via VAPID; period due, pill, BBT)
