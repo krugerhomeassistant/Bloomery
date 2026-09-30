@@ -110,7 +110,7 @@ export default function Calendar() {
       </div>
 
       {/* bottom panel */}
-      <div className="fixed inset-x-0 bottom-[68px] z-20 mx-auto max-w-md px-3">
+      <div className="fixed inset-x-0 bottom-[calc(var(--nav-h)+0.5rem)] z-20 mx-auto max-w-md px-3">
         {edit ? (
           <div className="card flex gap-3 p-3 shadow-xl">
             <button className="btn-ghost flex-1" onClick={() => setParams({})}>Cancel</button>

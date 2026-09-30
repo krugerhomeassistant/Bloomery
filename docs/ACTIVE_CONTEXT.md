@@ -1,11 +1,12 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-09-30 · **Version:** 0.6.0
+**Date:** 2026-09-30 · **Version:** 0.6.1
 
 ## Current subtask
 Shipped AI cycle recap + Apple Health import. Deployment: ZimaOS, Tailscale-only (no extra hardening).
 
 ## Last execution results
+- v0.6.1: fixed iPhone bottom cut-off (calendar panel/chat/toast now anchored to `--nav-h` incl. safe area).
 - `/api/ai/recap` (cached per completed cycle) + RecapSheet; Apple Health streaming import (`appleHealth.ts` + `importers._apple`).
 - Tests 21/21. E2E OK (synthetic export, fake LLM).
 

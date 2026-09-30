@@ -60,4 +60,4 @@ Migrations: none yet (`create_all` only). Adding columns requires Alembic or man
 
 ## Frontend (`frontend/src/`)
 `api.ts` (fetch wrapper + types) · `state.tsx` (AppProvider: user, catalog, data `version` bump, log-sheet date, theme; `useFetch`) · `App.tsx` (auth gate → onboarding → router + bottom nav + global `LogDay` sheet) · `components/ui.tsx` (Sheet, Chip, Stepper, LineChart, Logo) · `components/CycleRing.tsx` · `pages/*`.
-Design tokens in `index.css` `@theme` (pink-500 #FF4A7D primary, teal-400/500 fertile, canvas/card/ink/muted/line, `.dark` overrides). Custom classes via Tailwind v4 `@utility` (card, btn, btn-primary, btn-ghost, input).
+Design tokens in `index.css` `@theme` (pink-500 #FF4A7D primary, teal-400/500 fertile, canvas/card/ink/muted/line, `.dark` overrides). Bottom nav height is `--nav-h` (includes iOS safe area) — anything fixed/sticky above the nav must use `var(--nav-h)`, never pixel constants. Custom classes via Tailwind v4 `@utility` (card, btn, btn-primary, btn-ghost, input).

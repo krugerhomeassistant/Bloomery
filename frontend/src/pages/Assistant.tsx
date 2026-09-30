@@ -53,7 +53,7 @@ export default function Assistant() {
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-76px)] flex-col">
+    <div className="flex min-h-[calc(100dvh-var(--nav-h))] flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between bg-canvas/95 px-5 pb-3 pt-4 backdrop-blur">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-black"><Sparkles className="text-[#7C5CE0]" /> Ask Bloomery</h1>
@@ -91,7 +91,7 @@ export default function Assistant() {
         <div ref={end} />
       </div>
 
-      <form onSubmit={submit} className="sticky bottom-[68px] bg-gradient-to-t from-canvas via-canvas to-transparent px-4 pb-3 pt-4">
+      <form onSubmit={submit} className="sticky bottom-[var(--nav-h)] bg-gradient-to-t from-canvas via-canvas to-transparent px-4 pb-3 pt-4">
         <div className="flex items-end gap-2 rounded-[1.75rem] bg-card p-2 pl-5 shadow-lg">
           <textarea rows={1} value={text} onChange={(e) => setText(e.target.value)} placeholder="Ask about your cycle…"
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(text) } }}

@@ -39,7 +39,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="mx-auto flex min-h-full max-w-md flex-col">
-        <main className="flex-1 pb-[76px]">
+        <main className="flex-1 pb-[var(--nav-h)]">
           <Routes>
             <Route path="/" element={<Today />} />
             <Route path="/calendar" element={<Calendar />} />
@@ -49,7 +49,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
-        <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-line bg-card/95 backdrop-blur">
+        <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 h-[var(--nav-h)] mx-auto max-w-md border-t border-line bg-card/95 backdrop-blur">
           <div className="grid grid-cols-5">
             {TABS.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} end={to === '/'}
@@ -61,7 +61,7 @@ export default function App() {
         </nav>
         <LogDay />
         {toast && (
-          <button onClick={() => notify(null)} className="sheet-in fixed inset-x-3 bottom-[84px] z-40 mx-auto flex max-w-md gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
+          <button onClick={() => notify(null)} className="sheet-in fixed inset-x-3 bottom-[calc(var(--nav-h)+0.75rem)] z-40 mx-auto flex max-w-md gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
             <span className="text-lg">💬</span><span>{toast}</span>
           </button>
         )}

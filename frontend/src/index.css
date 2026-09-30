@@ -83,6 +83,10 @@ body {
     opacity: 0;
   }
 }
+/* bottom nav: 56px of content + home-indicator safe area (iPhone) — everything anchored to the nav uses this */
+:root {
+  --nav-h: calc(56px + max(env(safe-area-inset-bottom), 0.5rem));
+}
 .pb-safe {
   padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
 }
