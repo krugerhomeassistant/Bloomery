@@ -95,8 +95,10 @@
 - [x] Tests 24/24; E2E: partial reply visible mid-stream (fake SSE LLM), final saved clean
 
 ## Phase 12 — App lock (v0.9.0)
-- [ ] PIN hashed (argon2) in Setting `pin:<uid>`; `GET/PUT/DELETE /api/lock`, `POST /api/lock/verify` (throttled; 5 fails → logout)
-- [ ] Lock screen on app open + after ~1 min hidden; Profile set/change/remove
+- [x] 4-digit PIN argon2-hashed in Setting `pin:<uid>`; `PUT /api/auth/pin` (needs account password; `pin:null` removes); `POST /api/auth/pin/verify` (5 wrong → session cleared)
+- [x] `LockScreen` overlay on app open + after 60 s hidden; Profile "App lock (PIN)" sheet
+- [x] Account deletion now also removes per-user Setting rows (notes, tokens, PIN, recaps)
+- [x] Tests 25/25; E2E set PIN → reload locked → wrong PIN "4 tries left" → correct unlocks
 
 ## Phase 13 — Life stages (v1.0.0)
 - [ ] Setting `mode:<uid>` = {mode: cycle|pregnancy|perimenopause, lmp}
@@ -107,7 +109,7 @@
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
-- [ ] App lock PIN / passkey (WebAuthn)
+- [x] App lock PIN (passkey/WebAuthn still open; needs HTTPS)
 - [x] Import from Flo / Clue / CSV (Apple Health still open)
 - [ ] Pregnancy mode (weeks, due date) & perimenopause mode
 - [x] Partner read-only sharing link

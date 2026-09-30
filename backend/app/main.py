@@ -12,7 +12,7 @@ from .db import init_db
 from .notify import scheduler
 from .routers import assistant, auth, notifications, share, tracking
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 
 
 @asynccontextmanager

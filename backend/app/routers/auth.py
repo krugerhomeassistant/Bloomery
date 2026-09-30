@@ -3,11 +3,12 @@ from collections import defaultdict, deque
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import object_session
 from sqlmodel import func, select
 
 from ..config import get_settings
 from ..deps import SessionDep, UserDep, hash_pw, verify_pw
-from ..models import User
+from ..models import Setting, User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -28,7 +29,8 @@ def registration_open(db) -> bool:
 
 
 def public_user(u: User) -> dict:
-    return u.model_dump(exclude={"password_hash"})
+    db = object_session(u)
+    return u.model_dump(exclude={"password_hash"}) | {"pin_set": bool(db and db.get(Setting, f"pin:{u.id}"))}
 
 
 @router.get("/status")
@@ -109,3 +111,47 @@ def change_password(body: PasswordChange, user: UserDep, db: SessionDep):
     db.add(user)
     db.commit()
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- app lock PIN
+# ponytail: the lock screen is client-side (guards a phone left unlocked); the server verifies the PIN
+# and ends the session after PIN_TRIES wrong guesses, so it can't be brute-forced.
+PIN_TRIES = 5
+
+
+class PinIn(BaseModel):
+    password: str
+    pin: str | None = Field(None, pattern=r"^\d{4}$")  # None = remove
+
+
+@router.put("/pin")
+def set_pin(body: PinIn, user: UserDep, db: SessionDep):
+    if not verify_pw(user.password_hash, body.password):
+        raise HTTPException(400, "Password is wrong")
+    key = f"pin:{user.id}"
+    if s := db.get(Setting, key):
+        db.delete(s)
+    if body.pin:
+        db.add(Setting(key=key, value=hash_pw(body.pin)))
+    db.commit()
+    return public_user(user)
+
+
+class PinCheck(BaseModel):
+    pin: str = Field(max_length=16)
+
+
+@router.post("/pin/verify")
+def verify_pin(body: PinCheck, request: Request, user: UserDep, db: SessionDep):
+    s = db.get(Setting, f"pin:{user.id}")
+    k = f"pin:{user.id}"
+    if not s or verify_pw(s.value, body.pin):
+        FAILS.pop(k, None)
+        return {"ok": True}
+    FAILS[k].append(time.monotonic())
+    left = PIN_TRIES - len(FAILS[k])
+    if left <= 0:
+        FAILS.pop(k, None)
+        request.session.clear()
+        raise HTTPException(401, "Too many wrong PINs. Log in with your password.")
+    raise HTTPException(400, f"Wrong PIN, {left} {'try' if left == 1 else 'tries'} left")

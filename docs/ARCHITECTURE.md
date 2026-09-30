@@ -40,7 +40,7 @@ Deploy targets: `docker-compose.yml` (generic, builds locally, optional Ollama p
 - **chatmessage**: id, user_id, role(user|assistant), content, created_at
 - **setting**: key (PK), value — server-wide; `ai_provider|ai_base_url|ai_model|ai_api_key` (plaintext; DB file is the trust boundary)
 - `setting` also holds `notify:<uid>` JSON per user (notification config).
-- `setting` token keys: `share:<token>`/`shareof:<uid>` (partner page), `ha:<token>`/`haof:<uid>` (HA JSON + ICS), `recap:<uid>:<start>`, `lognote:<uid>`. One active token per kind per user.
+- `setting` token keys: `share:<token>`/`shareof:<uid>` (partner page), `ha:<token>`/`haof:<uid>` (HA JSON + ICS), `recap:<uid>:<start>`, `lognote:<uid>`, `pin:<uid>` (argon2 hash). All removed on account delete. One active token per kind per user.
 - **insightcache**: id, user_id, day, content — UNIQUE(user_id, day)
 
 Migrations: none yet (`create_all` only). Adding columns requires Alembic or manual `ALTER TABLE` → see PLAN backlog.

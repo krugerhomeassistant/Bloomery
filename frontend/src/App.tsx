@@ -12,6 +12,9 @@ import Insights from './pages/Insights'
 import Assistant from './pages/Assistant'
 import Profile from './pages/Profile'
 import LogDay from './pages/LogDay'
+import LockScreen from './components/LockScreen'
+
+const LOCK_AFTER_MS = 60_000  // hidden this long → PIN again
 
 const TABS = [
   { to: '/', label: 'Today', icon: Flower2 },
@@ -24,6 +27,18 @@ const TABS = [
 export default function App() {
   const { user, setUser, toast, notify } = useApp()
   const [ready, setReady] = useState(false)
+  const [locked, setLocked] = useState(true)  // only matters when user.pin_set
+
+  useEffect(() => { if (ready && !user?.pin_set) setLocked(false) }, [ready, user])  // fresh password login = unlocked
+  useEffect(() => {
+    let hiddenAt = 0
+    const onVis = () => {
+      if (document.hidden) hiddenAt = Date.now()
+      else if (hiddenAt && Date.now() - hiddenAt > LOCK_AFTER_MS) setLocked(true)
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [])
 
   useEffect(() => {
     api<User>('/api/auth/me', { today: false }).then(setUser).catch(() => setUser(null)).finally(() => setReady(true))
@@ -60,6 +75,7 @@ export default function App() {
           </div>
         </nav>
         <LogDay />
+        {user.pin_set && locked && <LockScreen onUnlock={() => setLocked(false)} />}
         {toast && (
           <div role="status" className="sheet-in fixed inset-x-3 bottom-[calc(var(--nav-h)+0.75rem)] z-40 mx-auto flex max-w-md items-start gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
             <span className="text-lg">💬</span><span className="flex-1">{toast}<span className="mt-1 block text-xs opacity-60">Saved to today's insights</span></span>

@@ -304,6 +304,9 @@ def import_other(body: OtherImport, user: UserDep, db: SessionDep):
 def delete_account(request: Request, user: UserDep, db: SessionDep):
     for m in (DayLog, ChatMessage, InsightCache):
         db.exec(delete(m).where(m.user_id == user.id))
+    u = str(user.id)  # per-user settings: <kind>:<uid>, recap:<uid>:<start>, and token rows whose value is the uid
+    db.exec(delete(Setting).where(Setting.key.like(f"%:{u}") | Setting.key.like(f"%:{u}:%")
+                                  | (Setting.key.like("share:%") | Setting.key.like("ha:%")) & (Setting.value == u)))
     db.delete(user)
     db.commit()
     request.session.clear()

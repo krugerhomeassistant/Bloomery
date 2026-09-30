@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound } from 'lucide-react'
+import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock } from 'lucide-react'
 import { api, type User } from '../api'
 import { useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
@@ -18,6 +18,7 @@ export default function Profile() {
   const [val, setVal] = useState(0)
   const [pw, setPw] = useState<null | { current: string; new: string; msg?: string }>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [lock, setLock] = useState<null | { pin: string; password: string; msg?: string }>(null)
   const [msg, setMsg] = useState('')
   const [aiOpen, setAiOpen] = useState(false)
   const [notifyOpen, setNotifyOpen] = useState(false)
@@ -182,6 +183,7 @@ export default function Profile() {
       <Group>
         <Row icon={<Download size={18} />} label="Export data (JSON)" onClick={exportData} />
         <Row icon={<Upload size={18} />} label="Import data (Flo, Clue, Apple Health, CSV)" onClick={() => file.current?.click()} />
+        <Row icon={<Lock size={18} />} label="App lock (PIN)" value={user.pin_set ? 'On' : 'Off'} onClick={() => setLock({ pin: '', password: '' })} />
         <Row icon={<KeyRound size={18} />} label="Change password" onClick={() => setPw({ current: '', new: '' })} />
         <Row icon={<LogOut size={18} />} label="Log out" onClick={logout} />
         <Row icon={<Trash2 size={18} />} label="Delete account & all data" danger onClick={() => setConfirmDelete(true)} />
@@ -196,6 +198,27 @@ export default function Profile() {
             <Stepper value={val} onChange={setVal} min={RANGE[editing][0]} max={RANGE[editing][1]} unit="days" />
             <button className="btn-primary mt-8 w-full" onClick={async () => { await save({ [editing]: val }); setEditing(null) }}>Save</button>
           </div>
+        )}
+      </Sheet>
+
+      <Sheet open={!!lock} onClose={() => setLock(null)} title="App lock">
+        {lock && (
+          <form className="space-y-3 px-5 pb-8" onSubmit={async (e) => {
+            e.preventDefault()
+            const remove = (e.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'remove'
+            try {
+              setUser(await api<User>('/api/auth/pin', { method: 'PUT', body: { password: lock.password, pin: remove ? null : lock.pin }, today: false }))
+              setLock(null); setMsg(remove ? 'App lock turned off' : 'PIN saved. Bloomery locks when opened or after a minute in the background.')
+            } catch (err: any) { setLock({ ...lock, msg: err.message }) }
+          }}>
+            <p className="text-sm text-muted">Asks for a 4-digit PIN when Bloomery opens or returns after a minute in the background. 5 wrong tries sign you out.</p>
+            <input className="input text-center text-2xl tracking-[.5em]" type="password" inputMode="numeric" pattern="\d{4}" maxLength={4} autoComplete="off"
+              placeholder="••••" value={lock.pin} onChange={(e) => setLock({ ...lock, pin: e.target.value.replace(/\D/g, '') })} required={!user.pin_set} />
+            <input className="input" type="password" placeholder="Account password" autoComplete="current-password" value={lock.password} onChange={(e) => setLock({ ...lock, password: e.target.value })} required />
+            {lock.msg && <p className="text-sm font-bold text-pink-600">{lock.msg}</p>}
+            <button className="btn-primary w-full" disabled={lock.pin.length !== 4}>{user.pin_set ? 'Change PIN' : 'Set PIN'}</button>
+            {user.pin_set && <button value="remove" formNoValidate className="btn-ghost w-full">Turn off app lock</button>}
+          </form>
         )}
       </Sheet>
 

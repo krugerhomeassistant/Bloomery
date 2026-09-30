@@ -43,6 +43,7 @@ export type User = {
   birth_year: number | null
   temp_unit: 'C' | 'F'
   weight_unit: 'kg' | 'lb'
+  pin_set: boolean
 }
 export type Item = { id: string; label: string; emoji: string }
 export type Catalog = { flow: Item[]; categories: { id: string; title: string; color: string; items: Item[] }[] }

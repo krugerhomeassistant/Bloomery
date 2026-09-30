@@ -36,4 +36,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 33. **After-log note "flashed" and was lost** → 6 s toast that dismissed on any tap, not stored anywhere → toast ≥10 s (≈90 ms/char) with an explicit close button + persist latest note per user/day as a Today feed card.
 34. **Seed/app failed with `No module named fastapi`** → system python used instead of the backend venv → run servers and scripts with `backend/.venv/bin/python`.
 35. **Streaming via proxies buffers** → nginx-style proxies hold chunks → send `X-Accel-Buffering: no`; plain-text chunked body (not SSE) keeps the client to a few lines of `TextDecoderStream`.
+36. **Account delete left Setting rows behind** (log notes, share/HA tokens) → per-user keys weren't tied to `user_id` → delete `%:<uid>`, `%:<uid>:%` and token rows whose value is the uid.
+37. **Tests needing a throwaway account** → registration is closed after the first user → `monkeypatch.setattr(auth, "registration_open", lambda db: True)` instead of depending on file order.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

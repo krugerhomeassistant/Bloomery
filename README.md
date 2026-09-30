@@ -55,6 +55,9 @@ A daily message on your phone with milestones, heads-ups, recaps, tips or a **pi
 ### 💞 Partner sharing
 A private read-only link for your partner showing where you are in your cycle, the next 5 weeks and tips on how to support you. Symptoms, moods, sex and notes are never shared, and one tap revokes the link.
 
+### 🔐 App lock
+Optional 4-digit PIN when the app opens or comes back from the background. Five wrong tries sign you out.
+
 ### 🏠 Home Assistant & calendar
 Ready-to-paste YAML for **Home Assistant sensors** (cycle day, phase, days until period, period / fertile binary sensors) plus a private **iCalendar feed** of periods, fertile windows and ovulation for HA, Google, Apple or Outlook calendars.
 
@@ -252,7 +255,7 @@ python scripts/seed_demo.py http://localhost:8000
 - [x] Daily feed: heads-ups, milestones, recaps
 - [x] Multi-arch image on GHCR
 - [x] Notifications via ntfy / Gotify / Home Assistant / Discord
-- [ ] App lock (PIN / passkey) *(next)*
+- [x] App lock (PIN)
 - [x] Import from Flo, Clue, Apple Health and CSV
 - [x] AI-written cycle recaps
 - [ ] Pregnancy and perimenopause modes
