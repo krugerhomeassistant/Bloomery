@@ -14,7 +14,7 @@
       }
     },
     "error": {
-      "invalid_url": "That doesn't look like a Bloomery integration URL (…/api/ha/<token>).",
+      "invalid_url": "That doesn't look like a Bloomery integration URL (…/api/ha/TOKEN).",
       "invalid_token": "This link is no longer active. Create a new one in Bloomery.",
       "cannot_connect": "Can't reach Bloomery at that address from Home Assistant."
     },
