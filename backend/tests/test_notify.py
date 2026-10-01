@@ -28,14 +28,25 @@ def test_notifications_schedule_and_payloads(monkeypatch):
         c.post(f"/api/period/start?today={today}", json={"day": str(today)})
         assert c.put("/api/notifications", json={"url": "ftp://x"}).status_code == 422
         assert c.put("/api/notifications", json={"url": "https://x", "tz": "Mars/Base"}).status_code == 422
-        r = c.put("/api/notifications", json={"url": "https://ntfy.sh/bloom-test", "time": "08:00",
-                                              "tz": "Africa/Johannesburg", "kinds": ["milestone", "pill"]})
+        r = c.put(
+            "/api/notifications",
+            json={
+                "url": "https://ntfy.sh/bloom-test",
+                "time": "08:00",
+                "tz": "Africa/Johannesburg",
+                "kinds": ["milestone", "pill"],
+            },
+        )
         assert r.status_code == 200 and "last" not in r.json()
 
         # ntfy gets JSON publish to the root with topic
         assert c.post(f"/api/notifications/test?today={today}", json=r.json()).json()["ok"]
         url, body = sent[-1]
-        assert url.rstrip("/") == "https://ntfy.sh" and body["topic"] == "bloom-test" and "Pill reminder" in body["message"]
+        assert (
+            url.rstrip("/") == "https://ntfy.sh"
+            and body["topic"] == "bloom-test"
+            and "Pill reminder" in body["message"]
+        )
         assert "Your period started" in body["message"]
 
     # 07:59 local (05:59 UTC) → nothing; 08:00 → one send; same day again → nothing
@@ -50,8 +61,16 @@ def test_notifications_schedule_and_payloads(monkeypatch):
 def test_payload_shapes(monkeypatch):
     sent = []
     real = httpx.AsyncClient
-    monkeypatch.setattr(httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(
-        lambda r: sent.append((str(r.url), json.loads(r.content))) or httpx.Response(204)), **kw))
+    monkeypatch.setattr(
+        httpx,
+        "AsyncClient",
+        lambda **kw: real(
+            transport=httpx.MockTransport(
+                lambda r: sent.append((str(r.url), json.loads(r.content))) or httpx.Response(204)
+            ),
+            **kw,
+        ),
+    )
     asyncio.run(notify.send("https://discord.com/api/webhooks/1/x", "T", "M"))
     asyncio.run(notify.send("http://gotify.lan/message?token=abc", "T", "M"))
     assert sent[0][1] == {"content": "**T**\nM"}

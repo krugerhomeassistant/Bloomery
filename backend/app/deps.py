@@ -54,8 +54,14 @@ def build_engine(db: Session, user: User, today: date) -> Engine:
     st = life_stage(db, user.id)
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id)).all()
     return Engine(
-        Profile(user.cycle_length, user.period_length, user.luteal_length, user.goal,
-                st["mode"], date.fromisoformat(st["lmp"]) if st.get("lmp") else None),
+        Profile(
+            user.cycle_length,
+            user.period_length,
+            user.luteal_length,
+            user.goal,
+            st["mode"],
+            date.fromisoformat(st["lmp"]) if st.get("lmp") else None,
+        ),
         today,
         [l.day for l in logs if l.flow in BLEEDING],
         {l.day: l.temperature for l in logs if l.temperature},

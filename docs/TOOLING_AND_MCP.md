@@ -16,6 +16,11 @@
 | Playwright (Chromium) | visual QA screenshots at 390×844 (script pattern in LESSONS #4 / ACTIVE_CONTEXT) |
 | `pytest-homeassistant-custom-component` | HA test harness for `tests_ha/` (Python 3.13 venv) | real HA core in tests |
 | hassfest (GH action) | validates the HA integration manifest/translations in CI | official HA validator |
+| ruff | lint + format for all Python (`pyproject.toml`; E501 left to formatter) | one fast tool, CI `lint` job |
+| mypy --strict | integration typing (Platinum rule) | `pyproject.toml [tool.mypy]` |
+| hacs/action | HACS repo validation (`validate.yml`, daily) | required for HACS default store |
+| Dependabot | weekly pip / npm / docker / actions updates, grouped | `.github/dependabot.yml` |
+| `scripts/bump.py` | sets version in all 4 places + cuts changelog section | single release step |
 | `scripts/seed_demo.py` | demo data (7 cycles, symptoms, BBT) |
 | fake LLM | tiny `http.server` returning `/chat/completions` JSON to test AI path without a model |
 

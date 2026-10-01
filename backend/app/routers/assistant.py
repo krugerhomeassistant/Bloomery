@@ -2,8 +2,8 @@ from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 from sqlmodel import Session, delete, func, select
 
 from .. import ai
@@ -35,8 +35,12 @@ class ConfigIn(BaseModel):
 
 def _public(cfg: dict) -> dict:
     k = cfg.pop("api_key")
-    return {**cfg, "has_key": bool(k), "key_hint": k[-4:] if len(k) > 8 else "",
-            "providers": {p: {"base_url": b, "model": m} for p, (b, m) in ai.PROVIDERS.items()}}
+    return {
+        **cfg,
+        "has_key": bool(k),
+        "key_hint": k[-4:] if len(k) > 8 else "",
+        "providers": {p: {"base_url": b, "model": m} for p, (b, m) in ai.PROVIDERS.items()},
+    }
 
 
 @router.get("/config")
@@ -57,8 +61,12 @@ async def test_config(body: ConfigIn, user: UserDep, db: SessionDep):
     """Try unsaved settings (falls back to the stored key when api_key is omitted)."""
     require_admin(user, db)
     try:
-        reply = await ai.complete("Reply with exactly: OK", [{"role": "user", "content": "ping"}],
-                                  max_tokens=20, cfg=ai.config(body.model_dump()))
+        reply = await ai.complete(
+            "Reply with exactly: OK",
+            [{"role": "user", "content": "ping"}],
+            max_tokens=20,
+            cfg=ai.config(body.model_dump()),
+        )
         return {"ok": True, "reply": reply[:200]}
     except ai.AIError as e:
         return {"ok": False, "error": str(e)}
@@ -79,7 +87,9 @@ async def daily(user: UserDep, db: SessionDep, today: TodayDep, refresh: bool = 
     try:
         text = await ai.complete(
             ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user),
-            [{"role": "user", "content": ai.daily_prompt(today)}], max_tokens=400)
+            [{"role": "user", "content": ai.daily_prompt(today)}],
+            max_tokens=400,
+        )
     except ai.AIError as e:
         return {"source": "rules", "content": ai.fallback_insight(eng), "error": str(e)}
     if cached:
@@ -108,8 +118,11 @@ async def recap(start: date, user: UserDep, db: SessionDep, today: TodayDep, ref
     if cached and done and not refresh:
         return {**base, "source": "ai", "content": cached.value, "cached": True}
     try:
-        text = await ai.complete(ai.SYSTEM + "\n\nCYCLE DATA (JSON):\n" + ai.recap_context(eng, logs, seg),
-                                 [{"role": "user", "content": ai.RECAP_PROMPT}], max_tokens=450)
+        text = await ai.complete(
+            ai.SYSTEM + "\n\nCYCLE DATA (JSON):\n" + ai.recap_context(eng, logs, seg),
+            [{"role": "user", "content": ai.RECAP_PROMPT}],
+            max_tokens=450,
+        )
     except ai.AIError as e:
         return {**base, "source": "rules", "content": cycle_summary(eng, logs, seg), "error": str(e)}
     if done:
@@ -133,12 +146,14 @@ async def chat(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
     if not ai.enabled():
         raise HTTPException(503, "AI is disabled on this server. Set BLOOMERY_AI_PROVIDER to enable it.")
     eng = build_engine(db, user, today)
-    prev = db.exec(select(ChatMessage).where(ChatMessage.user_id == user.id)
-                   .order_by(ChatMessage.id.desc()).limit(12)).all()[::-1]
+    prev = db.exec(
+        select(ChatMessage).where(ChatMessage.user_id == user.id).order_by(ChatMessage.id.desc()).limit(12)
+    ).all()[::-1]
     msgs = [{"role": m.role, "content": m.content} for m in prev] + [{"role": "user", "content": body.message}]
     try:
         reply = await ai.complete(
-            ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user), msgs)
+            ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user), msgs
+        )
     except ai.AIError as e:
         raise HTTPException(502, str(e)) from e
     db.add(ChatMessage(user_id=user.id, role="user", content=body.message))
@@ -153,8 +168,9 @@ async def chat_stream(body: ChatIn, user: UserDep, db: SessionDep, today: TodayD
     if not ai.enabled():
         raise HTTPException(503, "AI is disabled on this server. Enable it in Profile → AI assistant.")
     eng = build_engine(db, user, today)
-    prev = db.exec(select(ChatMessage).where(ChatMessage.user_id == user.id)
-                   .order_by(ChatMessage.id.desc()).limit(12)).all()[::-1]
+    prev = db.exec(
+        select(ChatMessage).where(ChatMessage.user_id == user.id).order_by(ChatMessage.id.desc()).limit(12)
+    ).all()[::-1]
     msgs = [{"role": m.role, "content": m.content} for m in prev] + [{"role": "user", "content": body.message}]
     system = ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user)
     uid = user.id

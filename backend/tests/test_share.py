@@ -43,5 +43,8 @@ def test_home_assistant_feeds():
         ics = ha.get(f"/api/ha/{t}/calendar.ics")
         assert ics.headers["content-type"].startswith("text/calendar")
         assert ics.text.startswith("BEGIN:VCALENDAR\r\n") and "SUMMARY:Predicted period" in ics.text
+        assert {e["kind"] for e in j["events"]} == {"period", "fertile", "ovulation"}
+        only = ha.get(f"/api/ha/{t}/calendar.ics?type=fertile").text
+        assert "SUMMARY:Fertile window" in only and "period" not in only.lower().replace("x-wr-calname", "")
         assert ha.get("/api/ha/nope").status_code == 404
         assert ha.get(f"/api/share/{t}").status_code == 404  # HA token can't open partner view

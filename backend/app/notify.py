@@ -1,6 +1,7 @@
 """Daily notifications via ntfy / Gotify / Home Assistant / Discord / any JSON webhook.
 Works over plain HTTP LAN installs (Web Push would need HTTPS). Settings live in the Setting table
 under key "notify:<user_id>" as JSON, so no schema migration is needed."""
+
 from __future__ import annotations
 
 import asyncio
@@ -42,8 +43,10 @@ async def send(url: str, title: str, message: str) -> None:
     u = urlsplit(url)
     async with httpx.AsyncClient(timeout=15) as c:
         if "ntfy" in u.netloc:  # JSON publish keeps emoji/unicode safe (headers can't carry them)
-            r = await c.post(f"{u.scheme}://{u.netloc}", json={
-                "topic": u.path.strip("/"), "title": title, "message": message, "tags": ["cherry_blossom"]})
+            r = await c.post(
+                f"{u.scheme}://{u.netloc}",
+                json={"topic": u.path.strip("/"), "title": title, "message": message, "tags": ["cherry_blossom"]},
+            )
         elif "discord" in u.netloc:
             r = await c.post(url, json={"content": f"**{title}**\n{message}"})
         else:  # Gotify (…/message?token=…), Home Assistant webhook, generic
@@ -86,7 +89,7 @@ async def tick(now_utc: datetime | None = None) -> int:
                 try:
                     await send(cfg["url"], *msg)
                     sent += 1
-                except Exception as e:  # noqa: BLE001 - log and move on to the next user
+                except Exception as e:
                     log.warning("notification to user %s failed: %s", row.key, e)
     return sent
 
@@ -95,6 +98,6 @@ async def scheduler() -> None:
     while True:
         try:
             await tick()
-        except Exception:  # noqa: BLE001
+        except Exception:
             log.exception("notification tick failed")
         await asyncio.sleep(60)

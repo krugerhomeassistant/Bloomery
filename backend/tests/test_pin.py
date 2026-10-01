@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
-
-from app.main import app
-from app.routers import auth
-from app.db import get_engine
-from app.models import Setting
 from sqlmodel import Session, select
+
+from app.db import get_engine
+from app.main import app
+from app.models import Setting
+from app.routers import auth
 
 
 def test_pin_lock_and_account_cleanup(monkeypatch):

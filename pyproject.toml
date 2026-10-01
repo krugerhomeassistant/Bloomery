@@ -1,0 +1,21 @@
+# Tooling config only (the backend is not packaged). Versions live in backend/app/__init__.py,
+# custom_components/bloomery/manifest.json and frontend/package.json; use scripts/bump.py.
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["frontend", "scripts/*.cjs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+ignore = ["E501", "E731", "E741", "RUF001", "RUF003", "B008", "SIM108"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "custom_components"]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true

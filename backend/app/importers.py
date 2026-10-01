@@ -8,6 +8,7 @@ Supported (auto-detected):
 * CSV with a date column + a flow column (period/flow/bleeding/menstruation; words or drip's 0-3),
   or CSV with start/end columns (one row per period)
 """
+
 from __future__ import annotations
 
 import csv
@@ -16,12 +17,27 @@ import json
 from datetime import date, datetime, timedelta
 
 FLOWS = ("spotting", "light", "medium", "heavy")
-WORDS = {"spotting": "spotting", "light": "light", "medium": "medium", "normal": "medium", "heavy": "heavy",
-         "very heavy": "heavy", "0": "spotting", "1": "light", "2": "medium", "3": "heavy",
-         "yes": "medium", "true": "medium", "x": "medium"}
+WORDS = {
+    "spotting": "spotting",
+    "light": "light",
+    "medium": "medium",
+    "normal": "medium",
+    "heavy": "heavy",
+    "very heavy": "heavy",
+    "0": "spotting",
+    "1": "light",
+    "2": "medium",
+    "3": "heavy",
+    "yes": "medium",
+    "true": "medium",
+    "x": "medium",
+}
 FLOW_COLS = ("period", "flow", "bleeding", "bleeding.value", "menstruation", "menstrual flow")
 DATE_COLS = ("date", "day")
-START_COLS, END_COLS = ("start", "period start", "start date", "period_start_date"), ("end", "period end", "end date", "period_end_date")
+START_COLS, END_COLS = (
+    ("start", "period start", "start date", "period_start_date"),
+    ("end", "period end", "end date", "period_end_date"),
+)
 
 
 class ImportFormatError(ValueError):
@@ -30,11 +46,21 @@ class ImportFormatError(ValueError):
 
 # Apple HealthKit type (without HKCategoryTypeIdentifier prefix) -> Bloomery tag
 APPLE_SYMPTOMS = {
-    "AbdominalCramps": "symptoms:cramps", "BreastPain": "symptoms:tender_breasts", "Headache": "symptoms:headache",
-    "Acne": "symptoms:acne", "LowerBackPain": "symptoms:backache", "Fatigue": "symptoms:fatigue",
-    "SleepChanges": "symptoms:insomnia", "HotFlashes": "symptoms:hot_flashes", "Dizziness": "symptoms:dizziness",
-    "PelvicPain": "symptoms:abdominal_pain", "AppetiteChanges": "symptoms:cravings", "Bloating": "digestion:bloating",
-    "Nausea": "digestion:nausea", "Constipation": "digestion:constipation", "Diarrhea": "digestion:diarrhea",
+    "AbdominalCramps": "symptoms:cramps",
+    "BreastPain": "symptoms:tender_breasts",
+    "Headache": "symptoms:headache",
+    "Acne": "symptoms:acne",
+    "LowerBackPain": "symptoms:backache",
+    "Fatigue": "symptoms:fatigue",
+    "SleepChanges": "symptoms:insomnia",
+    "HotFlashes": "symptoms:hot_flashes",
+    "Dizziness": "symptoms:dizziness",
+    "PelvicPain": "symptoms:abdominal_pain",
+    "AppetiteChanges": "symptoms:cravings",
+    "Bloating": "digestion:bloating",
+    "Nausea": "digestion:nausea",
+    "Constipation": "digestion:constipation",
+    "Diarrhea": "digestion:diarrhea",
     "MoodChanges": "mood:mood_swings",
 }
 APPLE_MUCUS = {"Dry": "none", "Sticky": "sticky", "Creamy": "creamy", "Watery": "watery", "EggWhite": "egg_white"}
@@ -47,8 +73,13 @@ def _apple(records: list) -> dict[date, dict]:
         unit = rec[3] if len(rec) > 3 else ""
         e = days.setdefault(day, {})
         tag = None
-        if typ == "MenstrualFlow":  # value ends Light/Medium/Heavy/Unspecified/None (…MenstrualFlow… or …VaginalBleeding…)
-            f = next((w.lower() for w in ("Light", "Medium", "Heavy") if value.endswith(w)), "medium" if value.endswith("Unspecified") else None)
+        if (
+            typ == "MenstrualFlow"
+        ):  # value ends Light/Medium/Heavy/Unspecified/None (…MenstrualFlow… or …VaginalBleeding…)
+            f = next(
+                (w.lower() for w in ("Light", "Medium", "Heavy") if value.endswith(w)),
+                "medium" if value.endswith("Unspecified") else None,
+            )
             if f:
                 e["flow"] = f
         elif typ == "IntermenstrualBleeding":
@@ -60,9 +91,17 @@ def _apple(records: list) -> dict[date, dict]:
             m = next((v for k, v in APPLE_MUCUS.items() if value.endswith(k)), None)
             tag = m and f"discharge:{m}"
         elif typ == "OvulationTestResult":
-            tag = "ovulation_test:negative" if value.endswith("Negative") else None if value.endswith("Indeterminate") else "ovulation_test:positive"
+            tag = (
+                "ovulation_test:negative"
+                if value.endswith("Negative")
+                else None
+                if value.endswith("Indeterminate")
+                else "ovulation_test:positive"
+            )
         elif typ == "PregnancyTestResult":
-            tag = {"Positive": "pregnancy_test:positive", "Negative": "pregnancy_test:negative"}.get(next((w for w in ("Positive", "Negative") if value.endswith(w)), ""))
+            tag = {"Positive": "pregnancy_test:positive", "Negative": "pregnancy_test:negative"}.get(
+                next((w for w in ("Positive", "Negative") if value.endswith(w)), "")
+            )
         elif typ in APPLE_SYMPTOMS and not value.endswith("NotPresent"):
             tag = APPLE_SYMPTOMS[typ]
         if tag:
@@ -135,7 +174,7 @@ def _parse(content: str):
     if not rows:
         raise ImportFormatError("The file is empty or not a CSV/JSON export.")
     cols = {k.strip().lower(): k for k in rows[0] if k}
-    pick = lambda names: next((cols[n] for n in names if n in cols), None)  # noqa: E731
+    pick = lambda names: next((cols[n] for n in names if n in cols), None)
     dcol, fcol, scol, ecol = pick(DATE_COLS), pick(FLOW_COLS), pick(START_COLS), pick(END_COLS)
     days = {}
     if scol:
@@ -154,14 +193,26 @@ def _parse(content: str):
 
 
 if __name__ == "__main__":  # self-check
-    flo = json.dumps({"operationalData": {"cycles": [{"period_start_date": "2024-01-01T00:00:00", "period_end_date": "2024-01-04T00:00:00"}]}})
+    flo = json.dumps(
+        {
+            "operationalData": {
+                "cycles": [{"period_start_date": "2024-01-01T00:00:00", "period_end_date": "2024-01-04T00:00:00"}]
+            }
+        }
+    )
     assert parse(flo) == ("Flo", {date(2024, 1, d): {"flow": "medium"} for d in range(1, 5)})
-    apple = json.dumps({"format": "apple_health", "records": [
-        ["MenstrualFlow", "2024-04-01", "HKCategoryValueVaginalBleedingHeavy", ""],
-        ["AbdominalCramps", "2024-04-01", "HKCategoryValueSeverityModerate", ""],
-        ["Headache", "2024-04-01", "HKCategoryValueSeverityNotPresent", ""],
-        ["BasalBodyTemperature", "2024-04-02", "97.7", "degF"],
-        ["CervicalMucusQuality", "2024-04-12", "HKCategoryValueCervicalMucusQualityEggWhite", ""]]})
+    apple = json.dumps(
+        {
+            "format": "apple_health",
+            "records": [
+                ["MenstrualFlow", "2024-04-01", "HKCategoryValueVaginalBleedingHeavy", ""],
+                ["AbdominalCramps", "2024-04-01", "HKCategoryValueSeverityModerate", ""],
+                ["Headache", "2024-04-01", "HKCategoryValueSeverityNotPresent", ""],
+                ["BasalBodyTemperature", "2024-04-02", "97.7", "degF"],
+                ["CervicalMucusQuality", "2024-04-12", "HKCategoryValueCervicalMucusQualityEggWhite", ""],
+            ],
+        }
+    )
     src, d = parse(apple)
     assert src == "Apple Health" and d[date(2024, 4, 1)] == {"flow": "heavy", "tags": {"symptoms": {"cramps"}}}
     assert d[date(2024, 4, 2)] == {"temperature": 36.5} and d[date(2024, 4, 12)]["tags"] == {"discharge": {"egg_white"}}

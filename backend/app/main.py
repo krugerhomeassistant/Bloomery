@@ -7,12 +7,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
+from . import VERSION
 from .config import get_settings
 from .db import init_db
 from .notify import scheduler
 from .routers import assistant, auth, notifications, share, tracking
-
-from . import VERSION
 
 
 @asynccontextmanager
@@ -25,10 +24,18 @@ async def lifespan(_: FastAPI):
 
 def create_app() -> FastAPI:
     s = get_settings()
-    app = FastAPI(title="Bloomery", version=VERSION, lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json")
+    app = FastAPI(
+        title="Bloomery", version=VERSION, lifespan=lifespan, docs_url="/api/docs", openapi_url="/api/openapi.json"
+    )
     app.add_middleware(
-        SessionMiddleware, secret_key=s.resolved_secret(), session_cookie="bloomery_session",
-        max_age=s.session_max_age_days * 86400, same_site="lax", https_only=s.secure_cookies)
+        SessionMiddleware,
+        secret_key=s.resolved_secret(),
+        session_cookie="bloomery_session",
+        max_age=s.session_max_age_days * 86400,
+        same_site="lax",
+        https_only=s.secure_cookies,
+    )
+
     @app.middleware("http")
     async def security_headers(request, call_next):
         resp = await call_next(request)

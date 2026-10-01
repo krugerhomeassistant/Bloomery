@@ -45,4 +45,9 @@ Format: [Problem] → [Root cause] → [Verified solution]
 42. **pytest-homeassistant-custom-component: `Integration 'bloomery' not found`** → the plugin's own `testing_config/custom_components` package shadows the repo's namespace package → in `tests_ha/conftest.py` append the repo's `custom_components` dir to `custom_components.__path__`; also needs `asyncio_mode = auto`.
 43. **E2E "away" simulation reset by navigation** → `pagehide` marks the session active (correct for real app close) → set `lastActive` from a non-app page before reopening.
 44. **hassfest: "string should not contain HTML"** → `<token>` in translations/en.json reads as a tag → no angle brackets in HA translation strings.
+45. **HACS shows "icon not available"** → HACS frontend still loads icons from brands CDN, which no longer accepts custom integrations; HA 2026.3 local `brand/` works in HA but not HACS → upstream bug hacs/integration#5223 (PRs pending); nothing to fix repo-side.
+46. **Calendar colours** → HA colours per calendar entity, not per event (per-event colour PR unmerged) → one calendar entity per event type with `_attr_initial_color` (HA 2026.2+).
+47. **README section rewrite deleted half the file** → `str.index("## X")` matched inside `### X` → anchor on `"\n## X\n"` and assert no other `\n## ` inside the replaced span; restore with `git checkout` if it happens.
+48. **Ad-hoc script import of the integration crashed (`calendar` circular import)** → putting `custom_components/bloomery` itself on `sys.path` shadows stdlib `calendar` → import as `custom_components.bloomery.*` from the repo root.
+49. **pytest relative imports `from .conftest`** → tests dir must be a package → `tests_ha/__init__.py`.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

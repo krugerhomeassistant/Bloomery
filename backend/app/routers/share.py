@@ -1,8 +1,9 @@
 """Token-gated read-only access: partner share links and Home Assistant / calendar feeds.
 Never exposes symptoms, moods, sex or notes. Tokens live in the Setting table:
 <kind>:<token> -> user id, <kind>of:<uid> -> token (one active token per kind per user)."""
+
 import secrets
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException
@@ -24,7 +25,9 @@ PARTNER_TIPS = {
     "luteal": "PMS can show up in this phase: tiredness, bloating or a shorter fuse. Extra patience and comfort food are appreciated.",
 }
 
-PREGNANCY_TIP = "Pregnancy is hard work for the body. Help with meals, chores and appointments, and ask how she's feeling today."
+PREGNANCY_TIP = (
+    "Pregnancy is hard work for the body. Help with meals, chores and appointments, and ask how she's feeling today."
+)
 
 
 # ---------------------------------------------------------------- token helpers
@@ -84,9 +87,14 @@ def partner_view(token: str, db: SessionDep, today: TodayDep):
     phase = ov["status"].get("phase")
     return {
         "name": user.display_name or user.username,
-        "today": ov["today"], "status": ov["status"], "current_cycle": ov["current_cycle"],
-        "predicted_cycle_length": ov["predicted_cycle_length"], "next_period": ov["next_period"],
-        "phase": phase, "tip": PARTNER_TIPS.get(phase or "") or (PREGNANCY_TIP if ov["pregnancy"] else None), "days": days,
+        "today": ov["today"],
+        "status": ov["status"],
+        "current_cycle": ov["current_cycle"],
+        "predicted_cycle_length": ov["predicted_cycle_length"],
+        "next_period": ov["next_period"],
+        "phase": phase,
+        "tip": PARTNER_TIPS.get(phase or "") or (PREGNANCY_TIP if ov["pregnancy"] else None),
+        "days": days,
         "pregnancy": ov["pregnancy"],
     }
 
@@ -110,40 +118,82 @@ def ha_state(token: str, db: SessionDep, tz: str | None = None):
     nxt = eng.next_period
     preg = ov["pregnancy"] or {}
     return {
-        "user_id": user.id, "name": user.display_name or user.username, "version": VERSION,
-        "mode": ov["mode"], "pregnancy_week": preg.get("week"), "due_date": preg.get("due"),
-        "state": st.get("state"), "label": st.get("label"), "headline": st.get("headline"), "summary": st.get("sub"),
-        "cycle_day": st.get("cycle_day"), "phase": st.get("phase"), "pregnancy_chance": st.get("chance"),
-        "in_period": st.get("state") == "period", "fertile": st.get("phase") in ("fertile", "ovulation"),
-        "days_until_period": (nxt - today).days if nxt else None, "next_period": ov["next_period"],
+        "user_id": user.id,
+        "name": user.display_name or user.username,
+        "version": VERSION,
+        "mode": ov["mode"],
+        "pregnancy_week": preg.get("week"),
+        "due_date": preg.get("due"),
+        "state": st.get("state"),
+        "label": st.get("label"),
+        "headline": st.get("headline"),
+        "summary": st.get("sub"),
+        "cycle_day": st.get("cycle_day"),
+        "phase": st.get("phase"),
+        "pregnancy_chance": st.get("chance"),
+        "in_period": st.get("state") == "period",
+        "fertile": st.get("phase") in ("fertile", "ovulation"),
+        "days_until_period": (nxt - today).days if nxt else None,
+        "next_period": ov["next_period"],
         "ovulation": cur.ovulation.isoformat() if cur else None,
-        "cycle_length": ov["predicted_cycle_length"], "period_length": ov["predicted_period_length"],
+        "cycle_length": ov["predicted_cycle_length"],
+        "period_length": ov["predicted_period_length"],
         "today": today.isoformat(),
+        "events": [{**e, "start": e["start"].isoformat(), "end": e["end"].isoformat()} for e in _events(eng, today)],
     }
 
 
-def _ics_date(d: date) -> str:
-    return d.strftime("%Y%m%d")
+EVENT_KINDS = ("period", "fertile", "ovulation")
 
 
-@router.get("/api/ha/{token}/calendar.ics")
-def ha_calendar(token: str, db: SessionDep, tz: str | None = None):
-    """iCalendar feed of predicted periods, fertile windows and ovulation (HA Remote Calendar, Apple/Google…)."""
-    user = _owner(db, "ha", token)
-    today = _local_today(tz)
-    eng = build_engine(db, user, today)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    events = []
+def _events(eng, today: date) -> list[dict]:
+    """Calendar events: logged/predicted periods, fertile windows, ovulation (last 60 days + predictions). End inclusive."""
+    out = []
     for s in eng.segments:
         if s.end < today - timedelta(days=60):
             continue
-        events.append(("Predicted period" if s.predicted else "Period", s.start, s.period_end))
-        events.append(("Fertile window", s.fertile_start, s.fertile_end))
-        events.append(("Ovulation (estimated)", s.ovulation, s.ovulation))
-    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bloomery//Cycle//EN", "X-WR-CALNAME:Bloomery", "CALSCALE:GREGORIAN"]
-    for title, a, b in events:
-        lines += ["BEGIN:VEVENT", f"UID:{title.split()[0].lower()}-{a.isoformat()}@bloomery", f"DTSTAMP:{stamp}",
-                  f"DTSTART;VALUE=DATE:{_ics_date(a)}", f"DTEND;VALUE=DATE:{_ics_date(b + timedelta(days=1))}",
-                  f"SUMMARY:{title}", "TRANSP:TRANSPARENT", "END:VEVENT"]
+        out += [
+            {
+                "kind": "period",
+                "title": "Predicted period" if s.predicted else "Period",
+                "start": s.start,
+                "end": s.period_end,
+            },
+            {"kind": "fertile", "title": "Fertile window", "start": s.fertile_start, "end": s.fertile_end},
+            {"kind": "ovulation", "title": "Ovulation (estimated)", "start": s.ovulation, "end": s.ovulation},
+        ]
+    if eng.pregnancy():  # only the cycle that led to the pregnancy, no future predictions
+        lmp = date.fromisoformat(eng.pregnancy()["lmp"])
+        out = [e for e in out if e["start"] <= lmp + timedelta(days=28)]
+    return out
+
+
+@router.get("/api/ha/{token}/calendar.ics")
+def ha_calendar(token: str, db: SessionDep, tz: str | None = None, type: str | None = None):
+    """iCalendar feed (HA Remote Calendar, Google/Apple/Outlook). `type=period,fertile,ovulation` limits event kinds,
+    so each kind can be subscribed as its own calendar with its own colour."""
+    user = _owner(db, "ha", token)
+    today = _local_today(tz)
+    kinds = set((type or ",".join(EVENT_KINDS)).split(",")) & set(EVENT_KINDS)
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Bloomery//Cycle//EN",
+        "CALSCALE:GREGORIAN",
+        f"X-WR-CALNAME:Bloomery{'' if len(kinds) == 3 else ' ' + ' & '.join(sorted(kinds)).title()}",
+    ]
+    for e in _events(build_engine(db, user, today), today):
+        if e["kind"] in kinds:
+            lines += [
+                "BEGIN:VEVENT",
+                f"UID:{e['kind']}-{e['start'].isoformat()}@bloomery",
+                f"DTSTAMP:{stamp}",
+                f"DTSTART;VALUE=DATE:{e['start']:%Y%m%d}",
+                f"DTEND;VALUE=DATE:{e['end'] + timedelta(days=1):%Y%m%d}",
+                f"SUMMARY:{e['title']}",
+                "TRANSP:TRANSPARENT",
+                "END:VEVENT",
+            ]
     lines.append("END:VCALENDAR")
     return Response("\r\n".join(lines) + "\r\n", media_type="text/calendar; charset=utf-8")

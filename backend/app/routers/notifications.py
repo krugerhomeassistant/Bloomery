@@ -51,9 +51,11 @@ async def test(body: NotifyIn, user: UserDep, db: SessionDep, today: TodayDep):
     if not body.url:
         raise HTTPException(400, "Enter a notification URL first")
     msg = notify.compose(db, user, today, body.kinds) or (
-        "🌸 Bloomery is connected", "Notifications work! You'll hear from me when there's something worth knowing.")
+        "🌸 Bloomery is connected",
+        "Notifications work! You'll hear from me when there's something worth knowing.",
+    )
     try:
         await notify.send(body.url, *msg)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"[:300]}
     return {"ok": True, "title": msg[0]}

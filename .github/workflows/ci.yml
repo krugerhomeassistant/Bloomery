@@ -1,4 +1,4 @@
-name: CI & Docker image
+name: CI & release
 
 on:
   push:
@@ -9,10 +9,25 @@ on:
 
 permissions:
   contents: read
-  packages: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  test:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.13" }
+      - run: pip install ruff
+      - run: ruff check --output-format=github .
+      - run: ruff format --check .
+
+  backend:
+    name: Backend tests + frontend build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -25,20 +40,23 @@ jobs:
       - run: npm ci && npm run build
         working-directory: frontend
 
-  home-assistant:  # integration only; doesn't gate the Docker image
+  home-assistant:
+    name: Home Assistant integration (tests, coverage, strict typing)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: home-assistant/actions/hassfest@master
       - uses: actions/setup-python@v7
         with: { python-version: "3.13" }
-      - run: pip install pytest-homeassistant-custom-component
-      - run: python -m pytest -c tests_ha/pytest.ini tests_ha -q
+      - run: pip install pytest-homeassistant-custom-component mypy
+      - run: python -m pytest -c tests_ha/pytest.ini tests_ha -q --cov=custom_components.bloomery --cov-report=term-missing --cov-fail-under=95
+      - run: mypy custom_components/bloomery
 
   image:
-    needs: test
+    name: Docker image
+    needs: [lint, backend, home-assistant]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions: { contents: read, packages: write }
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-qemu-action@v4
@@ -63,3 +81,37 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  release:
+    name: GitHub release
+    needs: image
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check every version matches the tag
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          python3 - "$V" <<'PY'
+          import json, re, sys
+          v = sys.argv[1]
+          found = {
+              "backend": re.search(r'"(.+)"', open("backend/app/__init__.py").read()).group(1),
+              "integration": json.load(open("custom_components/bloomery/manifest.json"))["version"],
+              "frontend": json.load(open("frontend/package.json"))["version"],
+          }
+          bad = {k: x for k, x in found.items() if x != v}
+          sys.exit(f"Version mismatch with tag {v}: {bad}. Run scripts/bump.py {v}" if bad else 0)
+          PY
+          grep -q "^## \[$V\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$V] section"; exit 1; }
+      - name: Package integration for HACS
+        run: cd custom_components/bloomery && zip -r -X "$GITHUB_WORKSPACE/bloomery.zip" . -x '__pycache__/*'
+      - name: Release notes from CHANGELOG
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          awk -v v="$V" '$0 ~ "^## \\[" v "\\]" {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md > notes.md
+          printf '\n---\n**Docker:** `ghcr.io/%s/bloomery:%s` · **Home Assistant:** update *Bloomery* in HACS.\n' "${GITHUB_REPOSITORY_OWNER}" "$V" >> notes.md
+      - name: Create release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh release create "$GITHUB_REF_NAME" bloomery.zip --title "Bloomery $GITHUB_REF_NAME" --notes-file notes.md --verify-tag

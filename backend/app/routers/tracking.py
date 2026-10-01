@@ -6,8 +6,8 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel import delete, select
 
-from ..catalog import LABELS, VALID, catalog_json
 from .. import feed as feed_mod
+from ..catalog import LABELS, VALID, catalog_json
 from ..cycles import symptom_patterns
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, Setting, User, now
@@ -54,7 +54,9 @@ class LifeStageIn(BaseModel):
 def set_life_stage(body: LifeStageIn, user: UserDep, db: SessionDep):
     lmp = body.lmp.isoformat() if body.mode == "pregnancy" and body.lmp else None
     db.merge(Setting(key=f"mode:{user.id}", value=json.dumps({"mode": body.mode, "lmp": lmp})))
-    db.exec(delete(InsightCache).where(InsightCache.user_id == user.id))  # daily AI insight was written for the old stage
+    db.exec(
+        delete(InsightCache).where(InsightCache.user_id == user.id)
+    )  # daily AI insight was written for the old stage
     db.commit()
     return public_user(user)
 
@@ -94,8 +96,9 @@ def _is_empty(l: DayLog) -> bool:
 
 @router.get("/logs")
 def list_logs(user: UserDep, db: SessionDep, start: date, end: date):
-    rows = db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day >= start, DayLog.day <= end)
-                   .order_by(DayLog.day)).all()
+    rows = db.exec(
+        select(DayLog).where(DayLog.user_id == user.id, DayLog.day >= start, DayLog.day <= end).order_by(DayLog.day)
+    ).all()
     return [r.model_dump(exclude={"user_id", "id"}) for r in rows]
 
 
@@ -206,8 +209,10 @@ def calendar(user: UserDep, db: SessionDep, today: TodayDep, start: date, end: d
         raise HTTPException(400, "Range too large")
     eng = build_engine(db, user, today)
     days = eng.calendar(start, end)
-    logs = {l.day.isoformat(): l for l in db.exec(
-        select(DayLog).where(DayLog.user_id == user.id, DayLog.day >= start, DayLog.day <= end)).all()}
+    logs = {
+        l.day.isoformat(): l
+        for l in db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day >= start, DayLog.day <= end)).all()
+    }
     for d in days:
         l = logs.get(d["date"])
         d["flow"] = l.flow if l else None
@@ -233,10 +238,16 @@ def insights(user: UserDep, db: SessionDep, today: TodayDep):
     cur = eng.current
     temps = []
     if cur:
-        temps = [{"date": l.day.isoformat(), "value": l.temperature} for l in sorted(logs, key=lambda x: x.day)
-                 if l.temperature and l.day >= cur.start]
-    weights = [{"date": l.day.isoformat(), "value": l.weight} for l in sorted(logs, key=lambda x: x.day)
-               if l.weight and l.day >= today - D(days=180)]
+        temps = [
+            {"date": l.day.isoformat(), "value": l.temperature}
+            for l in sorted(logs, key=lambda x: x.day)
+            if l.temperature and l.day >= cur.start
+        ]
+    weights = [
+        {"date": l.day.isoformat(), "value": l.weight}
+        for l in sorted(logs, key=lambda x: x.day)
+        if l.weight and l.day >= today - D(days=180)
+    ]
     return {
         "stats": eng.stats(),
         "flags": eng.flags(),
@@ -252,7 +263,9 @@ def insights(user: UserDep, db: SessionDep, today: TodayDep):
 def export(user: UserDep, db: SessionDep):
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id).order_by(DayLog.day)).all()
     return {
-        "app": "bloomery", "version": 1, "exported_at": now().isoformat(),
+        "app": "bloomery",
+        "version": 1,
+        "exported_at": now().isoformat(),
         "profile": public_user(user),
         "logs": [l.model_dump(mode="json", exclude={"user_id", "id"}) for l in logs],
     }
@@ -288,6 +301,7 @@ class OtherImport(BaseModel):
 def import_other(body: OtherImport, user: UserDep, db: SessionDep):
     """Period history from Flo / Clue / CSV. Never overwrites days you already logged as bleeding."""
     from ..importers import ImportFormatError, parse
+
     try:
         source, days = parse(body.content)
     except ImportFormatError as e:
@@ -310,8 +324,13 @@ def import_other(body: OtherImport, user: UserDep, db: SessionDep):
                 l.temperature = e["temperature"]
             db.add(l)
     db.commit()
-    return {"source": source, "days": len(days), "period_days": periods,
-            "first": min(days).isoformat(), "last": max(days).isoformat()}
+    return {
+        "source": source,
+        "days": len(days),
+        "period_days": periods,
+        "first": min(days).isoformat(),
+        "last": max(days).isoformat(),
+    }
 
 
 @router.delete("/account")
@@ -319,8 +338,13 @@ def delete_account(request: Request, user: UserDep, db: SessionDep):
     for m in (DayLog, ChatMessage, InsightCache):
         db.exec(delete(m).where(m.user_id == user.id))
     u = str(user.id)  # per-user settings: <kind>:<uid>, recap:<uid>:<start>, and token rows whose value is the uid
-    db.exec(delete(Setting).where(Setting.key.like(f"%:{u}") | Setting.key.like(f"%:{u}:%")
-                                  | (Setting.key.like("share:%") | Setting.key.like("ha:%")) & (Setting.value == u)))
+    db.exec(
+        delete(Setting).where(
+            Setting.key.like(f"%:{u}")
+            | Setting.key.like(f"%:{u}:%")
+            | (Setting.key.like("share:%") | Setting.key.like("ha:%")) & (Setting.value == u)
+        )
+    )
     db.delete(user)
     db.commit()
     request.session.clear()

@@ -62,3 +62,11 @@ Migrations: none yet (`create_all` only). Adding columns requires Alembic or man
 ## Frontend (`frontend/src/`)
 `api.ts` (fetch wrapper + types) · `state.tsx` (AppProvider: user, catalog, data `version` bump, log-sheet date, theme; `useFetch`) · `App.tsx` (auth gate → onboarding → router + bottom nav + global `LogDay` sheet) · `components/ui.tsx` (Sheet, Chip, Stepper, LineChart, Logo) · `components/CycleRing.tsx` · `pages/*`.
 Design tokens in `index.css` `@theme` (pink-500 #FF4A7D primary, teal-400/500 fertile, canvas/card/ink/muted/line, `.dark` overrides). Bottom nav height is `--nav-h` (includes iOS safe area) — anything fixed/sticky above the nav must use `var(--nav-h)`, never pixel constants. Custom classes via Tailwind v4 `@utility` (card, btn, btn-primary, btn-ghost, input).
+
+## Home Assistant integration (`custom_components/bloomery`)
+- `api.py` BloomeryClient (HA aiohttp session, `GET /api/ha/<token>?tz=`) → `coordinator.py` (15 min + 00:00:10) → `entity.py` base (service device, unique id `<host>_<user_id>_<key>`) → platforms `sensor` (12), `binary_sensor` (2), `calendar` (3, from feed `events`).
+- Errors: 404 → ConfigEntryAuthFailed → reauth flow; network → UpdateFailed (translated). `diagnostics.py` redacts URL/name.
+- Release artefact: `bloomery.zip` (contents of the integration folder) attached to each GitHub release; `hacs.json` `zip_release`.
+
+## Versioning
+Single version across `backend/app/__init__.py` (VERSION, served at /api/health), integration `manifest.json`, `frontend/package*.json`; set by `scripts/bump.py`, enforced by the release job.

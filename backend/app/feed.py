@@ -1,5 +1,6 @@
 """Rule-based daily feed: symptom forecasts, milestones, cycle recap, phase tips, after-log notes.
 Pure functions over Engine + logs; no AI needed (AI daily insight gets the forecasts as context)."""
+
 from __future__ import annotations
 
 from collections import Counter, defaultdict
@@ -11,8 +12,13 @@ from .cycles import Engine, Segment
 FORECAST_CATS = {"symptoms", "mood", "digestion", "discharge"}
 SKIP = {"none", "fine"}
 EMOJI = {f"{c['id']}:{i}": e for c in CATALOG for i, _, e in c["items"]}
-PHASE_WORDS = {"menstrual": "during your period", "follicular": "after your period",
-               "fertile": "around ovulation", "ovulation": "around ovulation", "luteal": "before your period"}
+PHASE_WORDS = {
+    "menstrual": "during your period",
+    "follicular": "after your period",
+    "fertile": "around ovulation",
+    "ovulation": "around ovulation",
+    "luteal": "before your period",
+}
 
 PHASE_TIPS = {
     "menstrual": [
@@ -99,9 +105,18 @@ def forecasts(eng: Engine, logs: list, today: date, limit: int = 3) -> list[dict
             continue
         label = LABELS.get(tag, tag).lower()
         verb = "feel" if tag.startswith("mood:") else "notice"
-        out.append({**_card("forecast", EMOJI.get(tag, "🔮"), f"Heads-up: {LABELS.get(tag, tag)}",
-                            f"You might {verb} {label} today — you logged it around this point in {n} of your last {len(cycles)} cycles."
-                            + (f" {SYMPTOM_TIPS[tag]}" if tag in SYMPTOM_TIPS else "")), "tag": tag})
+        out.append(
+            {
+                **_card(
+                    "forecast",
+                    EMOJI.get(tag, "🔮"),
+                    f"Heads-up: {LABELS.get(tag, tag)}",
+                    f"You might {verb} {label} today — you logged it around this point in {n} of your last {len(cycles)} cycles."
+                    + (f" {SYMPTOM_TIPS[tag]}" if tag in SYMPTOM_TIPS else ""),
+                ),
+                "tag": tag,
+            }
+        )
         if len(out) == limit:
             break
     return out
@@ -114,20 +129,46 @@ def milestones(eng: Engine, today: date, goal: str) -> list[dict]:
     st = eng.status()
     out = []
     if today == cur.start:
-        out.append(_card("milestone", "🌺", "Your period started", "Day 1 of a new cycle. Rest if you need it and keep a heat pad handy."))
+        out.append(
+            _card(
+                "milestone",
+                "🌺",
+                "Your period started",
+                "Day 1 of a new cycle. Rest if you need it and keep a heat pad handy.",
+            )
+        )
     if today == cur.fertile_start:
         text = "Your fertile window opens today and lasts about 6 days." + (
-            " These are your best days to try." if goal == "conceive" else " Chance of pregnancy is higher until it closes.")
+            " These are your best days to try."
+            if goal == "conceive"
+            else " Chance of pregnancy is higher until it closes."
+        )
         out.append(_card("milestone", "🌼", "Fertile window starts", text))
     if today == cur.ovulation:
-        out.append(_card("milestone", "✨", "Estimated ovulation day",
-                         "Your egg is likely released today" + (" (confirmed by your temperature)." if cur.ovulation_confirmed else ".")))
+        out.append(
+            _card(
+                "milestone",
+                "✨",
+                "Estimated ovulation day",
+                "Your egg is likely released today"
+                + (" (confirmed by your temperature)." if cur.ovulation_confirmed else "."),
+            )
+        )
     if st.get("state") == "cycle" and nxt and 1 <= (nxt - today).days <= 3:
         n = (nxt - today).days
-        out.append(_card("milestone", "👜", f"Period in {n} day{'s' if n > 1 else ''}", "Good time to pack pads, tampons or your cup."))
+        out.append(
+            _card(
+                "milestone",
+                "👜",
+                f"Period in {n} day{'s' if n > 1 else ''}",
+                "Good time to pack pads, tampons or your cup.",
+            )
+        )
     if st.get("state") == "late":
-        text = ("Stress, travel, illness or sleep changes can delay a period. "
-                "If pregnancy is possible, a home test is reliable from the day your period was due.")
+        text = (
+            "Stress, travel, illness or sleep changes can delay a period. "
+            "If pregnancy is possible, a home test is reliable from the day your period was due."
+        )
         out.append(_card("milestone", "⏳", f"Period late by {st['headline']}", text))
     return out
 
@@ -150,7 +191,11 @@ def cycle_summary(eng: Engine, logs: list, seg: Segment) -> str:
     text = f"It lasted {seg.length} days"
     if avg:
         diff = seg.length - avg
-        text += " — right on your average." if abs(diff) < 1.5 else f" — {abs(diff):.0f} days {'longer' if diff > 0 else 'shorter'} than your average of {avg:g}."
+        text += (
+            " — right on your average."
+            if abs(diff) < 1.5
+            else f" — {abs(diff):.0f} days {'longer' if diff > 0 else 'shorter'} than your average of {avg:g}."
+        )
     text += f" Your period was {(seg.period_end - seg.start).days + 1} days."
     if top:
         text += " Most logged: " + ", ".join(LABELS.get(t, t).lower() for t, _ in top) + "."
@@ -166,18 +211,24 @@ def tip(eng: Engine, today: date) -> dict | None:
 
 
 TRIMESTER_TIPS = {
-    1: ["Take a daily prenatal vitamin with folic acid, ideally 400 mcg.",
+    1: [
+        "Take a daily prenatal vitamin with folic acid, ideally 400 mcg.",
         "Nausea? Small, frequent snacks and ginger often help. Seek care if you can't keep fluids down.",
         "Tiredness is normal this trimester. Rest when you can.",
-        "Book your first prenatal appointment if you haven't yet."],
-    2: ["Many people feel more energetic now. A good time for gentle exercise like walking or swimming.",
+        "Book your first prenatal appointment if you haven't yet.",
+    ],
+    2: [
+        "Many people feel more energetic now. A good time for gentle exercise like walking or swimming.",
         "Sleeping on your side gets more comfortable as your bump grows; a pillow between the knees helps.",
         "You may start feeling movements between weeks 16 and 22.",
-        "Ask about the anatomy scan, usually around weeks 18 to 22."],
-    3: ["Get to know your baby's movement pattern and call your provider if it changes or slows.",
+        "Ask about the anatomy scan, usually around weeks 18 to 22.",
+    ],
+    3: [
+        "Get to know your baby's movement pattern and call your provider if it changes or slows.",
         "Swelling, heartburn and poor sleep are common now. Smaller meals and elevating your feet help.",
         "Pack a hospital bag and plan your route by week 36.",
-        "Severe headache, vision changes or sudden swelling need a call to your provider right away."],
+        "Severe headache, vision changes or sudden swelling need a call to your provider right away.",
+    ],
 }
 
 
@@ -186,7 +237,14 @@ def pregnancy_cards(p: dict, today: date) -> list[dict]:
     if p["size"]:
         cards.append(_card("milestone", "👶", f"Week {w}", f"Your baby is about the size of a {p['size']}."))
     due = date.fromisoformat(p["due"])
-    cards.append(_card("milestone", "📅", f"{p['days_left']} days to go", f"Due {due:%b} {due.day}, {due.year} · trimester {p['trimester']}. Only about 1 in 20 babies arrive on the due date itself."))
+    cards.append(
+        _card(
+            "milestone",
+            "📅",
+            f"{p['days_left']} days to go",
+            f"Due {due:%b} {due.day}, {due.year} · trimester {p['trimester']}. Only about 1 in 20 babies arrive on the due date itself.",
+        )
+    )
     tips = TRIMESTER_TIPS[p["trimester"]]
     cards.append(_card("tip", "💡", f"Trimester {p['trimester']} tip", tips[today.toordinal() % len(tips)]))
     return cards
@@ -195,7 +253,11 @@ def pregnancy_cards(p: dict, today: date) -> list[dict]:
 def feed(eng: Engine, logs: list, today: date, goal: str) -> list[dict]:
     if p := eng.pregnancy():
         return pregnancy_cards(p, today)
-    return [c for c in [*milestones(eng, today, goal), recap(eng, logs, today), *forecasts(eng, logs, today), tip(eng, today)] if c]
+    return [
+        c
+        for c in [*milestones(eng, today, goal), recap(eng, logs, today), *forecasts(eng, logs, today), tip(eng, today)]
+        if c
+    ]
 
 
 def log_note(eng: Engine, patterns: list[dict], day: date, tags: dict) -> str | None:

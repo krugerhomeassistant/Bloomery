@@ -1,22 +1,75 @@
 {
   "entity": {
     "sensor": {
-      "status": {"default": "mdi:flower"},
-      "cycle_day": {"default": "mdi:counter"},
-      "phase": {"default": "mdi:moon-waning-crescent", "state": {"menstrual": "mdi:water", "fertile": "mdi:flower-pollen", "ovulation": "mdi:star-four-points"}},
-      "days_until_period": {"default": "mdi:calendar-heart"},
-      "next_period": {"default": "mdi:calendar-start"},
-      "ovulation": {"default": "mdi:star-four-points"},
-      "pregnancy_chance": {"default": "mdi:gauge"},
-      "life_stage": {"default": "mdi:account-heart", "state": {"pregnancy": "mdi:human-pregnant"}},
-      "pregnancy_week": {"default": "mdi:human-pregnant"},
-      "due_date": {"default": "mdi:baby-carriage"},
-      "cycle_length": {"default": "mdi:sync"},
-      "period_length": {"default": "mdi:water-outline"}
+      "status": {
+        "default": "mdi:flower"
+      },
+      "cycle_day": {
+        "default": "mdi:counter"
+      },
+      "phase": {
+        "default": "mdi:moon-waning-crescent",
+        "state": {
+          "menstrual": "mdi:water",
+          "fertile": "mdi:flower-pollen",
+          "ovulation": "mdi:star-four-points"
+        }
+      },
+      "days_until_period": {
+        "default": "mdi:calendar-heart"
+      },
+      "next_period": {
+        "default": "mdi:calendar-start"
+      },
+      "ovulation": {
+        "default": "mdi:star-four-points"
+      },
+      "pregnancy_chance": {
+        "default": "mdi:gauge"
+      },
+      "life_stage": {
+        "default": "mdi:account-heart",
+        "state": {
+          "pregnancy": "mdi:human-pregnant"
+        }
+      },
+      "pregnancy_week": {
+        "default": "mdi:human-pregnant"
+      },
+      "due_date": {
+        "default": "mdi:baby-carriage"
+      },
+      "cycle_length": {
+        "default": "mdi:sync"
+      },
+      "period_length": {
+        "default": "mdi:water-outline"
+      }
     },
     "binary_sensor": {
-      "period": {"default": "mdi:water-off", "state": {"on": "mdi:water"}},
-      "fertile_window": {"default": "mdi:flower-outline", "state": {"on": "mdi:flower-pollen"}}
+      "period": {
+        "default": "mdi:water-off",
+        "state": {
+          "on": "mdi:water"
+        }
+      },
+      "fertile_window": {
+        "default": "mdi:flower-outline",
+        "state": {
+          "on": "mdi:flower-pollen"
+        }
+      }
+    },
+    "calendar": {
+      "periods": {
+        "default": "mdi:water"
+      },
+      "fertile_windows": {
+        "default": "mdi:flower-pollen"
+      },
+      "ovulation_days": {
+        "default": "mdi:star-four-points"
+      }
     }
   }
 }

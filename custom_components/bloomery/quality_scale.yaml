@@ -1,0 +1,82 @@
+# Home Assistant Integration Quality Scale self-assessment
+# https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/
+rules:
+  # Bronze
+  action-setup:
+    status: exempt
+    comment: No service actions.
+  appropriate-polling: done  # 15 min + a refresh just after local midnight
+  brands: done  # brand/icon.png (HA 2026.3+ local brand images)
+  common-modules: done  # api.py, coordinator.py, entity.py
+  config-flow-test-coverage: done
+  config-flow: done
+  dependency-transparency: done  # no external requirements, uses HA's aiohttp session
+  docs-actions:
+    status: exempt
+    comment: No service actions.
+  docs-high-level-description: done
+  docs-installation-instructions: done
+  docs-removal-instructions: done
+  entity-event-setup:
+    status: exempt
+    comment: Entities only use the coordinator.
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure: done
+  test-before-setup: done
+  unique-config-entry: done  # unique id = server host + Bloomery user id
+
+  # Silver
+  action-exceptions:
+    status: exempt
+    comment: No service actions.
+  config-entry-unloading: done
+  docs-configuration-parameters:
+    status: exempt
+    comment: No options flow.
+  docs-installation-parameters: done
+  entity-unavailable: done
+  integration-owner: done
+  log-when-unavailable: done  # handled by the coordinator
+  parallel-updates: done
+  reauthentication-flow: done  # revoked/regenerated feed link
+  test-coverage: done  # enforced >= 95% in CI
+
+  # Gold
+  devices: done
+  diagnostics: done
+  discovery:
+    status: exempt
+    comment: Bloomery is a self-hosted web app reached by URL; there is nothing to discover on the network.
+  discovery-update-info:
+    status: exempt
+    comment: No discovery.
+  docs-data-update: done
+  docs-examples: done
+  docs-known-limitations: done
+  docs-supported-devices: done
+  docs-supported-functions: done
+  docs-troubleshooting: done
+  docs-use-cases: done
+  dynamic-devices:
+    status: exempt
+    comment: One service device per config entry.
+  entity-category: done
+  entity-device-class: done
+  entity-disabled-by-default: done  # pregnancy week / due date
+  entity-translations: done
+  exception-translations: done
+  icon-translations: done
+  reconfiguration-flow: done
+  repair-issues:
+    status: exempt
+    comment: The only user-fixable problem (revoked link) is handled by the reauthentication flow.
+  stale-devices:
+    status: exempt
+    comment: One service device per config entry, removed with the entry.
+
+  # Platinum
+  async-dependency: done
+  inject-websession: done
+  strict-typing: done  # mypy --strict in CI

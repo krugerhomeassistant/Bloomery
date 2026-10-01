@@ -4,6 +4,7 @@ Providers: anthropic (/v1/messages) · openai / openrouter / ollama / custom (Op
 Config: env BLOOMERY_AI_* < in-app settings (Setting table, admin-only) < per-call override (connection test).
 Only aggregated stats + recent logs are sent; nothing leaves the box when provider=none or ollama.
 """
+
 from __future__ import annotations
 
 import json
@@ -17,8 +18,8 @@ from sqlmodel import Session, select
 from .catalog import LABELS
 from .config import get_settings
 from .cycles import Engine
-from .feed import forecasts
 from .db import get_engine
+from .feed import forecasts
 from .models import Setting
 
 SYSTEM = """You are Bloomery, a warm, knowledgeable menstrual-health companion inside a private, self-hosted period tracker.
@@ -51,7 +52,9 @@ def stored() -> dict[str, str]:
     """In-app settings (DB), empty dict if the table isn't there yet."""
     try:
         with Session(get_engine()) as db:
-            return {r.key.removeprefix("ai_"): r.value for r in db.exec(select(Setting)).all() if r.key.startswith("ai_")}
+            return {
+                r.key.removeprefix("ai_"): r.value for r in db.exec(select(Setting)).all() if r.key.startswith("ai_")
+            }
     except OperationalError:
         return {}
 
@@ -90,8 +93,12 @@ def enabled(cfg: dict | None = None) -> bool:
 def info() -> dict:
     cfg = config()
     on = enabled(cfg)
-    return {"enabled": on, "provider": cfg["provider"], "model": cfg["model"] if on else None,
-            "local": cfg["provider"] == "ollama"}
+    return {
+        "enabled": on,
+        "provider": cfg["provider"],
+        "model": cfg["model"] if on else None,
+        "local": cfg["provider"] == "ollama",
+    }
 
 
 _THINK = re.compile(r"<think>.*?</think>", re.S)
@@ -105,9 +112,11 @@ def _request(cfg: dict, system: str, messages: list[dict], max_tokens: int, stre
     if not base or not model:
         raise AIError("Base URL and model are required for this provider.")
     if provider == "anthropic":
-        return (f"{base}/v1/messages",
-                {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                {"model": model, "max_tokens": max_tokens, "system": system, "messages": messages, "stream": stream})
+        return (
+            f"{base}/v1/messages",
+            {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+            {"model": model, "max_tokens": max_tokens, "system": system, "messages": messages, "stream": stream},
+        )
     body = {"model": model, "messages": [{"role": "system", "content": system}, *messages], "stream": stream}
     if provider == "openai":  # GPT-5 family: no temperature; reasoning tokens count toward the cap
         body["max_completion_tokens"] = max_tokens * 4
@@ -148,7 +157,10 @@ async def stream(system: str, messages: list[dict], max_tokens: int = 700, cfg: 
     url, headers, body = _request(cfg, system, messages, max_tokens, stream=True)
     anthropic = cfg["provider"] == "anthropic"
     try:
-        async with httpx.AsyncClient(timeout=get_settings().ai_timeout) as c, c.stream("POST", url, json=body, headers=headers) as r:
+        async with (
+            httpx.AsyncClient(timeout=get_settings().ai_timeout) as c,
+            c.stream("POST", url, json=body, headers=headers) as r,
+        ):
             if r.status_code >= 400:
                 await r.aread()
                 raise _status_error(r)
@@ -231,7 +243,9 @@ def fallback_insight(engine: Engine) -> str:
     parts = [PHASE_TIPS.get(phase or "", "")]
     stats = engine.stats()
     if stats["avg_cycle_length"]:
-        parts.append(f"Your average cycle is {stats['avg_cycle_length']} days across {stats['cycles_tracked']} tracked cycles.")
+        parts.append(
+            f"Your average cycle is {stats['avg_cycle_length']} days across {stats['cycles_tracked']} tracked cycles."
+        )
     return " ".join(p for p in parts if p)
 
 
@@ -253,25 +267,40 @@ def recap_context(engine: Engine, logs: list, seg) -> str:
             days.append(row)
     st = engine.stats()
     done = seg.end < engine.today
-    return json.dumps({
-        "cycle": {"start": seg.start.isoformat(), "length_days": seg.length if done else None,
-                  "days_so_far": None if done else (engine.today - seg.start).days + 1,
-                  "period_days": (seg.period_end - seg.start).days + 1, "ovulation": seg.ovulation.isoformat(),
-                  "ovulation_confirmed_by_bbt": seg.ovulation_confirmed},
-        "averages": {"cycle": st["avg_cycle_length"], "period": st["avg_period_length"], "regularity": st["regularity"]},
-        "recent_cycle_lengths": [h["length"] for h in st["history"] if h["length"]][:6],
-        "logs": days,
-    }, separators=(",", ":"))
+    return json.dumps(
+        {
+            "cycle": {
+                "start": seg.start.isoformat(),
+                "length_days": seg.length if done else None,
+                "days_so_far": None if done else (engine.today - seg.start).days + 1,
+                "period_days": (seg.period_end - seg.start).days + 1,
+                "ovulation": seg.ovulation.isoformat(),
+                "ovulation_confirmed_by_bbt": seg.ovulation_confirmed,
+            },
+            "averages": {
+                "cycle": st["avg_cycle_length"],
+                "period": st["avg_period_length"],
+                "regularity": st["regularity"],
+            },
+            "recent_cycle_lengths": [h["length"] for h in st["history"] if h["length"]][:6],
+            "logs": days,
+        },
+        separators=(",", ":"),
+    )
 
 
-RECAP_PROMPT = ("Write a recap of this cycle for me. Use 3-5 short bullet points (start each with •): how its length compares "
-                "to my average, my period, which symptoms/moods showed up in which phase, and anything notable (e.g. a "
-                "temperature shift or unusual pattern). Only mention things in the data. Then one final line starting "
-                "'For next cycle:' with one practical, specific tip. Max 130 words. No greeting.")
+RECAP_PROMPT = (
+    "Write a recap of this cycle for me. Use 3-5 short bullet points (start each with •): how its length compares "
+    "to my average, my period, which symptoms/moods showed up in which phase, and anything notable (e.g. a "
+    "temperature shift or unusual pattern). Only mention things in the data. Then one final line starting "
+    "'For next cycle:' with one practical, specific tip. Max 130 words. No greeting."
+)
 
 
 def daily_prompt(day: date) -> str:
-    return (f"Write today's personal insight for {day.isoformat()} in 2-4 short sentences (max 90 words). "
-            "Explain what's likely happening in my body in this phase (or pregnancy week / life stage), connect it to anything notable in my recent logs "
-            "(patterns, symptoms, moods, temperature, and heads_up_today forecasts), and give one practical, specific tip. No greeting, no disclaimer "
-            "unless a health flag warrants it.")
+    return (
+        f"Write today's personal insight for {day.isoformat()} in 2-4 short sentences (max 90 words). "
+        "Explain what's likely happening in my body in this phase (or pregnancy week / life stage), connect it to anything notable in my recent logs "
+        "(patterns, symptoms, moods, temperature, and heads_up_today forecasts), and give one practical, specific tip. No greeting, no disclaimer "
+        "unless a health flag warrants it."
+    )

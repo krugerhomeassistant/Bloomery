@@ -115,6 +115,16 @@
 - [x] `tests_ha/` with pytest-homeassistant-custom-component (HA 2026.2): flow errors, entities, abort, reconfigure; CI job with hassfest
 - [x] App lock: only after N min away (per-device choice 1 min–4 h, default 15, `lastActive` in localStorage, survives app close); 10 wrong PINs before sign-out
 
+## Phase 15 — Calendars, Platinum integration, releases (v1.2.0)
+- [x] Feed JSON `events` + ICS `?type=period|fertile|ovulation`
+- [x] Integration: Periods / Fertile windows / Ovulation calendars with `initial_color`; modules api/coordinator/entity; reauth; diagnostics (redacted); exception translations; PARALLEL_UPDATES; pregnancy entities disabled by default; `quality_scale.yaml` (platinum, self-assessed)
+- [x] `tests_ha`: 13 tests, 100% coverage; mypy --strict clean
+- [x] `docs/home-assistant.md` (install, params, entities, data update, examples, use cases, limitations, troubleshooting, removal)
+- [x] Tooling: ruff lint+format (pyproject.toml), Dependabot, CHANGELOG (Keep a Changelog), `scripts/bump.py`, SECURITY/CONTRIBUTING, issue + PR templates, version in Profile footer
+- [x] CI: lint → backend → HA tests/coverage/mypy → image → tag-driven GitHub release (`bloomery.zip` for HACS `zip_release`); `validate.yml` = hassfest + HACS action (daily)
+- [ ] User: add GitHub repo topics (HACS check), then tag v1.2.0 release
+- [ ] Optional: submit to HACS default store (needs release + passing HACS action)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

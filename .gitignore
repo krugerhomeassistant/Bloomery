@@ -8,3 +8,7 @@ __pycache__/
 .pytest_cache/
 frontend/dev-dist/
 .sandbox-ca.crt
+.coverage
+.mypy_cache/
+.ruff_cache/
+bloomery.zip

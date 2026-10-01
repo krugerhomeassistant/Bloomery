@@ -19,6 +19,7 @@ export default function Profile() {
   const share = useFetch<{ token: string | null }>('/api/tokens/share')
   const ha = useFetch<{ token: string | null }>('/api/tokens/ha')
   const [copied, setCopied] = useState(false)
+  const health = useFetch<{ version: string }>('/api/health').data
   const ai = useFetch<{ enabled: boolean; provider: string; model: string | null; local: boolean }>('/api/ai/status').data
   const [editing, setEditing] = useState<null | 'cycle_length' | 'period_length' | 'luteal_length'>(null)
   const [val, setVal] = useState(0)
@@ -192,10 +193,14 @@ export default function Profile() {
                 <li>Settings → Devices & services → <i>Add integration</i> → <b>Bloomery</b> → paste:</li>
               </ol>
               <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{haUrl}</div>
-              <div className="font-bold">2. Calendar</div>
-              <p className="text-muted">HA → Add integration → <i>Remote Calendar</i>, or subscribe in Google, Apple or Outlook calendar:</p>
-              <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{haUrl}/calendar.ics?tz={tz}</div>
-              <p className="text-xs text-muted">Home Assistant must be able to reach this address. <b>New token</b> disables the old links (update HA via the integration's <i>Reconfigure</i>).</p>
+              <p className="text-muted">You get sensors plus <b>Periods</b>, <b>Fertile windows</b> and <b>Ovulation</b> calendars, each with its own colour. <a className="font-bold text-pink-600" href="https://github.com/krugerhomeassistant/Bloomery/blob/main/docs/home-assistant.md" target="_blank" rel="noreferrer">Full guide</a></p>
+              <div className="font-bold">2. Other calendar apps</div>
+              <p className="text-muted">Subscribe in Google, Apple or Outlook. Add one link per type if you want separate colours:</p>
+              {([['All events', ''], ['Periods', '&type=period'], ['Fertile windows', '&type=fertile'], ['Ovulation', '&type=ovulation']] as const).map(([label, q]) => (
+                <div key={label}><div className="mb-1 text-xs font-bold text-muted">{label}</div>
+                  <div className="select-all break-all rounded-2xl bg-pink-50 p-3 font-mono text-xs">{haUrl}/calendar.ics?tz={tz}{q}</div></div>
+              ))}
+              <p className="text-xs text-muted">The server must be reachable at this address from Home Assistant / your calendar app. <b>New token</b> disables the old links; Home Assistant will ask for the new one.</p>
               <div className="flex flex-wrap gap-2">
                 {window.isSecureContext && navigator.clipboard && (
                   <button className="btn-primary px-4 py-2 text-sm" onClick={() => navigator.clipboard.writeText(haUrl).then(() => setCopied(true))}>{copied ? 'Copied!' : 'Copy integration URL'}</button>
@@ -221,7 +226,7 @@ export default function Profile() {
       </Group>
       <input ref={file} type="file" accept=".json,.csv,.cluedata,.xml,.zip,application/json,text/csv,text/xml" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importData(f) }} />
       {msg && <p className="mt-3 text-center text-sm font-bold text-pink-600">{msg}</p>}
-      <p className="mt-8 text-center text-xs text-muted">Bloomery · self-hosted · your data stays yours</p>
+      <p className="mt-8 text-center text-xs text-muted">Bloomery {health?.version && `v${health.version} `}· self-hosted · your data stays yours</p>
 
       <Sheet open={!!editing} onClose={() => setEditing(null)} title={editing ? LABEL[editing] : ''}>
         {editing && (

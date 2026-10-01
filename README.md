@@ -6,7 +6,10 @@
 
 **A beautiful, private, self-hosted period & cycle tracker — with smart predictions, daily insights and an optional AI assistant.**
 
+[![Release](https://img.shields.io/github/v/release/krugerhomeassistant/Bloomery?color=FF4A7D)](https://github.com/krugerhomeassistant/Bloomery/releases)
 [![CI](https://github.com/krugerhomeassistant/Bloomery/actions/workflows/ci.yml/badge.svg)](https://github.com/krugerhomeassistant/Bloomery/actions/workflows/ci.yml)
+[![HACS](https://img.shields.io/badge/HACS-custom-41BDF5?logo=homeassistantcommunitystore&logoColor=white)](docs/home-assistant.md)
+[![HA quality scale](https://img.shields.io/badge/HA%20quality%20scale-platinum%20(self--assessed)-E5E4E2?logo=homeassistant&logoColor=white)](custom_components/bloomery/quality_scale.yaml)
 [![Docker image](https://img.shields.io/badge/ghcr.io-bloomery-FF4A7D?logo=docker&logoColor=white)](https://github.com/krugerhomeassistant/Bloomery/pkgs/container/bloomery)
 ![Platforms](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-22ADA5)
 ![RAM](https://img.shields.io/badge/RAM-~60%20MB-7C5CE0)
@@ -14,7 +17,7 @@
 ![React](https://img.shields.io/badge/React%2019-PWA-61DAFB?logo=react&logoColor=black)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2D2A3E)](LICENSE)
 
-[Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install-in-60-seconds) · [ZimaOS](#-zimaos--casaos) · [AI](#-ai-assistant) · [Privacy](#-privacy) · [How it works](#-how-predictions-work) · [Roadmap](#-roadmap)
+[Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install-in-60-seconds) · [ZimaOS](#-zimaos--casaos) · [AI](#-ai-assistant) · [Home Assistant](#-home-assistant--calendar) · [Privacy](#-privacy) · [How it works](#-how-predictions-work) · [Roadmap](#-roadmap)
 
 </div>
 
@@ -62,7 +65,7 @@ Switch to **Pregnancy** mode for your week, due date, baby-size cards and trimes
 Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, your choice per device; 15 minutes by default).
 
 ### 🏠 Home Assistant & calendar
-A **Home Assistant integration** (HACS, UI setup, no YAML) with cycle day, phase, next period, fertile window, pregnancy week and more, plus a private **iCalendar feed** of periods, fertile windows and ovulation for HA, Google, Apple or Outlook calendars.
+A **Home Assistant integration** built to HA's Platinum quality rules (HACS, UI setup, no YAML): cycle sensors plus colour-coded **Periods / Fertile windows / Ovulation calendars**, and a private **iCalendar feed** for Google, Apple or Outlook.
 
 ### 📊 Insights
 Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature and weight charts, plus gentle health-check flags.
@@ -163,23 +166,19 @@ Only the owner account can change AI settings. The API key is stored in your dat
 
 ## 🏠 Home Assistant & calendar
 
-**Profile → Home Assistant & calendar → Create feed.**
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=krugerhomeassistant&repository=Bloomery&category=integration)
 
-1. **Integration**: in HACS → ⋮ → *Custom repositories*, add `https://github.com/krugerhomeassistant/Bloomery` as **Integration**, download **Bloomery** and restart HA. Then **Settings → Devices & services → Add integration → Bloomery** and paste the integration URL from Bloomery.
+1. Add this repo to HACS as a custom **Integration** repository (button above), download **Bloomery**, restart HA.
+2. In Bloomery: **Profile → Home Assistant & calendar → Create feed**, copy the integration URL.
+3. In HA: **Settings → Devices & services → Add integration → Bloomery**, paste it.
 
-   | Entity | What it shows |
-   |---|---|
-   | `sensor.bloomery_<name>_status` | e.g. "Period in 5 days" (+ summary attribute) |
-   | `…_cycle_day`, `…_phase`, `…_days_until_period` | where you are in the cycle |
-   | `…_next_period`, `…_ovulation` | date sensors |
-   | `…_pregnancy_chance`, `…_life_stage`, `…_pregnancy_week`, `…_due_date` | fertility / life stage |
-   | `…_cycle_length`, `…_period_length` | learned averages (diagnostic) |
-   | `binary_sensor.bloomery_<name>_period`, `…_fertile_window` | on/off for automations |
+You get a *Bloomery* device with **status, cycle day, phase, days until period, next period, ovulation, pregnancy chance, life stage** (and pregnancy week / due date) sensors, **period** and **fertile window** binary sensors, and **Periods**, **Fertile windows** and **Ovulation** calendars, each with its own colour. Read-only, refreshed every 15 minutes and at midnight.
 
-   Updates every 15 minutes and just after midnight. After **New token**, use the integration's **Reconfigure** to paste the new URL; entities stay the same.
-2. **Calendar**: add the `.ics` URL with HA's **Remote Calendar** integration (HA 2025.4+), or subscribe from Google / Apple / Outlook.
+📖 **[Full integration guide](docs/home-assistant.md)**: entities, automation examples, troubleshooting, removal.
 
-Feeds contain cycle dates only, never symptoms or notes. **New token** invalidates the old URLs; **Turn off** removes them.
+**Other calendar apps:** subscribe to the `.ics` link shown in the same Profile section; add `&type=period`, `&type=fertile` or `&type=ovulation` to get one calendar per type with its own colour.
+
+Feeds contain cycle dates only, never symptoms or notes. **New token** invalidates the old links (HA asks for the new one); **Turn off** removes them.
 
 ## 🔒 Privacy
 
@@ -247,6 +246,13 @@ Days you've already logged are never overwritten; imported symptoms are added to
 
 **Backups:** copy the `/data` volume (`bloomery.db` + `secret.key`), or use in-app **Export**.
 
+## ⬆️ Updating & releases
+
+Bloomery uses [semantic versioning](https://semver.org/); every release is listed in the [changelog](CHANGELOG.md) and on [GitHub Releases](https://github.com/krugerhomeassistant/Bloomery/releases).
+
+- **App**: `docker compose pull && docker compose up -d` (or *Update* in ZimaOS). Pin `ghcr.io/krugerhomeassistant/bloomery:1.2` (patch updates only) or `:1.2.0` (exact) instead of `:latest` if you prefer.
+- **Home Assistant**: HACS shows each release as an update.
+
 ## 🛠️ Development
 
 ```bash
@@ -261,6 +267,8 @@ cd frontend && npm install && npm run dev         # http://localhost:5173
 # demo data: user demo / demodemo
 python scripts/seed_demo.py http://localhost:8000
 ```
+
+Linting, Home Assistant tests and the release process are in [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
 
 ## 🗺️ Roadmap
 

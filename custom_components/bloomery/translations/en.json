@@ -4,13 +4,32 @@
       "user": {
         "title": "Connect Bloomery",
         "description": "In Bloomery open **Profile → Home Assistant & calendar**, tap **Create feed** and paste the integration URL here.",
-        "data": {"url": "Integration URL"},
-        "data_description": {"url": "Looks like http://your-server:8420/api/ha/…"}
+        "data": {
+          "url": "Integration URL"
+        },
+        "data_description": {
+          "url": "Looks like http://your-server:8420/api/ha/…"
+        }
       },
       "reconfigure": {
         "title": "Update Bloomery link",
         "description": "Paste the new integration URL from Bloomery (needed after tapping **New token**).",
-        "data": {"url": "Integration URL"}
+        "data": {
+          "url": "Integration URL"
+        },
+        "data_description": {
+          "url": "Looks like http://your-server:8420/api/ha/…"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Bloomery link changed",
+        "description": "The integration URL no longer works (it was turned off or a new token was created). Paste the current URL from Bloomery → Profile → Home Assistant & calendar.",
+        "data": {
+          "url": "Integration URL"
+        },
+        "data_description": {
+          "url": "Looks like http://your-server:8420/api/ha/…"
+        }
       }
     },
     "error": {
@@ -21,27 +40,92 @@
     "abort": {
       "already_configured": "This Bloomery account is already set up.",
       "reconfigure_successful": "Link updated.",
-      "unique_id_mismatch": "That link belongs to a different Bloomery account."
+      "unique_id_mismatch": "That link belongs to a different Bloomery account.",
+      "reauth_successful": "Link updated."
     }
   },
   "entity": {
     "sensor": {
-      "status": {"name": "Status"},
-      "cycle_day": {"name": "Cycle day"},
-      "phase": {"name": "Phase", "state": {"menstrual": "Menstrual", "follicular": "Follicular", "fertile": "Fertile window", "ovulation": "Ovulation", "luteal": "Luteal"}},
-      "days_until_period": {"name": "Days until period"},
-      "next_period": {"name": "Next period"},
-      "ovulation": {"name": "Ovulation"},
-      "pregnancy_chance": {"name": "Pregnancy chance", "state": {"low": "Low", "medium": "Medium", "high": "High"}},
-      "life_stage": {"name": "Life stage", "state": {"cycle": "Cycle", "pregnancy": "Pregnancy", "perimenopause": "Perimenopause"}},
-      "pregnancy_week": {"name": "Pregnancy week"},
-      "due_date": {"name": "Due date"},
-      "cycle_length": {"name": "Cycle length"},
-      "period_length": {"name": "Period length"}
+      "status": {
+        "name": "Status"
+      },
+      "cycle_day": {
+        "name": "Cycle day"
+      },
+      "phase": {
+        "name": "Phase",
+        "state": {
+          "menstrual": "Menstrual",
+          "follicular": "Follicular",
+          "fertile": "Fertile window",
+          "ovulation": "Ovulation",
+          "luteal": "Luteal"
+        }
+      },
+      "days_until_period": {
+        "name": "Days until period"
+      },
+      "next_period": {
+        "name": "Next period"
+      },
+      "ovulation": {
+        "name": "Ovulation"
+      },
+      "pregnancy_chance": {
+        "name": "Pregnancy chance",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        }
+      },
+      "life_stage": {
+        "name": "Life stage",
+        "state": {
+          "cycle": "Cycle",
+          "pregnancy": "Pregnancy",
+          "perimenopause": "Perimenopause"
+        }
+      },
+      "pregnancy_week": {
+        "name": "Pregnancy week"
+      },
+      "due_date": {
+        "name": "Due date"
+      },
+      "cycle_length": {
+        "name": "Cycle length"
+      },
+      "period_length": {
+        "name": "Period length"
+      }
     },
     "binary_sensor": {
-      "period": {"name": "Period"},
-      "fertile_window": {"name": "Fertile window"}
+      "period": {
+        "name": "Period"
+      },
+      "fertile_window": {
+        "name": "Fertile window"
+      }
+    },
+    "calendar": {
+      "periods": {
+        "name": "Periods"
+      },
+      "fertile_windows": {
+        "name": "Fertile windows"
+      },
+      "ovulation_days": {
+        "name": "Ovulation"
+      }
+    }
+  },
+  "exceptions": {
+    "feed_revoked": {
+      "message": "The Bloomery integration URL is no longer active. Create a new one in Bloomery and update the integration."
+    },
+    "cannot_connect": {
+      "message": "Can't reach Bloomery: {error}"
     }
   }
 }

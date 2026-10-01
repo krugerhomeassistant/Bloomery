@@ -12,7 +12,10 @@ def bleed(*starts, n=5):
 def test_derive_periods_merges_small_gaps():
     days = [date(2026, 1, 1), date(2026, 1, 2), date(2026, 1, 4), date(2026, 1, 20)]
     ps = derive_periods(days)
-    assert [(p.start, p.end) for p in ps] == [(date(2026, 1, 1), date(2026, 1, 4)), (date(2026, 1, 20), date(2026, 1, 20))]
+    assert [(p.start, p.end) for p in ps] == [
+        (date(2026, 1, 1), date(2026, 1, 4)),
+        (date(2026, 1, 20), date(2026, 1, 20)),
+    ]
 
 
 def test_empty_state():
@@ -76,18 +79,22 @@ def test_calendar_marks_predictions():
 
 def test_life_stages():
     from datetime import date, timedelta
+
     from app.cycles import Engine, Profile
     from app.feed import feed, log_note
+
     starts = [date(2026, 1, 1) + timedelta(days=28 * i) for i in range(4)]
     bleed = [s + timedelta(days=k) for s in starts for k in range(5)]
     today = starts[-1] + timedelta(days=70)  # 10 weeks after last period
 
     preg = Engine(Profile(mode="pregnancy"), today, bleed)
     p = preg.pregnancy()
-    assert (p["week"], p["day"], p["trimester"]) == (10, 0, 1) and p["due"] == (starts[-1] + timedelta(days=280)).isoformat()
+    assert (p["week"], p["day"], p["trimester"]) == (10, 0, 1) and p["due"] == (
+        starts[-1] + timedelta(days=280)
+    ).isoformat()
     assert preg.day_info(today)["kind"] is None and preg.day_info(starts[-1])["kind"] == "period"
     assert preg.status()["state"] == "pregnancy" and preg.next_period is None and preg.flags() == []
-    assert [c["title"] for c in feed(preg, [], today, "track")][0] == "Week 10"
+    assert feed(preg, [], today, "track")[0]["title"] == "Week 10"
     assert Engine(Profile(mode="pregnancy", lmp=today - timedelta(days=100)), today, bleed).pregnancy()["week"] == 14
 
     cyc = Engine(Profile(), today, bleed)
@@ -97,4 +104,7 @@ def test_life_stages():
     peri = Engine(Profile(mode="perimenopause"), today, bleed)
     assert peri.variability >= 5 and peri.status()["label"] == "Days since period"
     assert [f["title"] for f in peri.flags()] == ["No period for 66 days"]
-    assert Engine(Profile(mode="perimenopause"), today + timedelta(days=300), bleed).flags()[0]["title"] == "12 months without a period"
+    assert (
+        Engine(Profile(mode="perimenopause"), today + timedelta(days=300), bleed).flags()[0]["title"]
+        == "12 months without a period"
+    )

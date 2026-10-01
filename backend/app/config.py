@@ -1,4 +1,5 @@
 """Runtime settings, all overridable via BLOOMERY_* environment variables."""
+
 import secrets
 from functools import lru_cache
 from pathlib import Path

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import JSON, Column, UniqueConstraint
@@ -6,7 +6,7 @@ from sqlmodel import Field, SQLModel
 
 
 def now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 FLOW_LEVELS = ("spotting", "light", "medium", "heavy")

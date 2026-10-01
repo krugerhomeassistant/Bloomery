@@ -25,7 +25,7 @@ def test_forecast_pms_symptom_before_period():
 
 def test_forecast_skips_already_logged_and_needs_history():
     today = starts[-1] + D(days=25)
-    assert forecasts(eng(today), logs + [L(day=today, tags={"symptoms": ["tender_breasts"]})], today) == []
+    assert forecasts(eng(today), [*logs, L(day=today, tags={"symptoms": ["tender_breasts"]})], today) == []
     assert forecasts(Engine(Profile(), date(2026, 1, 3), bleeding[:5]), logs, date(2026, 1, 3)) == []
 
 
