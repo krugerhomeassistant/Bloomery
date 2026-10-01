@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-01
+
+### Changed
+- Docker image now runs on Python 3.14 (backend tests run on 3.14 in CI too).
+- Frontend type-checking uses TypeScript 7 (native compiler, ~4.5× faster builds).
+
 ## [1.2.0] - 2026-10-01
 
 ### Added
@@ -78,5 +84,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/krugerhomeassistant/Bloomery/releases/tag/v1.2.0

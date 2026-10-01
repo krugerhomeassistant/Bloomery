@@ -124,7 +124,8 @@
 - [x] CI: lint → backend → HA tests/coverage/mypy → image → tag-driven GitHub release (`bloomery.zip` for HACS `zip_release`); `validate.yml` = hassfest + HACS action (daily)
 - [x] CI creates tag + release when main has an unreleased version (tag push blocked from this sandbox)
 - [ ] User: add GitHub repo topics (HACS check)
-- [ ] Review Dependabot major PRs (TypeScript 7, Python 3.14 image, Node 26 image)
+- [x] Dependabot majors reviewed: TypeScript 7 + Python 3.14 merged (v1.2.1); tests on 3.14.7, cp314 wheels for amd64+arm64 verified
+- [ ] Merge Node 26 PR (#1) once Node 26 is LTS (~2026-10-28); build already verified on v26.10.0
 - [ ] Optional: submit to HACS default store (needs release + passing HACS action)
 
 ## Backlog (next)

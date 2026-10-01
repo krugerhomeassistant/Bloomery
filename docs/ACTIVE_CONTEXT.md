@@ -1,15 +1,16 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-10-01 · **Version:** 1.2.0
+**Date:** 2026-10-01 · **Version:** 1.2.1
 
 ## Current subtask
-v1.2.0: per-type colour calendars, Platinum-rules HA integration, professional repo tooling and tag-driven releases.
+Dependabot majors: TypeScript 7 and Python 3.14 merged and released as 1.2.1. Node 26 (PR #1) held until it becomes LTS (~Oct 28).
 
 ## Last execution results
-- Backend 26/26, HA 13/13 with 100% coverage, mypy strict clean, ruff clean, frontend build OK, live feed checked with the integration client.
+- TS7: build OK, catches type errors, tsc 0.75 s vs 3.4 s. Py 3.14.7: 26/26, wheels OK. Node 26.10: build OK.
+- Repo topics/description set by user; main protected (no deletion / force push).
 
 ## Blockers
-- GitHub repo has no topics → HACS action fails `topics` until the user adds them (needs their login).
+None.
 
 ## Immediate next step
-Push main, confirm CI, tag v1.2.0 → release + bloomery.zip; user updates via HACS. Optional: HACS default-store PR.
+After Oct 28: merge dependabot/docker/node-26-alpine. Optional: HACS default-store submission.

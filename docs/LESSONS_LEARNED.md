@@ -52,4 +52,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 49. **pytest relative imports `from .conftest`** → tests dir must be a package → `tests_ha/__init__.py`.
 50. **`git push origin v1.2.0` → HTTP 403 from the session's egress proxy** (tag pushes not allowed here; policy, don't retry) → release-on-version-bump: CI creates the tag + release itself when `main` has a version with no release.
 51. **Dependabot opened major-bump PRs instantly** (TypeScript 7, Python 3.14, Node 26) → review majors manually; CI on PRs guards them.
+52. **Python 3.14 test run failed with `_eval_type() ... prefer_fwd_module`** → uv 0.8 only knew 3.14.0rc2 (pydantic incompatible with the RC) → upgrade uv (`pip install -U uv`), use a final 3.14.x; also check cp314 wheels exist for amd64 + arm64 before bumping the slim image (no compiler in it).
+53. **Merging Dependabot PRs from here** → no GitHub API auth; `git fetch origin <dependabot branch>` + `git merge` + push to main closes the PR automatically.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
