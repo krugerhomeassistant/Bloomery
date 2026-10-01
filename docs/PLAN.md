@@ -122,7 +122,9 @@
 - [x] `docs/home-assistant.md` (install, params, entities, data update, examples, use cases, limitations, troubleshooting, removal)
 - [x] Tooling: ruff lint+format (pyproject.toml), Dependabot, CHANGELOG (Keep a Changelog), `scripts/bump.py`, SECURITY/CONTRIBUTING, issue + PR templates, version in Profile footer
 - [x] CI: lint → backend → HA tests/coverage/mypy → image → tag-driven GitHub release (`bloomery.zip` for HACS `zip_release`); `validate.yml` = hassfest + HACS action (daily)
-- [ ] User: add GitHub repo topics (HACS check), then tag v1.2.0 release
+- [x] CI creates tag + release when main has an unreleased version (tag push blocked from this sandbox)
+- [ ] User: add GitHub repo topics (HACS check)
+- [ ] Review Dependabot major PRs (TypeScript 7, Python 3.14 image, Node 26 image)
 - [ ] Optional: submit to HACS default store (needs release + passing HACS action)
 
 ## Backlog (next)

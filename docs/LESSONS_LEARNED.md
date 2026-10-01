@@ -50,4 +50,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 47. **README section rewrite deleted half the file** → `str.index("## X")` matched inside `### X` → anchor on `"\n## X\n"` and assert no other `\n## ` inside the replaced span; restore with `git checkout` if it happens.
 48. **Ad-hoc script import of the integration crashed (`calendar` circular import)** → putting `custom_components/bloomery` itself on `sys.path` shadows stdlib `calendar` → import as `custom_components.bloomery.*` from the repo root.
 49. **pytest relative imports `from .conftest`** → tests dir must be a package → `tests_ha/__init__.py`.
+50. **`git push origin v1.2.0` → HTTP 403 from the session's egress proxy** (tag pushes not allowed here; policy, don't retry) → release-on-version-bump: CI creates the tag + release itself when `main` has a version with no release.
+51. **Dependabot opened major-bump PRs instantly** (TypeScript 7, Python 3.14, Node 26) → review majors manually; CI on PRs guards them.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

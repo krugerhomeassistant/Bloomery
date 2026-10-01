@@ -30,6 +30,6 @@ mypy custom_components/bloomery
 
 1. Note changes under `## [Unreleased]` in `CHANGELOG.md` as you go.
 2. `python scripts/bump.py X.Y.Z` (updates backend, integration and frontend versions and the changelog).
-3. `git commit -am "Release vX.Y.Z" && git tag vX.Y.Z && git push --follow-tags`
+3. `git commit -am "Release vX.Y.Z" && git push`
 
-CI then runs every check, publishes `ghcr.io/krugerhomeassistant/bloomery:X.Y.Z` (+ `X.Y`), and creates the GitHub release with notes and `bloomery.zip`, which HACS offers as an update.
+When a version that has no release yet reaches `main`, CI runs every check, publishes `ghcr.io/krugerhomeassistant/bloomery:X.Y.Z` (+ `X.Y`), then creates the `vX.Y.Z` tag and GitHub release with notes and `bloomery.zip`, which HACS offers as an update.

@@ -15,6 +15,40 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      release: ${{ steps.v.outputs.release }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: v
+        name: New version on main = release (no tag push needed)
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          V=$(python3 -c "import re;print(re.search(r'\"(.+)\"', open('backend/app/__init__.py').read()).group(1))")
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF" = "refs/tags/v$V" ]; then R=true
+          elif [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" = "push" ] && ! gh release view "v$V" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then R=true
+          else R=false; fi
+          echo "release=$R" >> "$GITHUB_OUTPUT"; echo "version $V, release $R"
+      - name: Versions agree everywhere (and changelog has a section when releasing)
+        run: |
+          V="${{ steps.v.outputs.version }}"
+          python3 - "$V" <<'PY'
+          import json, re, sys
+          v = sys.argv[1]
+          found = {
+              "backend": re.search(r'"(.+)"', open("backend/app/__init__.py").read()).group(1),
+              "integration": json.load(open("custom_components/bloomery/manifest.json"))["version"],
+              "frontend": json.load(open("frontend/package.json"))["version"],
+          }
+          bad = {k: x for k, x in found.items() if x != v}
+          sys.exit(f"Version mismatch with backend {v}: {bad}. Run scripts/bump.py {v}" if bad else 0)
+          PY
+          if [ "${{ steps.v.outputs.release }}" = "true" ]; then grep -q "^## \[$V\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$V] section"; exit 1; }; fi
+
   lint:
     name: Lint (ruff)
     runs-on: ubuntu-latest
@@ -53,7 +87,7 @@ jobs:
 
   image:
     name: Docker image
-    needs: [lint, backend, home-assistant]
+    needs: [version, lint, backend, home-assistant]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions: { contents: read, packages: write }
@@ -69,8 +103,8 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/bloomery
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}},value=v${{ needs.version.outputs.version }},enable=${{ needs.version.outputs.release }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.version.outputs.version }},enable=${{ needs.version.outputs.release }}
             type=sha,format=short
       - uses: docker/build-push-action@v7
         with:
@@ -84,34 +118,21 @@ jobs:
 
   release:
     name: GitHub release
-    needs: image
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [version, image]
+    if: needs.version.outputs.release == 'true'
     runs-on: ubuntu-latest
     permissions: { contents: write }
     steps:
       - uses: actions/checkout@v7
-      - name: Check every version matches the tag
-        run: |
-          V="${GITHUB_REF_NAME#v}"
-          python3 - "$V" <<'PY'
-          import json, re, sys
-          v = sys.argv[1]
-          found = {
-              "backend": re.search(r'"(.+)"', open("backend/app/__init__.py").read()).group(1),
-              "integration": json.load(open("custom_components/bloomery/manifest.json"))["version"],
-              "frontend": json.load(open("frontend/package.json"))["version"],
-          }
-          bad = {k: x for k, x in found.items() if x != v}
-          sys.exit(f"Version mismatch with tag {v}: {bad}. Run scripts/bump.py {v}" if bad else 0)
-          PY
-          grep -q "^## \[$V\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$V] section"; exit 1; }
       - name: Package integration for HACS
         run: cd custom_components/bloomery && zip -r -X "$GITHUB_WORKSPACE/bloomery.zip" . -x '__pycache__/*'
       - name: Release notes from CHANGELOG
         run: |
-          V="${GITHUB_REF_NAME#v}"
+          V="${{ needs.version.outputs.version }}"
           awk -v v="$V" '$0 ~ "^## \\[" v "\\]" {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md > notes.md
           printf '\n---\n**Docker:** `ghcr.io/%s/bloomery:%s` · **Home Assistant:** update *Bloomery* in HACS.\n' "${GITHUB_REPOSITORY_OWNER}" "$V" >> notes.md
       - name: Create release
         env: { GH_TOKEN: "${{ github.token }}" }
-        run: gh release create "$GITHUB_REF_NAME" bloomery.zip --title "Bloomery $GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+        run: |
+          V="${{ needs.version.outputs.version }}"
+          gh release create "v$V" bloomery.zip --title "Bloomery v$V" --notes-file notes.md --target "$GITHUB_SHA" --latest

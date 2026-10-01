@@ -2,10 +2,11 @@
 """Bump the version everywhere and cut the changelog section.
 
     python scripts/bump.py 1.3.0
-    git commit -am "Release v1.3.0" && git tag v1.3.0 && git push --follow-tags
+    git commit -am "Release v1.3.0" && git push
 
-Pushing the tag makes CI test everything, publish ghcr.io/krugerhomeassistant/bloomery:1.3.0
-and create the GitHub release (notes from CHANGELOG.md + bloomery.zip for HACS).
+When a new version reaches main, CI tests everything, publishes ghcr.io/krugerhomeassistant/bloomery:1.3.0
+(+ 1.3 and latest), then creates the v1.3.0 tag and GitHub release (notes from CHANGELOG.md + bloomery.zip
+for HACS). Pushing a v1.3.0 tag yourself works too.
 """
 
 import json
@@ -48,7 +49,7 @@ def main(version: str) -> None:
             text,
         )
         cl.write_text(text)
-    print(f"Bumped to {version}. Review CHANGELOG.md, then commit and tag v{version}.")
+    print(f"Bumped to {version}. Review CHANGELOG.md, then commit and push to main to release v{version}.")
 
 
 if __name__ == "__main__":
