@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from .. import notify, push
 from ..deps import SessionDep, TodayDep, UserDep
+from ..i18n import _
 
 router = APIRouter(prefix="/api/notifications", tags=["notifications"])
 
@@ -51,10 +52,10 @@ async def test(body: NotifyIn, user: UserDep, db: SessionDep, today: TodayDep):
     """Send what today's notification would contain (or a hello if there's nothing today)."""
     devices = len(push.subscriptions(db, user.id))
     if not body.url and not devices:
-        raise HTTPException(400, "Turn on notifications for this device or enter a notification URL first")
+        raise HTTPException(400, _("Turn on notifications for this device or enter a notification URL first"))
     msg = notify.compose(db, user, today, body.kinds) or (
-        "🌸 Bloomery is connected",
-        "Notifications work! You'll hear from me when there's something worth knowing.",
+        "🌸 " + _("Bloomery is connected"),
+        _("Notifications work! You'll hear from me when there's something worth knowing."),
     )
     if body.url:
         try:

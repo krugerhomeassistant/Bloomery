@@ -12,6 +12,7 @@ from typing import Any
 
 from .catalog import LABELS
 from .cycles import Engine, symptom_heatmap, symptom_patterns
+from .i18n import _
 
 REPORT_CATS = {"symptoms", "mood", "digestion", "discharge"}
 SKIP = {"none", "fine"}
@@ -48,7 +49,7 @@ def build(eng: Engine, logs: list, user: Any, today: date, months: int, include_
                 "spotting_days": spotting,
                 "ovulation": s.ovulation.isoformat(),
                 "ovulation_confirmed": s.ovulation_confirmed,
-                "top": [LABELS.get(t, t.split(":")[1]) for t, _ in top],
+                "top": [_(LABELS.get(t, t.split(":")[1])) for t, _n in top],
             }
         )
 
@@ -91,7 +92,7 @@ def build(eng: Engine, logs: list, user: Any, today: date, months: int, include_
         },
         "cycles": list(reversed(cycles)),
         "flags": eng.flags(),
-        "symptoms": [{"label": LABELS.get(t, t.split(":")[1]), "days": n} for t, n in counts.most_common(12)],
+        "symptoms": [{"label": _(LABELS.get(t, t.split(":")[1])), "days": n} for t, n in counts.most_common(12)],
         "patterns": symptom_patterns(eng, pairs, LABELS)["patterns"],
         "heatmap": symptom_heatmap(eng, pairs, LABELS, since=since),
         "temperature": [{"date": l.day.isoformat(), "value": l.temperature} for l in window if l.temperature],

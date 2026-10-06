@@ -16,18 +16,20 @@ from sqlmodel import Session
 
 from ..catalog import CATALOG, LABELS, catalog_json
 from ..db import get_session
+from ..i18n import CATALOGS, LANG, _, user_lang
 from ..models import DayLog, Setting, User, now
 from .tracking import PeriodStart, _get_log, period_start
 
 router = APIRouter(prefix="/api/quick", tags=["quick log"])
 
 
-def key_user(db: Annotated[Session, Depends(get_session)], authorization: Annotated[str, Header()] = "") -> User:
+async def key_user(db: Annotated[Session, Depends(get_session)], authorization: Annotated[str, Header()] = "") -> User:
     token = authorization.removeprefix("Bearer ").strip()
     row = db.get(Setting, f"api:{token}") if token and token != authorization else None
     user = db.get(User, int(row.value)) if row else None
     if not user:
-        raise HTTPException(401, "Invalid or missing API key", headers={"WWW-Authenticate": "Bearer"})
+        raise HTTPException(401, _("Invalid or missing API key"), headers={"WWW-Authenticate": "Bearer"})
+    LANG.set(user_lang(db, user.id))
     return user
 
 
@@ -44,12 +46,13 @@ def _day(day: date | None, tz: str | None) -> date:
         raise HTTPException(422, f"Unknown time zone {tz!r}") from e
 
 
-# lookup by "cat:id", id, or label (case-insensitive), in catalog order; "none" is too ambiguous to resolve
+# lookup by "cat:id", id, or label in any language (case-insensitive), in catalog order; "none" is too ambiguous
 _BY_NAME: dict[str, tuple[str, str]] = {}
 for _c in reversed(CATALOG):
-    for _i, _label, _ in _c["items"]:
+    for _i, _label, _emoji in _c["items"]:
         if _i != "none":
-            _BY_NAME[_i.lower()] = _BY_NAME[_label.lower()] = (_c["id"], _i)
+            for _name in (_i, _label, *(cat.get(_label, _label) for cat in CATALOGS.values())):
+                _BY_NAME[_name.lower()] = (_c["id"], _i)
 
 
 def resolve(name: str) -> tuple[str, str] | None:
@@ -92,12 +95,12 @@ def quick_log(body: QuickLog, user: KeyUser, db: DB):
     day = _day(body.day, body.tz)
     resolved = [(t, resolve(t)) for t in body.tags]
     if unknown := [t for t, r in resolved if not r]:
-        raise HTTPException(422, f"Unknown: {', '.join(unknown)}. See GET /api/quick/catalog")
+        raise HTTPException(422, _("Unknown: {items}. See GET /api/quick/catalog", items=", ".join(unknown)))
     if not (resolved or body.flow or body.temperature is not None or body.note):
-        raise HTTPException(422, "Nothing to log")
+        raise HTTPException(422, _("Nothing to log"))
     log = _get_log(db, user, day) or DayLog(user_id=user.id, day=day)
     tags = {c: list(v) for c, v in (log.tags or {}).items()}
-    pairs = [r for _, r in resolved if r]
+    pairs = [r for _t, r in resolved if r]
     for cat, item in pairs:
         if item not in tags.setdefault(cat, []):
             tags[cat].append(item)
@@ -108,10 +111,10 @@ def quick_log(body: QuickLog, user: KeyUser, db: DB):
         t = body.temperature
         log.temperature = round((t - 32) * 5 / 9, 2) if "F" in body.temperature_unit.upper() else round(t, 2)
         if not 32 <= log.temperature <= 43:  # wrist/skin temperature runs a few degrees under core
-            raise HTTPException(422, "That temperature doesn't look like a body temperature")
+            raise HTTPException(422, _("That temperature doesn't look like a body temperature"))
     if body.note:
         log.notes = f"{log.notes}\n{body.note}".strip() if log.notes else body.note
     log.updated_at = now()
     db.add(log)
     db.commit()
-    return {"ok": True, "date": day.isoformat(), "logged": [LABELS[f"{c}:{i}"] for c, i in pairs]}
+    return {"ok": True, "date": day.isoformat(), "logged": [_(LABELS[f"{c}:{i}"]) for c, i in pairs]}

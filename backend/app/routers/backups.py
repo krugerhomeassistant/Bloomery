@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from .. import backup
 from ..deps import SessionDep, UserDep
+from ..i18n import _
 from .assistant import require_admin
 
 router = APIRouter(prefix="/api/backups", tags=["backups"])
@@ -65,7 +66,7 @@ def save_config(body: ConfigIn, user: UserDep, db: SessionDep):
     cfg.update(enabled=body.enabled, time=body.time, tz=body.tz, keep=body.keep)
     if body.passphrase is not None:
         if body.passphrase and len(body.passphrase) < 8:
-            raise HTTPException(422, "Use a passphrase of at least 8 characters")
+            raise HTTPException(422, _("Use a passphrase of at least 8 characters"))
         cfg["passphrase"] = body.passphrase
     g = cfg["gdrive"]
     if body.gdrive_client_id is not None and body.gdrive_client_id.strip() != g["client_id"]:
@@ -93,7 +94,7 @@ def download(name: str, user: UserDep, db: SessionDep):
 
 def _restore(blob: bytes, passphrase: str) -> dict[str, bool]:
     if len(blob) > backup.MAX_RESTORE:
-        raise HTTPException(413, "Backup file is too large")
+        raise HTTPException(413, _("Backup file is too large"))
     try:
         backup.restore(blob, passphrase)
     except backup.BackupError as e:
@@ -119,7 +120,7 @@ async def restore_cloud(
     require_admin(user, db)
     cfg = backup.load(db)
     if not backup.drive_connected(cfg):
-        raise HTTPException(409, "Google Drive isn't connected")
+        raise HTTPException(409, _("Google Drive isn't connected"))
     try:
         async with httpx.AsyncClient(timeout=60) as c, backup.Drive(cfg["gdrive"], c) as d:
             blob = await d.download(file_id)
@@ -140,9 +141,9 @@ def google_start(origin: str, request: Request, user: UserDep, db: SessionDep):
     require_admin(user, db)
     g = backup.load(db)["gdrive"]
     if not (g["client_id"] and g["client_secret"]):
-        raise HTTPException(409, "Save the Google client ID and secret first")
+        raise HTTPException(409, _("Save the Google client ID and secret first"))
     if not origin.startswith(("https://", "http://localhost", "http://127.0.0.1")):
-        raise HTTPException(422, "Google only allows HTTPS addresses (or localhost)")
+        raise HTTPException(422, _("Google only allows HTTPS addresses (or localhost)"))
     state = secrets.token_urlsafe(24)
     request.session["gstate"] = state
     request.session["gorigin"] = origin

@@ -34,6 +34,7 @@ from webauthn.helpers.structs import (
 )
 
 from ..deps import SessionDep, UserDep
+from ..i18n import _
 from ..models import Setting
 
 router = APIRouter(prefix="/api/auth/passkey", tags=["auth"])
@@ -58,7 +59,7 @@ def _origin(request: Request) -> tuple[str, str]:
     origin = request.headers.get("origin", "")
     host = urlsplit(origin).hostname or ""
     if not (origin.startswith("https://") or host in ("localhost", "127.0.0.1")):
-        raise HTTPException(400, "Face ID / fingerprint unlock needs Bloomery to be opened over HTTPS")
+        raise HTTPException(400, _("Face ID / fingerprint unlock needs Bloomery to be opened over HTTPS"))
     return origin, host
 
 
@@ -73,7 +74,7 @@ def list_passkeys(user: UserDep, db: SessionDep):
 
 @router.post("/register/options")
 def register_options(request: Request, user: UserDep, db: SessionDep):
-    _, rp_id = _origin(request)
+    rp_id = _origin(request)[1]
     opts = generate_registration_options(
         rp_id=rp_id,
         rp_name="Bloomery",
@@ -101,7 +102,7 @@ def register(body: RegisterIn, request: Request, user: UserDep, db: SessionDep):
     origin, rp_id = _origin(request)
     challenge = request.session.pop("pk_challenge", None)
     if not challenge:
-        raise HTTPException(400, "Start again")
+        raise HTTPException(400, _("Start again"))
     try:
         v = verify_registration_response(
             credential=body.credential,
@@ -129,10 +130,10 @@ def register(body: RegisterIn, request: Request, user: UserDep, db: SessionDep):
 
 @router.post("/unlock/options")
 def unlock_options(request: Request, user: UserDep, db: SessionDep):
-    _, rp_id = _origin(request)
+    rp_id = _origin(request)[1]
     keys = [k for k in load(db, user.id) if k["rp_id"] == rp_id]
     if not keys:
-        raise HTTPException(404, "No Face ID / fingerprint set up for this address")
+        raise HTTPException(404, _("No Face ID / fingerprint set up for this address"))
     opts = generate_authentication_options(
         rp_id=rp_id,
         challenge=secrets.token_bytes(32),
@@ -154,7 +155,7 @@ def unlock(body: UnlockIn, request: Request, user: UserDep, db: SessionDep):
     keys = load(db, user.id)
     key = next((k for k in keys if k["id"] == body.credential.get("id")), None)
     if not challenge or not key:
-        raise HTTPException(400, "Unknown device. Use your PIN.")
+        raise HTTPException(400, _("Unknown device. Use your PIN."))
     try:
         v = verify_authentication_response(
             credential=body.credential,
@@ -166,7 +167,7 @@ def unlock(body: UnlockIn, request: Request, user: UserDep, db: SessionDep):
             require_user_verification=True,
         )
     except InvalidAuthenticationResponse as e:
-        raise HTTPException(400, "Face ID / fingerprint check failed. Use your PIN.") from e
+        raise HTTPException(400, _("Face ID / fingerprint check failed. Use your PIN.")) from e
     key["sign_count"] = v.new_sign_count
     save(db, user.id, keys)
     return {"ok": True}

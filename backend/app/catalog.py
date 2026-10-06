@@ -1,5 +1,7 @@
 """Loggable tag catalog: single source of truth for backend + frontend (served at /api/catalog)."""
 
+from .i18n import _
+
 CATALOG: list[dict] = [
     {
         "id": "symptoms",
@@ -168,16 +170,17 @@ FLOW = [
 
 def catalog_json() -> dict:
     return {
-        "flow": [{"id": i, "label": l, "emoji": e} for i, l, e in FLOW],
+        "flow": [{"id": i, "label": _(l), "emoji": e} for i, l, e in FLOW],
         "categories": [
             {
                 **{k: v for k, v in c.items() if k != "items"},
-                "items": [{"id": i, "label": l, "emoji": e} for i, l, e in c["items"]],
+                "title": _(c["title"]),
+                "items": [{"id": i, "label": _(l), "emoji": e} for i, l, e in c["items"]],
             }
             for c in CATALOG
         ],
     }
 
 
-LABELS: dict[str, str] = {f"{c['id']}:{i}": l for c in CATALOG for i, l, _ in c["items"]}
-VALID: dict[str, set[str]] = {c["id"]: {i for i, _, _ in c["items"]} for c in CATALOG}
+LABELS: dict[str, str] = {f"{c['id']}:{i}": l for c in CATALOG for i, l, _e in c["items"]}
+VALID: dict[str, set[str]] = {c["id"]: {i for i, _l, _e in c["items"]} for c in CATALOG}

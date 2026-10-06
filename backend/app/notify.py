@@ -18,6 +18,7 @@ from . import contraception, push
 from .db import get_engine
 from .deps import bc_config, build_engine
 from .feed import feed
+from .i18n import _, language, user_lang
 from .models import DayLog, Setting, User
 
 log = logging.getLogger("bloomery.notify")
@@ -79,10 +80,11 @@ def compose(db: Session, user: User, today, kinds: list[str]) -> tuple[str, str]
         if bc and bc["action"]:
             cards.insert(0, bc)
         elif not bc_config(db, user.id):  # no method set up: the classic daily pill reminder
-            cards.insert(0, {"emoji": "💊", "title": "Pill reminder", "text": "Time to take your pill."})
+            cards.insert(0, {"emoji": "💊", "title": _("Pill reminder"), "text": _("Time to take your pill.")})
     if not cards:
         return None
-    title = f"{cards[0]['emoji']} {cards[0]['title']}" + (f" (+{len(cards) - 1} more)" if len(cards) > 1 else "")
+    more = " " + _("(+{n} more)", n=len(cards) - 1) if len(cards) > 1 else ""
+    title = f"{cards[0]['emoji']} {cards[0]['title']}{more}"
     return title, "\n\n".join(f"{c['emoji']} {c['title']}: {c['text']}" for c in cards)
 
 
@@ -106,7 +108,8 @@ async def tick(now_utc: datetime | None = None) -> int:
             user = db.get(User, uid)
             cfg["last"] = today.isoformat()  # mark first: a failing endpoint must not retry every minute
             store(db, uid, cfg)
-            msg = user and compose(db, user, today, cfg["kinds"])
+            with language(user_lang(db, uid)):
+                msg = user and compose(db, user, today, cfg["kinds"])
             if msg:
                 sent += await deliver(db, uid, cfg["url"], *msg)
     return sent

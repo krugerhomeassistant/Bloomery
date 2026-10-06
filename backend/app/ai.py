@@ -20,6 +20,7 @@ from .config import get_settings
 from .cycles import Engine
 from .db import get_engine
 from .feed import forecasts
+from .i18n import LANG, LANGS, N_, _
 from .models import Setting
 
 SYSTEM = """You are Bloomery, a warm, knowledgeable menstrual-health companion inside a private, self-hosted period tracker.
@@ -31,6 +32,12 @@ calendar/fertility predictions as reliable contraception. For emergencies, advis
 If life_stage is "pregnancy", talk about pregnancy week, baby development and trimester care instead of cycle phases, and
 urge prompt care for bleeding, severe pain, severe headache, vision changes or reduced baby movement. If "perimenopause",
 expect irregular cycles and symptoms like hot flashes, night sweats and sleep changes; bleeding after 12 months without a period needs a doctor."""
+
+
+def system() -> str:
+    """System prompt, asking for replies in the user's language."""
+    lang = LANGS.get(LANG.get(), "English")
+    return SYSTEM + ("" if lang == "English" else f"\nAlways reply in {lang}, in natural, everyday language.")
 
 
 class AIError(RuntimeError):
@@ -228,11 +235,19 @@ def build_context(engine: Engine, logs: list, user) -> str:
 
 
 PHASE_TIPS = {
-    "menstrual": "Your body is shedding the uterine lining. Warmth, gentle movement and iron-rich foods can help with cramps and fatigue.",
-    "follicular": "Estrogen is rising, which often brings more energy and a brighter mood — a good time for new projects and harder workouts.",
-    "fertile": "You're in your fertile window. Cervical fluid often becomes clearer and stretchier around now.",
-    "ovulation": "Ovulation is estimated for today. Some people notice mild one-sided pain or a small temperature rise afterwards.",
-    "luteal": "Progesterone is higher now. It's common to feel more tired, bloated or crave comfort food before your period.",
+    "menstrual": N_(
+        "Your body is shedding the uterine lining. Warmth, gentle movement and iron-rich foods can help with cramps and fatigue."
+    ),
+    "follicular": N_(
+        "Estrogen is rising, which often brings more energy and a brighter mood — a good time for new projects and harder workouts."
+    ),
+    "fertile": N_("You're in your fertile window. Cervical fluid often becomes clearer and stretchier around now."),
+    "ovulation": N_(
+        "Ovulation is estimated for today. Some people notice mild one-sided pain or a small temperature rise afterwards."
+    ),
+    "luteal": N_(
+        "Progesterone is higher now. It's common to feel more tired, bloated or crave comfort food before your period."
+    ),
 }
 
 
@@ -240,12 +255,16 @@ def fallback_insight(engine: Engine) -> str:
     st = engine.status()
     phase = st.get("phase")
     if st.get("state") == "empty":
-        return "Log your last period to unlock predictions and personalised insights."
-    parts = [PHASE_TIPS.get(phase or "", "")]
+        return _("Log your last period to unlock predictions and personalised insights.")
+    parts = [_(PHASE_TIPS[phase]) if phase in PHASE_TIPS else ""]
     stats = engine.stats()
     if stats["avg_cycle_length"]:
         parts.append(
-            f"Your average cycle is {stats['avg_cycle_length']} days across {stats['cycles_tracked']} tracked cycles."
+            _(
+                "Your average cycle is {avg} days across {n} tracked cycles.",
+                avg=stats["avg_cycle_length"],
+                n=stats["cycles_tracked"],
+            )
         )
     return " ".join(p for p in parts if p)
 

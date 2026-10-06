@@ -11,6 +11,7 @@ from .. import feed as feed_mod
 from ..catalog import LABELS, VALID, catalog_json
 from ..cycles import symptom_heatmap, symptom_patterns
 from ..deps import SessionDep, TodayDep, UserDep, bc_config, build_engine
+from ..i18n import _, language
 from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, Setting, User, now
 from .auth import public_user
 
@@ -19,8 +20,9 @@ D = timedelta
 
 
 @router.get("/catalog")
-def catalog():
-    return catalog_json()
+def catalog(lang: str = "en"):
+    with language(lang):
+        return catalog_json()
 
 
 # ---------------------------------------------------------------- profile
@@ -43,6 +45,18 @@ def update_profile(body: ProfileIn, user: UserDep, db: SessionDep):
     db.add(user)
     db.commit()
     db.refresh(user)
+    return public_user(user)
+
+
+class LanguageIn(BaseModel):
+    lang: Literal["en", "af"]
+
+
+@router.put("/language")
+def set_language(body: LanguageIn, user: UserDep, db: SessionDep):
+    db.merge(Setting(key=f"lang:{user.id}", value=json.dumps(body.lang)))
+    db.exec(delete(InsightCache).where(InsightCache.user_id == user.id))  # today's AI insight was in the old language
+    db.commit()
     return public_user(user)
 
 
@@ -207,7 +221,7 @@ def overview(user: UserDep, db: SessionDep, today: TodayDep):
 @router.get("/cycle/calendar")
 def calendar(user: UserDep, db: SessionDep, today: TodayDep, start: date, end: date):
     if (end - start).days > 800:
-        raise HTTPException(400, "Range too large")
+        raise HTTPException(400, _("Range too large"))
     eng = build_engine(db, user, today)
     days = eng.calendar(start, end)
     logs = {
@@ -228,7 +242,7 @@ def daily_feed(user: UserDep, db: SessionDep, today: TodayDep):
     cards = feed_mod.feed(build_engine(db, user, today), logs, today, user.goal)
     note = db.get(Setting, f"lognote:{user.id}")
     if note and (n := json.loads(note.value))["day"] == today.isoformat():
-        cards.insert(0, {"kind": "note", "emoji": "💬", "title": "About today's log", "text": n["text"]})
+        cards.insert(0, {"kind": "note", "emoji": "💬", "title": _("About today's log"), "text": n["text"]})
     if bc := contraception.status(bc_config(db, user.id), today):
         cards.insert(0, bc)
     return cards
@@ -251,7 +265,7 @@ def get_contraception(user: UserDep, db: SessionDep, today: TodayDep):
 @router.put("/contraception")
 def put_contraception(body: ContraceptionIn, user: UserDep, db: SessionDep, today: TodayDep):
     if body.method in ("pill", "ring", "patch", "injection") and not body.start:
-        raise HTTPException(422, "Choose the start date")
+        raise HTTPException(422, _("Choose the start date"))
     key = f"bc:{user.id}"
     if body.method == "none":
         if row := db.get(Setting, key):

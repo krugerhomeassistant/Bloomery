@@ -10,6 +10,7 @@ from .. import ai
 from ..db import get_engine
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..feed import cycle_summary
+from ..i18n import _
 from ..models import ChatMessage, DayLog, InsightCache, Setting, User
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
@@ -23,7 +24,7 @@ def status():
 # ---------------------------------------------------------------- in-app configuration (admin = first account)
 def require_admin(user: User, db) -> None:
     if user.id != db.exec(select(func.min(User.id))).one():
-        raise HTTPException(403, "Only the server owner (first account) can change AI settings")
+        raise HTTPException(403, _("Only the server owner (first account) can change AI settings"))
 
 
 class ConfigIn(BaseModel):
@@ -86,7 +87,7 @@ async def daily(user: UserDep, db: SessionDep, today: TodayDep, refresh: bool = 
         return {"source": "ai", "content": cached.content, "cached": True}
     try:
         text = await ai.complete(
-            ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user),
+            ai.system() + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user),
             [{"role": "user", "content": ai.daily_prompt(today)}],
             max_tokens=400,
         )
@@ -107,7 +108,7 @@ async def recap(start: date, user: UserDep, db: SessionDep, today: TodayDep, ref
     eng = build_engine(db, user, today)
     seg = next((s for s in eng.segments if s.start == start and not s.predicted), None)
     if not seg:
-        raise HTTPException(404, "No logged cycle starts on that date")
+        raise HTTPException(404, _("No logged cycle starts on that date"))
     logs = _logs(db, user)
     done = seg.end < today and seg is not eng.current
     base = {"start": seg.start.isoformat(), "length": seg.length if done else None, "complete": done}
@@ -119,7 +120,7 @@ async def recap(start: date, user: UserDep, db: SessionDep, today: TodayDep, ref
         return {**base, "source": "ai", "content": cached.value, "cached": True}
     try:
         text = await ai.complete(
-            ai.SYSTEM + "\n\nCYCLE DATA (JSON):\n" + ai.recap_context(eng, logs, seg),
+            ai.system() + "\n\nCYCLE DATA (JSON):\n" + ai.recap_context(eng, logs, seg),
             [{"role": "user", "content": ai.RECAP_PROMPT}],
             max_tokens=450,
         )
@@ -144,7 +145,7 @@ def history(user: UserDep, db: SessionDep):
 @router.post("/chat")
 async def chat(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
     if not ai.enabled():
-        raise HTTPException(503, "AI is disabled on this server. Set BLOOMERY_AI_PROVIDER to enable it.")
+        raise HTTPException(503, _("AI is disabled on this server. Set BLOOMERY_AI_PROVIDER to enable it."))
     eng = build_engine(db, user, today)
     prev = db.exec(
         select(ChatMessage).where(ChatMessage.user_id == user.id).order_by(ChatMessage.id.desc()).limit(12)
@@ -152,7 +153,7 @@ async def chat(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
     msgs = [{"role": m.role, "content": m.content} for m in prev] + [{"role": "user", "content": body.message}]
     try:
         reply = await ai.complete(
-            ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user), msgs
+            ai.system() + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user), msgs
         )
     except ai.AIError as e:
         raise HTTPException(502, str(e)) from e
@@ -166,13 +167,13 @@ async def chat(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
 async def chat_stream(body: ChatIn, user: UserDep, db: SessionDep, today: TodayDep):
     """Same as /chat but streams the reply as plain-text chunks; saves both messages when done."""
     if not ai.enabled():
-        raise HTTPException(503, "AI is disabled on this server. Enable it in Profile → AI assistant.")
+        raise HTTPException(503, _("AI is disabled on this server. Enable it in Profile → AI assistant."))
     eng = build_engine(db, user, today)
     prev = db.exec(
         select(ChatMessage).where(ChatMessage.user_id == user.id).order_by(ChatMessage.id.desc()).limit(12)
     ).all()[::-1]
     msgs = [{"role": m.role, "content": m.content} for m in prev] + [{"role": "user", "content": body.message}]
-    system = ai.SYSTEM + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user)
+    system = ai.system() + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user)
     uid = user.id
 
     async def gen():

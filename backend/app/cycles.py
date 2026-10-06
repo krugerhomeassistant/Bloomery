@@ -20,6 +20,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
 from itertools import pairwise
 
+from .i18n import N_, _, fmt_date, plural
+
 MERGE_GAP = 2
 MIN_CYCLE, MAX_CYCLE = 15, 90
 TYPICAL_CYCLE = (21, 35)
@@ -137,7 +139,7 @@ class Engine:
                 segs.append(Segment(p.start, length, period_end, ov, False, bool(bbt)))
         if segs and self.profile.mode != "pregnancy":
             nxt = segs[-1].end + D(days=1)
-            for _ in range(12):
+            for _n in range(12):
                 segs.append(
                     Segment(
                         nxt,
@@ -230,15 +232,20 @@ class Engine:
             due = date.fromisoformat(p["due"])
             return {
                 "state": "pregnancy",
-                "label": "Pregnant",
-                "headline": f"{p['week']}w {p['day']}d",
-                "sub": f"Due {due:%b} {due.day}",
+                "label": _("Pregnant"),
+                "headline": _("{w}w {d}d", w=p["week"], d=p["day"]),
+                "sub": _("Due {date}", date=fmt_date(due)),
                 "cycle_day": None,
                 "phase": None,
                 "chance": None,
             }
         if not self.periods:
-            return {"state": "empty", "label": "Welcome", "headline": "Log your period", "sub": "to get predictions"}
+            return {
+                "state": "empty",
+                "label": _("Welcome"),
+                "headline": _("Log your period"),
+                "sub": _("to get predictions"),
+            }
         s = self.current
         info = self.day_info(t)
         base = {"cycle_day": info["cycle_day"], "phase": info["phase"], "chance": info["chance"]}
@@ -249,41 +256,41 @@ class Engine:
             return {
                 **base,
                 "state": "period",
-                "label": "Period",
-                "headline": f"Day {day}",
+                "label": _("Period"),
+                "headline": _("Day {n}", n=day),
                 "sub": _chance_text(info["chance"]),
             }
         if late == 0 and s is last:
             return {
                 **base,
                 "state": "due",
-                "label": "Period expected",
-                "headline": "Today",
-                "sub": "Log your period when it starts",
+                "label": _("Period expected"),
+                "headline": _("Today"),
+                "sub": _("Log your period when it starts"),
             }
         if late > 0 and s is last and self.profile.mode == "perimenopause":
             return {
                 **base,
                 "state": "late",
-                "label": "Days since period",
+                "label": _("Days since period"),
                 "headline": _days((t - last.start).days),
-                "sub": "Longer gaps are common now",
+                "sub": _("Longer gaps are common now"),
             }
         if late > 0 and s is last:
             return {
                 **base,
                 "state": "late",
-                "label": "Period late by",
+                "label": _("Period late by"),
                 "headline": _days(late),
-                "sub": "Log your period when it starts",
+                "sub": _("Log your period when it starts"),
             }
         if s and not self.profile.hormonal and s.fertile_start <= t <= s.ovulation:
             n = (s.ovulation - t).days
             return {
                 **base,
                 "state": "fertile",
-                "label": "Ovulation" if n == 0 else "Ovulation in",
-                "headline": "Today" if n == 0 else _days(n),
+                "label": _("Ovulation") if n == 0 else "Ovulation in",
+                "headline": _("Today") if n == 0 else _days(n),
                 "sub": _chance_text(info["chance"]),
             }
         n = (self.next_period - t).days if self.next_period else 0
@@ -291,14 +298,14 @@ class Engine:
             return {
                 **base,
                 "state": "due",
-                "label": "Period expected",
-                "headline": "Today",
-                "sub": "Log your period when it starts",
+                "label": _("Period expected"),
+                "headline": _("Today"),
+                "sub": _("Log your period when it starts"),
             }
         return {
             **base,
             "state": "cycle",
-            "label": "Period in",
+            "label": _("Period in"),
             "headline": _days(n),
             "sub": _chance_text(info["chance"]),
         }
@@ -370,48 +377,63 @@ class Engine:
                 f.append(
                     {
                         "level": "warn",
-                        "title": "12 months without a period",
-                        "text": "A full year without a period usually marks menopause. Any bleeding from now on should be checked by a doctor.",
+                        "title": _("12 months without a period"),
+                        "text": _(
+                            "A full year without a period usually marks menopause. Any bleeding from now on should be checked by a doctor."
+                        ),
                     }
                 )
             elif gap >= 60:
                 f.append(
                     {
                         "level": "info",
-                        "title": f"No period for {gap} days",
-                        "text": f"Gaps of 60+ days are common in late perimenopause. You're {gap // 30} of the 12 months that usually mark menopause. Pregnancy is still possible until then.",
+                        "title": _("No period for {n} days", n=gap),
+                        "text": _(
+                            "Gaps of 60+ days are common in late perimenopause. You're {months} of the 12 months that "
+                            "usually mark menopause. Pregnancy is still possible until then.",
+                            months=gap // 30,
+                        ),
                     }
                 )
         if any(c < TYPICAL_CYCLE[0] for c in cl):
             f.append(
                 {
                     "level": "info",
-                    "title": "Short cycles",
-                    "text": "Some of your recent cycles were shorter than 21 days. Worth mentioning to a healthcare provider if it keeps happening.",
+                    "title": _("Short cycles"),
+                    "text": _(
+                        "Some of your recent cycles were shorter than 21 days. Worth mentioning to a healthcare provider if it keeps happening."
+                    ),
                 }
             )
         if any(c > TYPICAL_CYCLE[1] for c in cl):
             f.append(
                 {
                     "level": "info",
-                    "title": "Long cycles",
-                    "text": "Some of your recent cycles were longer than 35 days. Stress, travel and hormones can cause this; talk to a professional if it persists.",
+                    "title": _("Long cycles"),
+                    "text": _(
+                        "Some of your recent cycles were longer than 35 days. Stress, travel and hormones can cause this; talk to a professional if it persists."
+                    ),
                 }
             )
         if len(cl) >= 3 and max(cl) - min(cl) > 9:
             f.append(
                 {
                     "level": "info",
-                    "title": "Variable cycle length",
-                    "text": f"Your cycle length varied by {max(cl) - min(cl)} days recently, so predictions are less certain.",
+                    "title": _("Variable cycle length"),
+                    "text": _(
+                        "Your cycle length varied by {n} days recently, so predictions are less certain.",
+                        n=max(cl) - min(cl),
+                    ),
                 }
             )
         if any(p > 7 for p in pl):
             f.append(
                 {
                     "level": "warn",
-                    "title": "Long periods",
-                    "text": "At least one recent period lasted more than 7 days. Consider checking in with a healthcare provider.",
+                    "title": _("Long periods"),
+                    "text": _(
+                        "At least one recent period lasted more than 7 days. Consider checking in with a healthcare provider."
+                    ),
                 }
             )
         st = self.status()
@@ -421,8 +443,10 @@ class Engine:
                 f.append(
                     {
                         "level": "warn",
-                        "title": "Period is late",
-                        "text": "Your period is a week or more late. If pregnancy is possible, a test can help; otherwise stress and lifestyle changes are common causes.",
+                        "title": _("Period is late"),
+                        "text": _(
+                            "Your period is a week or more late. If pregnancy is possible, a test can help; otherwise stress and lifestyle changes are common causes."
+                        ),
                     }
                 )
         return f
@@ -431,43 +455,43 @@ class Engine:
 # ---------------------------------------------------------------------- helpers
 # Approximate baby size by pregnancy week (common produce comparisons).
 _SIZES = [
-    "poppy seed",
-    "sesame seed",
-    "lentil",
-    "blueberry",
-    "raspberry",
-    "cherry",
-    "strawberry",
-    "lime",
-    "plum",
-    "lemon",
-    "peach",
-    "apple",
-    "avocado",
-    "pear",
-    "bell pepper",
-    "mango",
-    "banana",
-    "carrot",
-    "papaya",
-    "grapefruit",
-    "ear of corn",
-    "cauliflower",
-    "lettuce",
-    "rutabaga",
-    "eggplant",
-    "butternut squash",
-    "cabbage",
-    "coconut",
-    "pineapple",
-    "large jicama",
-    "cantaloupe",
-    "honeydew melon",
-    "romaine lettuce",
-    "swiss chard",
-    "leek",
-    "mini watermelon",
-    "small pumpkin",
+    N_("poppy seed"),
+    N_("sesame seed"),
+    N_("lentil"),
+    N_("blueberry"),
+    N_("raspberry"),
+    N_("cherry"),
+    N_("strawberry"),
+    N_("lime"),
+    N_("plum"),
+    N_("lemon"),
+    N_("peach"),
+    N_("apple"),
+    N_("avocado"),
+    N_("pear"),
+    N_("bell pepper"),
+    N_("mango"),
+    N_("banana"),
+    N_("carrot"),
+    N_("papaya"),
+    N_("grapefruit"),
+    N_("ear of corn"),
+    N_("cauliflower"),
+    N_("lettuce"),
+    N_("rutabaga"),
+    N_("eggplant"),
+    N_("butternut squash"),
+    N_("cabbage"),
+    N_("coconut"),
+    N_("pineapple"),
+    N_("large jicama"),
+    N_("cantaloupe"),
+    N_("honeydew melon"),
+    N_("romaine lettuce"),
+    N_("swiss chard"),
+    N_("leek"),
+    N_("mini watermelon"),
+    N_("small pumpkin"),
 ]
 BABY_SIZE = dict(zip(range(4, 41), _SIZES, strict=True))
 
@@ -486,8 +510,8 @@ def detect_thermal_shift(temps: list[tuple[date, float]]) -> date | None:
     """'3 over 6': three consecutive temps above the max of the previous six, one >= +0.2°C.
     Returns the estimated ovulation day (day before the first high temp)."""
     for i in range(6, len(temps) - 2):
-        cover = max(t for _, t in temps[i - 6 : i])
-        trio = [t for _, t in temps[i : i + 3]]
+        cover = max(t for _d, t in temps[i - 6 : i])
+        trio = [t for _d, t in temps[i : i + 3]]
         if all(t > cover for t in trio) and max(trio) >= cover + 0.2:
             return temps[i][0] - D(days=1)
     return None
@@ -505,14 +529,14 @@ def _blend(values: list[int], prior: int) -> int:
 
 
 def _days(n: int) -> str:
-    return f"{n} day" if n == 1 else f"{n} days"
+    return plural(n, "{n} day", "{n} days")
 
 
 def _chance_text(c: str | None) -> str:
     if c is None:  # hormonal birth control
-        return "Fertile days hidden on hormonal birth control"
-    return {"high": "High chance of getting pregnant", "medium": "Medium chance of getting pregnant"}.get(
-        c, "Low chance of getting pregnant"
+        return _("Fertile days hidden on hormonal birth control")
+    return {"high": _("High chance of getting pregnant"), "medium": _("Medium chance of getting pregnant")}.get(
+        c, _("Low chance of getting pregnant")
     )
 
 
@@ -542,14 +566,14 @@ def symptom_patterns(engine: Engine, logs: list[tuple[date, dict]], catalog_labe
             patterns.append(
                 {
                     "tag": key,
-                    "label": catalog_labels.get(key, key.split(":")[1]),
+                    "label": _(catalog_labels.get(key, key.split(":")[1])),
                     "phase": phase,
                     "count": k,
                     "share": round(k / n, 2),
                 }
             )
     patterns.sort(key=lambda p: (-p["count"], p["label"]))
-    top = [{"tag": k, "label": catalog_labels.get(k, k.split(":")[1]), "count": n} for k, n in total.most_common(8)]
+    top = [{"tag": k, "label": _(catalog_labels.get(k, k.split(":")[1])), "count": n} for k, n in total.most_common(8)]
     return {"patterns": patterns[:8], "top": top}
 
 
@@ -585,7 +609,7 @@ def symptom_heatmap(
     rows = [
         {
             "tag": key,
-            "label": catalog_labels.get(key, key.split(":")[1]),
+            "label": _(catalog_labels.get(key, key.split(":")[1])),
             "share": [
                 round(by_day[key][cd] / reached[cd - 1], 2) if reached[cd - 1] else 0 for cd in range(1, days + 1)
             ],

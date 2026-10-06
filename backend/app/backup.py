@@ -28,6 +28,7 @@ from sqlmodel import Session
 
 from .config import get_settings
 from .db import get_engine, init_db
+from .i18n import _
 from .models import Setting
 
 log = logging.getLogger("bloomery.backup")
@@ -95,7 +96,7 @@ def decrypt(blob: bytes, passphrase: str) -> bytes:
     try:
         return AESGCM(_key(passphrase, salt)).decrypt(nonce, ct, MAGIC)
     except Exception as e:
-        raise BackupError("Wrong passphrase, or the file is damaged.") from e
+        raise BackupError(_("Wrong passphrase, or the file is damaged.")) from e
 
 
 # ---------------------------------------------------------------- snapshot / restore
@@ -124,15 +125,15 @@ def unpack(blob: bytes, passphrase: str) -> bytes:
     """Encrypted/gzipped/plain backup bytes -> raw SQLite bytes."""
     if blob.startswith(MAGIC):
         if not passphrase:
-            raise BackupError("This backup is encrypted. Enter its passphrase.")
+            raise BackupError(_("This backup is encrypted. Enter its passphrase."))
         blob = decrypt(blob, passphrase)
     if blob[:2] == b"\x1f\x8b":
         try:
             blob = gzip.decompress(blob)
         except OSError as e:
-            raise BackupError("The backup file is damaged.") from e
+            raise BackupError(_("The backup file is damaged.")) from e
     if not blob.startswith(b"SQLite format 3\x00"):
-        raise BackupError("That isn't a Bloomery backup.")
+        raise BackupError(_("That isn't a Bloomery backup."))
     return blob
 
 
@@ -149,7 +150,7 @@ def restore(blob: bytes, passphrase: str) -> None:
         finally:
             con.close()
         if not ok or not {"user", "daylog", "setting"} <= tables:
-            raise BackupError("That backup is damaged or isn't from Bloomery.")
+            raise BackupError(_("That backup is damaged or isn't from Bloomery."))
         name, data = make("")
         (backup_dir() / name.replace("bloomery-", "bloomery-prerestore-", 1)).write_bytes(data)
         get_engine().dispose()  # close pooled connections, then copy page-by-page into the live file

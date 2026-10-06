@@ -54,7 +54,7 @@ def test_schedules():
     assert (
         status({"method": "iud_copper", "start": "2025-06-01"}, date(2026, 3, 1))["title"] == "Monthly IUD string check"
     )
-    assert status({"method": "implant", "start": "2025-06-01"}, date(2026, 3, 1))["title"] == "implant in place"
+    assert status({"method": "implant", "start": "2025-06-01"}, date(2026, 3, 1))["title"] == "Implant in place"
     assert status({"method": "condom"}, D0) is None and status(None, D0) is None
 
 

@@ -12,20 +12,25 @@ from sqlmodel import Session
 
 from .. import VERSION
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
+from ..i18n import LANG, N_, _, user_lang
 from ..models import Setting, User
 
 router = APIRouter(tags=["share"])
 KINDS = ("share", "ha", "api")  # api = write key for quick logging (routers/quick.py)
 
 PARTNER_TIPS = {
-    "menstrual": "Period days can mean cramps and low energy. A hot water bottle, snacks and taking a chore off her plate go a long way.",
-    "follicular": "Energy usually climbs this week. A good time for plans, dates and doing active things together.",
-    "fertile": "This is the fertile window, the days when pregnancy is most likely.",
-    "ovulation": "Ovulation is estimated around today, the peak of the fertile window.",
-    "luteal": "PMS can show up in this phase: tiredness, bloating or a shorter fuse. Extra patience and comfort food are appreciated.",
+    "menstrual": N_(
+        "Period days can mean cramps and low energy. A hot water bottle, snacks and taking a chore off her plate go a long way."
+    ),
+    "follicular": N_("Energy usually climbs this week. A good time for plans, dates and doing active things together."),
+    "fertile": N_("This is the fertile window, the days when pregnancy is most likely."),
+    "ovulation": N_("Ovulation is estimated around today, the peak of the fertile window."),
+    "luteal": N_(
+        "PMS can show up in this phase: tiredness, bloating or a shorter fuse. Extra patience and comfort food are appreciated."
+    ),
 }
 
-PREGNANCY_TIP = (
+PREGNANCY_TIP = N_(
     "Pregnancy is hard work for the body. Help with meals, chores and appointments, and ask how she's feeling today."
 )
 
@@ -43,7 +48,8 @@ def _owner(db: Session, kind: str, token: str) -> User:
     s = db.get(Setting, f"{kind}:{token}")
     user = db.get(User, int(s.value)) if s else None
     if not user:
-        raise HTTPException(404, "This link is no longer active")
+        raise HTTPException(404, _("This link is no longer active"))
+    LANG.set(user_lang(db, user.id))  # partner page / HA / calendar texts in the owner's language
     return user
 
 
@@ -93,7 +99,7 @@ def partner_view(token: str, db: SessionDep, today: TodayDep):
         "predicted_cycle_length": ov["predicted_cycle_length"],
         "next_period": ov["next_period"],
         "phase": phase,
-        "tip": PARTNER_TIPS.get(phase or "") or (PREGNANCY_TIP if ov["pregnancy"] else None),
+        "tip": _(PARTNER_TIPS[phase]) if phase in PARTNER_TIPS else (_(PREGNANCY_TIP) if ov["pregnancy"] else None),
         "days": days,
         "pregnancy": ov["pregnancy"],
         "hormonal": ov["hormonal"],
@@ -156,15 +162,15 @@ def _events(eng, today: date) -> list[dict]:
         out += [
             {
                 "kind": "period",
-                "title": "Predicted period" if s.predicted else "Period",
+                "title": _("Predicted period") if s.predicted else _("Period"),
                 "start": s.start,
                 "end": s.period_end,
             },
         ]
         if not eng.profile.hormonal:  # no ovulation on hormonal birth control
             out += [
-                {"kind": "fertile", "title": "Fertile window", "start": s.fertile_start, "end": s.fertile_end},
-                {"kind": "ovulation", "title": "Ovulation (estimated)", "start": s.ovulation, "end": s.ovulation},
+                {"kind": "fertile", "title": _("Fertile window"), "start": s.fertile_start, "end": s.fertile_end},
+                {"kind": "ovulation", "title": _("Ovulation (estimated)"), "start": s.ovulation, "end": s.ovulation},
             ]
     if eng.pregnancy():  # only the cycle that led to the pregnancy, no future predictions
         lmp = date.fromisoformat(eng.pregnancy()["lmp"])

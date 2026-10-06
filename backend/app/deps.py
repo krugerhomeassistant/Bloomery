@@ -10,6 +10,7 @@ from sqlmodel import Session, select
 from . import contraception
 from .cycles import Engine, Profile
 from .db import get_session
+from .i18n import LANG, user_lang
 from .models import BLEEDING, DayLog, Setting, User
 
 ph = PasswordHasher()
@@ -27,11 +28,13 @@ def verify_pw(h: str, pw: str) -> bool:
         return False
 
 
-def current_user(request: Request, db: SessionDep) -> User:
+async def current_user(request: Request, db: SessionDep) -> User:
+    # async on purpose: runs in the request's own context, so the language set here reaches the endpoint
     uid = request.session.get("uid")
     user = db.get(User, uid) if uid else None
     if not user:
         raise HTTPException(401, "Not authenticated")
+    LANG.set(user_lang(db, user.id))
     return user
 
 

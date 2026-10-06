@@ -9,6 +9,7 @@ from sqlmodel import func, select
 
 from ..config import get_settings
 from ..deps import SessionDep, UserDep, hash_pw, life_stage, verify_pw
+from ..i18n import _, user_lang
 from ..models import Setting, User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -35,6 +36,7 @@ def public_user(u: User) -> dict:
         {
             "pin_set": bool(db.get(Setting, f"pin:{u.id}")),
             "is_owner": u.id == db.exec(select(func.min(User.id))).one(),
+            "lang": user_lang(db, u.id),
             "passkeys": len(json.loads(pk.value)) if (pk := db.get(Setting, f"passkeys:{u.id}")) else 0,
             **life_stage(db, u.id),
         }
@@ -52,10 +54,10 @@ def status(request: Request, db: SessionDep):
 @router.post("/register")
 def register(body: Credentials, request: Request, db: SessionDep):
     if not registration_open(db):
-        raise HTTPException(403, "Registration is closed")
+        raise HTTPException(403, _("Registration is closed"))
     uname = body.username.strip().lower()
     if db.exec(select(User).where(User.username == uname)).first():
-        raise HTTPException(409, "Username taken")
+        raise HTTPException(409, _("Username taken"))
     u = User(username=uname, password_hash=hash_pw(body.password), display_name=body.display_name or body.username)
     db.add(u)
     db.commit()
@@ -86,12 +88,12 @@ def login(body: Credentials, request: Request, db: SessionDep):
     # per-IP only: a per-username limit would let strangers lock the owner out of an internet-facing instance
     keys = (f"ip:{request.client.host if request.client else '?'}",)
     if _throttled(*keys):
-        raise HTTPException(429, "Too many failed attempts. Try again in 15 minutes.")
+        raise HTTPException(429, _("Too many failed attempts. Try again in 15 minutes."))
     u = db.exec(select(User).where(User.username == uname)).first()
     if not u or not verify_pw(u.password_hash, body.password):
         for k in keys:
             FAILS[k].append(time.monotonic())
-        raise HTTPException(401, "Invalid username or password")
+        raise HTTPException(401, _("Invalid username or password"))
     for k in keys:
         FAILS.pop(k, None)
     request.session["uid"] = u.id
@@ -117,7 +119,7 @@ class PasswordChange(BaseModel):
 @router.post("/password")
 def change_password(body: PasswordChange, user: UserDep, db: SessionDep):
     if not verify_pw(user.password_hash, body.current):
-        raise HTTPException(400, "Current password is wrong")
+        raise HTTPException(400, _("Current password is wrong"))
     user.password_hash = hash_pw(body.new)
     db.add(user)
     db.commit()
@@ -138,7 +140,7 @@ class PinIn(BaseModel):
 @router.put("/pin")
 def set_pin(body: PinIn, user: UserDep, db: SessionDep):
     if not verify_pw(user.password_hash, body.password):
-        raise HTTPException(400, "Password is wrong")
+        raise HTTPException(400, _("Password is wrong"))
     key = f"pin:{user.id}"
     if s := db.get(Setting, key):
         db.delete(s)
@@ -164,5 +166,5 @@ def verify_pin(body: PinCheck, request: Request, user: UserDep, db: SessionDep):
     if left <= 0:
         FAILS.pop(k, None)
         request.session.clear()
-        raise HTTPException(401, "Too many wrong PINs. Log in with your password.")
+        raise HTTPException(401, _("Too many wrong PINs. Log in with your password."))
     raise HTTPException(400, f"Wrong PIN, {left} {'try' if left == 1 else 'tries'} left")
