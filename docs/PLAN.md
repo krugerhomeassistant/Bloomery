@@ -144,6 +144,11 @@
 - [x] Frontend: `webauthn.ts` helpers, LockScreen Face ID key, Passkeys in App lock sheet, NotifySettings "This device", `public/push-sw.js` via workbox importScripts
 - [x] Tests 34/34 (soft authenticator with real ECDSA incl. wrong origin/replay/unknown device; push payload decrypted as a browser would, 410 cleanup); E2E Chromium virtual authenticator register → lock → unlock
 
+## Phase 18 — Insights charts (v1.5.0)
+- [x] `cycles.symptom_heatmap`: top 6 tags × cycle day (21–35), share of cycles that reached the day; avg period days + ovulation day for the phase strip; in `/api/insights` as `heatmap`
+- [x] `components/InsightCharts.tsx`: CycleTrend (dots + thin line, dashed avg, typical band; tap/hover detail) and SymptomMap (single-hue sequential grid, tap detail line, legend, aria-labels)
+- [x] Tests 35/35; screenshots light + dark
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

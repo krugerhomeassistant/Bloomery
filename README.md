@@ -68,7 +68,7 @@ Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, y
 A **Home Assistant integration** built to HA's Platinum quality rules (HACS, UI setup, no YAML): cycle sensors plus colour-coded **Periods / Fertile windows / Ovulation calendars**, and a private **iCalendar feed** for Google, Apple or Outlook.
 
 ### 📊 Insights
-Averages, regularity, cycle history, **symptom ↔ phase patterns**, temperature and weight charts, plus gentle health-check flags.
+Averages, regularity, **cycle length over time**, a **symptom map by cycle day**, cycle history, symptom ↔ phase patterns, temperature and weight charts, plus gentle health-check flags.
 
 </td>
 </tr>

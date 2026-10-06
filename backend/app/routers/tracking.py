@@ -8,7 +8,7 @@ from sqlmodel import delete, select
 
 from .. import feed as feed_mod
 from ..catalog import LABELS, VALID, catalog_json
-from ..cycles import symptom_patterns
+from ..cycles import symptom_heatmap, symptom_patterns
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, Setting, User, now
 from .auth import public_user
@@ -252,6 +252,7 @@ def insights(user: UserDep, db: SessionDep, today: TodayDep):
         "stats": eng.stats(),
         "flags": eng.flags(),
         "symptoms": symptom_patterns(eng, [(l.day, l.tags) for l in logs], LABELS),
+        "heatmap": symptom_heatmap(eng, [(l.day, l.tags) for l in logs], LABELS),
         "temperature": temps,
         "weight": weights,
         "overview": eng.overview(),

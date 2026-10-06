@@ -544,3 +544,51 @@ def symptom_patterns(engine: Engine, logs: list[tuple[date, dict]], catalog_labe
     patterns.sort(key=lambda p: (-p["count"], p["label"]))
     top = [{"tag": k, "label": catalog_labels.get(k, k.split(":")[1]), "count": n} for k, n in total.most_common(8)]
     return {"patterns": patterns[:8], "top": top}
+
+
+def symptom_heatmap(
+    engine: Engine, logs: list[tuple[date, dict]], catalog_labels: dict[str, str], top_n: int = 6
+) -> dict:
+    """How often each of the most-logged symptoms/moods shows up on each cycle day, across your logged cycles.
+
+    Cell value = share of cycles (that reached that day) in which the tag was logged on that cycle day.
+    """
+    days = min(max(engine.predicted_cycle, 21), 35)
+    segs = [s for s in engine.segments if not s.predicted and s.start <= engine.today]
+    by_day: dict[str, Counter] = defaultdict(Counter)
+    total: Counter = Counter()
+    for d, tags in logs:
+        seg = next((s for s in segs if s.start <= d <= s.end), None)
+        if not seg or (cd := (d - seg.start).days + 1) > days:
+            continue
+        for cat, vals in (tags or {}).items():
+            for v in vals if isinstance(vals, list) else []:
+                if v in ("none", "fine"):
+                    continue
+                by_day[f"{cat}:{v}"][cd] += 1
+                total[f"{cat}:{v}"] += 1
+    # cycles that actually reached each cycle day (the current one only up to today)
+    reached = [
+        sum(1 for s in segs if min(s.end, engine.today) >= s.start + D(days=cd - 1)) for cd in range(1, days + 1)
+    ]
+    rows = [
+        {
+            "tag": key,
+            "label": catalog_labels.get(key, key.split(":")[1]),
+            "share": [
+                round(by_day[key][cd] / reached[cd - 1], 2) if reached[cd - 1] else 0 for cd in range(1, days + 1)
+            ],
+        }
+        for key, n in total.most_common(top_n)
+        if n >= 3
+    ]
+    done = [s for s in segs if s.end < engine.today]
+    return {
+        "days": days,
+        "cycles": len(segs),
+        "period_days": round(statistics.mean((s.period_end - s.start).days + 1 for s in done))
+        if done
+        else engine.predicted_period,
+        "ovulation_day": round(statistics.mean((s.ovulation - s.start).days + 1 for s in done)) if done else None,
+        "rows": rows,
+    }

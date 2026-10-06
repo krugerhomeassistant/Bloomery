@@ -5,6 +5,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-06
+
+### Added
+- Insights: **cycle length over time** chart (with your average and the typical 21–35 day range) and a **symptom map** showing which symptoms and moods you log on which cycle day, across your cycles.
+
 ## [1.4.0] - 2026-10-06
 
 ### Added
@@ -100,7 +105,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.0...v1.2.1

@@ -4,6 +4,7 @@ import type { Overview } from '../api'
 import { useApp, useFetch } from '../state'
 import { LineChart, SectionTitle, Spinner } from '../components/ui'
 import RecapSheet from '../components/RecapSheet'
+import { CycleTrend, SymptomMap, type Heatmap } from '../components/InsightCharts'
 import { useState } from 'react'
 
 type Hist = { start: string; length: number | null; days_so_far: number | null; period_length: number; ovulation: string; ovulation_confirmed: boolean }
@@ -11,6 +12,7 @@ type Data = {
   stats: { cycles_tracked: number; avg_cycle_length: number | null; avg_period_length: number | null; min_cycle: number | null; max_cycle: number | null; regularity: string; history: Hist[] }
   flags: { level: string; title: string; text: string }[]
   symptoms: { patterns: { tag: string; label: string; phase: string; count: number; share: number }[]; top: { tag: string; label: string; count: number }[] }
+  heatmap: Heatmap
   temperature: { date: string; value: number }[]
   weight: { date: string; value: number }[]
   overview: Overview
@@ -55,6 +57,9 @@ export default function Insights() {
         </>
       )}
 
+      <SectionTitle>Cycle length over time</SectionTitle>
+      <div className="card p-4"><CycleTrend history={stats.history} /></div>
+
       <SectionTitle>Cycle history</SectionTitle>
       <div className="card space-y-4 p-4">
         {stats.history.length === 0 && <p className="text-sm text-muted">Log your periods to build your cycle history.</p>}
@@ -81,6 +86,9 @@ export default function Insights() {
       </div>
 
       <RecapSheet start={recap} onClose={() => setRecap(null)} />
+
+      <SectionTitle>Symptom map</SectionTitle>
+      <div className="card p-4"><SymptomMap map={data.heatmap} emoji={emoji} /></div>
 
       <SectionTitle>Your body patterns</SectionTitle>
       <div className="card p-4">

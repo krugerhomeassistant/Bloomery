@@ -108,3 +108,18 @@ def test_life_stages():
         Engine(Profile(mode="perimenopause"), today + timedelta(days=300), bleed).flags()[0]["title"]
         == "12 months without a period"
     )
+
+
+def test_symptom_heatmap():
+    from app.cycles import symptom_heatmap
+
+    starts = [date(2026, 1, 1) + D(days=28 * i) for i in range(4)]
+    eng = Engine(Profile(), starts[-1] + D(days=10), bleed(*starts))
+    logs = [(s + D(days=1), {"symptoms": ["cramps"]}) for s in starts]  # cycle day 2, every cycle
+    logs += [(starts[0] + D(days=25), {"symptoms": ["cramps", "fine"]})]
+    h = symptom_heatmap(eng, logs, {"symptoms:cramps": "Cramps"})
+    assert h["days"] == 28 and h["cycles"] == 4 and h["period_days"] == 5
+    row = h["rows"][0]
+    assert row["label"] == "Cramps" and row["share"][1] == 1.0 and row["share"][0] == 0
+    assert row["share"][25] == round(1 / 3, 2)  # day 26 reached by the 3 finished cycles only
+    assert all(r["tag"] != "symptoms:fine" for r in h["rows"])

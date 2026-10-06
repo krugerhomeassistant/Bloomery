@@ -62,4 +62,5 @@ Format: [Problem] → [Root cause] → [Verified solution]
 59. **pywebpush drags in requests + aiohttp** → too heavy for a low-RAM server → use its building blocks (http-ece + py-vapid) and send with httpx.
 60. **Tests run standalone had no tables** → `TestClient(app)` without `with` skips lifespan → call `init_db()` in test helpers.
 61. **Testing WebAuthn without hardware** → backend: soft authenticator (P-256, 'none' attestation, CBOR authData); browser: Chromium CDP `WebAuthn.addVirtualAuthenticator` (internal, UV) on http://localhost (secure context).
+62. **First cycle-length chart used bars on a zoomed axis** → exaggerates small differences (dataviz anti-pattern) → dots + line when the baseline isn't zero.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
