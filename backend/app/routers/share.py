@@ -15,7 +15,7 @@ from ..deps import SessionDep, TodayDep, UserDep, build_engine
 from ..models import Setting, User
 
 router = APIRouter(tags=["share"])
-KINDS = ("share", "ha")
+KINDS = ("share", "ha", "api")  # api = write key for quick logging (routers/quick.py)
 
 PARTNER_TIPS = {
     "menstrual": "Period days can mean cramps and low energy. A hot water bottle, snacks and taking a chore off her plate go a long way.",

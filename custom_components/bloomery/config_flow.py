@@ -6,12 +6,13 @@ from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_URL
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import BloomeryAuthError, BloomeryClient, BloomeryConnectionError, normalize_url
-from .const import DOMAIN
+from .api import BloomeryAuthError, BloomeryClient, BloomeryConnectionError, BloomeryKeyError, normalize_url
+from .const import CONF_API_KEY, DOMAIN
 
 SCHEMA = vol.Schema({vol.Required(CONF_URL): str})
 
@@ -20,6 +21,11 @@ class BloomeryConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Bloomery."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> BloomeryOptionsFlow:
+        return BloomeryOptionsFlow()
 
     async def _validate(self, user_input: dict[str, Any]) -> tuple[str | None, dict[str, Any], dict[str, str]]:
         """Return (normalized url, feed data, errors) and set the unique id (server host + Bloomery user id)."""
@@ -64,3 +70,25 @@ class BloomeryConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_mismatch()
                 return self.async_update_reload_and_abort(get_entry(), data_updates={CONF_URL: url})
         return self.async_show_form(step_id=step_id, data_schema=SCHEMA, errors=errors)
+
+
+class BloomeryOptionsFlow(OptionsFlow):
+    """API key for the logging actions (Bloomery → Profile → Shortcuts & automations). Empty = actions off."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            key = user_input.get(CONF_API_KEY, "").strip()
+            if key:
+                client = self.config_entry.runtime_data.client
+                try:
+                    await client.async_quick(key, "catalog")
+                except BloomeryKeyError:
+                    errors[CONF_API_KEY] = "invalid_api_key"
+                except BloomeryConnectionError:
+                    errors["base"] = "cannot_connect"
+            if not errors:
+                return self.async_create_entry(data={CONF_API_KEY: key})
+        current = self.config_entry.options.get(CONF_API_KEY, "")
+        schema = vol.Schema({vol.Optional(CONF_API_KEY, description={"suggested_value": current}): str})
+        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)

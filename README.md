@@ -172,13 +172,22 @@ Only the owner account can change AI settings. The API key is stored in your dat
 2. In Bloomery: **Profile → Home Assistant & calendar → Create feed**, copy the integration URL.
 3. In HA: **Settings → Devices & services → Add integration → Bloomery**, paste it.
 
-You get a *Bloomery* device with **status, cycle day, phase, days until period, next period, ovulation, pregnancy chance, life stage** (and pregnancy week / due date) sensors, **period** and **fertile window** binary sensors, and **Periods**, **Fertile windows** and **Ovulation** calendars, each with its own colour. Read-only, refreshed every 15 minutes and at midnight.
+Add your API key under the integration's **Configure** to get **Log period start** and **Log** actions (dashboard buttons, NFC tags, voice). You get a *Bloomery* device with **status, cycle day, phase, days until period, next period, ovulation, pregnancy chance, life stage** (and pregnancy week / due date) sensors, **period** and **fertile window** binary sensors, and **Periods**, **Fertile windows** and **Ovulation** calendars, each with its own colour. Read-only, refreshed every 15 minutes and at midnight.
 
 📖 **[Full integration guide](docs/home-assistant.md)**: entities, automation examples, troubleshooting, removal.
 
 **Other calendar apps:** subscribe to the `.ics` link shown in the same Profile section; add `&type=period`, `&type=fertile` or `&type=ovulation` to get one calendar per type with its own colour.
 
 Feeds contain cycle dates only, never symptoms or notes. **New token** invalidates the old links (HA asks for the new one); **Turn off** removes them.
+
+## ⚡ Siri Shortcuts & automations
+
+**Profile → Shortcuts & automations → Create API key**, then follow the in-app steps for a *"Hey Siri, my period started"* shortcut, a symptom menu shortcut, or Home Assistant. The key can only add logs (`POST /api/quick/period-start`, `POST /api/quick/log`), never read or delete.
+
+```bash
+curl -X POST https://bloomery.example/api/quick/log -H "Authorization: Bearer YOUR_KEY" \
+     -H "Content-Type: application/json" -d '{"tags": ["cramps", "mood:sad"], "note": "rough day"}'
+```
 
 ## 💾 Backups
 

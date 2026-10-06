@@ -156,6 +156,12 @@
 - [x] CODE_OF_CONDUCT.md (Contributor Covenant 2.1, official text; reports via GitHub private reporting)
 - [ ] Next: v1.7 HA/Siri logging, v1.8 birth control, v1.9 wearable temperature, v2.0 Afrikaans
 
+## Phase 20 — Logging from Home Assistant & Siri (v1.7.0)
+- [x] Token kind `api` (write-only key), `routers/quick.py`: Bearer auth, `/catalog`, `/period-start`, `/log` (merge tags by id/label/cat:id, flow, temp °C/°F, note append, day/tz); account delete removes `api:` tokens
+- [x] Integration: options flow (API key, validated), `services.py` actions registered in `async_setup` (`log_period_start`, `log`, response data), services.yaml + translations + icons; quality scale action rules now done
+- [x] UI: Profile → Shortcuts & automations (key create/show/copy/rotate/off, Siri Shortcut + HA + curl guides)
+- [x] Tests: backend 37/37 (key can't reach other endpoints), HA 18/18 at 100%; E2E key → curl → log
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

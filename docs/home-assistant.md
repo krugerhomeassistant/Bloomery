@@ -25,7 +25,13 @@ It reads a private, read-only feed. It never sees symptoms, moods, sex or notes,
 |---|---|
 | Integration URL | The feed URL from Bloomery's profile. Anything after `?` is ignored. Home Assistant's time zone is sent automatically so "today" matches yours. |
 
-There are no other options. Each Bloomery account can be added once; add more accounts by repeating the steps from that account.
+**Options** (Settings → Devices & services → Bloomery → **Configure**):
+
+| Option | Description |
+|---|---|
+| API key | Turns on the logging actions below. Create it in Bloomery under **Profile → Shortcuts & automations**. It can only add logs; it can't read or delete anything. Leave empty to turn the actions off. |
+
+Each Bloomery account can be added once; add more accounts by repeating the steps from that account.
 
 ## What you get
 
@@ -65,6 +71,17 @@ Each event type is its own calendar, so each has its own colour. Change a colour
 | Ovulation | Estimated ovulation days | Purple `#7C5CE0` |
 
 Covers the last 60 days and the next 12 predicted cycles. Calendar colours need Home Assistant 2026.2 or newer.
+
+## Actions
+
+Need the API key option. Both return what was logged (use `response_variable` in scripts).
+
+| Action | Fields |
+|---|---|
+| `bloomery.log_period_start` | `config_entry_id`, optional `date` (default today). Marks the period start and the expected next few days, like **Log period** in the app. |
+| `bloomery.log` | `config_entry_id`, optional `items` (symptoms, moods etc. by name or id, e.g. `cramps`, `Headache`, `mood:sad`), `flow` (spotting/light/medium/heavy), `temperature` (°C), `note`, `date`. Adds to the day; never removes what's already logged. |
+
+Unknown item names fail with a message listing them; every loggable item is in Bloomery's `/api/quick/catalog`.
 
 ## How data updates
 
@@ -113,17 +130,48 @@ type: tile
 entity: sensor.bloomery_mia_status
 ```
 
+A dashboard button that logs a period start:
+
+```yaml
+type: button
+name: Period started
+icon: mdi:water-plus
+tap_action:
+  action: perform-action
+  perform_action: bloomery.log_period_start
+  data:
+    config_entry_id: YOUR_ENTRY_ID  # Settings → Devices & services → Bloomery → ⋮ → copy entry ID
+  confirmation:
+    text: Log a period starting today?
+```
+
+An NFC tag on the bathroom cabinet that logs cramps:
+
+```yaml
+automation:
+  - alias: "Cramps tag"
+    triggers:
+      - trigger: tag
+        tag_id: cramps-tag
+    actions:
+      - action: bloomery.log
+        data:
+          config_entry_id: YOUR_ENTRY_ID
+          items: [cramps]
+```
+
 ## Use cases
 
 - Heads-up notifications before a period or the fertile window.
 - Comfort routines on period days: heating pad smart plug, warmer lights, quieter evening scenes.
 - A shared family calendar showing predicted periods, without sharing any symptoms.
 - Pregnancy countdown on a wall tablet (enable *Pregnancy week* and *Due date*).
+- One-tap or voice logging: dashboard buttons, NFC tags, Assist ("log cramps" via a script), or a thermometer sensor feeding `bloomery.log` with your morning temperature.
 
 ## Known limitations
 
 - Predictions are estimates from your own logs and are **not contraception**.
-- Read-only: you can't log periods or symptoms from Home Assistant.
+- Logging actions add to a day; to remove or edit entries, use the app.
 - Polling only; changes in Bloomery can take up to 15 minutes to appear.
 - Home Assistant must reach the exact address in the URL. A URL created while browsing over a Tailscale-only name won't work if Home Assistant can't resolve that name; create the feed while using an address Home Assistant can reach.
 

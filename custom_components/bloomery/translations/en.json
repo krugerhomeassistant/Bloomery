@@ -126,6 +126,92 @@
     },
     "cannot_connect": {
       "message": "Can't reach Bloomery: {error}"
+    },
+    "entry_not_loaded": {
+      "message": "That Bloomery entry isn't loaded."
+    },
+    "no_api_key": {
+      "message": "Add your Bloomery API key in the integration's options (Configure) to log from Home Assistant."
+    },
+    "invalid_api_key": {
+      "message": "Bloomery rejected the API key. Create a new one in Bloomery and update the integration's options."
+    },
+    "rejected": {
+      "message": "Bloomery couldn't log that: {error}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Logging from Home Assistant",
+        "description": "Paste the API key from Bloomery → Profile → Shortcuts & automations to use the *Log period start* and *Log* actions. Leave it empty to turn the actions off.",
+        "data": {
+          "api_key": "API key"
+        },
+        "data_description": {
+          "api_key": "Lets Home Assistant add logs to Bloomery. It can't read or delete anything."
+        }
+      }
+    },
+    "error": {
+      "invalid_api_key": "Bloomery didn't accept that API key.",
+      "cannot_connect": "Can't reach Bloomery at that address from Home Assistant."
+    }
+  },
+  "services": {
+    "log_period_start": {
+      "name": "Log period start",
+      "description": "Marks the start of a period (and the expected next few days), like tapping Log period in the app.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Bloomery account",
+          "description": "Which Bloomery account to log to."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Day to log for. Defaults to today."
+        }
+      }
+    },
+    "log": {
+      "name": "Log",
+      "description": "Adds symptoms, moods and other items to a day without removing anything already logged.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Bloomery account",
+          "description": "Which Bloomery account to log to."
+        },
+        "date": {
+          "name": "Date",
+          "description": "Day to log for. Defaults to today."
+        },
+        "items": {
+          "name": "Items",
+          "description": "Symptoms, moods and more by name or id, e.g. cramps, Headache or mood:sad."
+        },
+        "flow": {
+          "name": "Flow",
+          "description": "Bleeding for that day."
+        },
+        "temperature": {
+          "name": "Temperature",
+          "description": "Basal body temperature in °C."
+        },
+        "note": {
+          "name": "Note",
+          "description": "Text added to the day's notes."
+        }
+      }
+    }
+  },
+  "selector": {
+    "flow": {
+      "options": {
+        "spotting": "Spotting",
+        "light": "Light",
+        "medium": "Medium",
+        "heavy": "Heavy"
+      }
     }
   }
 }

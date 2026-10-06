@@ -22,6 +22,14 @@ class BloomeryAuthError(BloomeryError):
     """The feed token was revoked or regenerated."""
 
 
+class BloomeryKeyError(BloomeryError):
+    """The API key (for logging) is missing, wrong or revoked."""
+
+
+class BloomeryRejected(BloomeryError):
+    """Bloomery refused the input (e.g. an unknown symptom); message comes from the server."""
+
+
 def normalize_url(url: str) -> str | None:
     """Return the feed URL without query/fragment, or None if it isn't a Bloomery feed URL."""
     m = FEED_RE.match(url.strip())
@@ -45,6 +53,25 @@ class BloomeryClient:
             async with self._session.get(self.url, params={"tz": self._tz}, timeout=ClientTimeout(total=15)) as r:
                 if r.status == 404:
                     raise BloomeryAuthError
+                r.raise_for_status()
+                data: dict[str, Any] = await r.json()
+        except (ClientError, TimeoutError, ValueError) as err:
+            raise BloomeryConnectionError(str(err) or type(err).__name__) from err
+        return data
+
+    async def async_quick(self, api_key: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+        """POST (GET when payload is None) to /api/quick/<path> with the logging API key."""
+        headers = {"Authorization": f"Bearer {api_key}"}
+        body = None if payload is None else {"tz": self._tz, **payload}
+        method = "GET" if body is None else "POST"
+        try:
+            async with self._session.request(
+                method, f"{self.base_url}/api/quick/{path}", json=body, headers=headers, timeout=ClientTimeout(total=15)
+            ) as r:
+                if r.status == 401:
+                    raise BloomeryKeyError
+                if r.status == 422:
+                    raise BloomeryRejected(str((await r.json()).get("detail", "")))
                 r.raise_for_status()
                 data: dict[str, Any] = await r.json()
         except (ClientError, TimeoutError, ValueError) as err:

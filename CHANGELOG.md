@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-06
+
+### Added
+- **Quick logging with an API key** (Profile → Shortcuts & automations): log a period start, symptoms, moods, flow, temperature or a note from Siri Shortcuts, NFC tags or scripts (`/api/quick/*`). The key can only add logs.
+- Home Assistant integration: **Log period start** and **Log** actions (set the API key under the integration's *Configure*), with translated errors and responses.
+
 ## [1.6.0] - 2026-10-06
 
 ### Added
@@ -111,7 +117,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.3.0...v1.4.0

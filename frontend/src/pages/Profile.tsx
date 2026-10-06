@@ -8,6 +8,7 @@ import AiSettings from '../components/AiSettings'
 import NotifySettings from '../components/NotifySettings'
 import BackupSettings from '../components/BackupSettings'
 import Passkeys from '../components/Passkeys'
+import Automations from '../components/Automations'
 
 const STAGE_HELP: Record<LifeStage, string> = {
   cycle: 'Period and fertility predictions from your logs.',
@@ -235,6 +236,9 @@ export default function Profile() {
           )}
         </div>
       </Group>
+
+      <SectionTitle>Shortcuts & automations</SectionTitle>
+      <Group><Automations /></Group>
 
       <SectionTitle>Your data</SectionTitle>
       <Group>

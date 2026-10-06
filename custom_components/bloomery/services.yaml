@@ -1,0 +1,47 @@
+log_period_start:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: bloomery
+    date:
+      selector:
+        date:
+
+log:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: bloomery
+    items:
+      example: '["cramps", "headache", "mood:sad"]'
+      selector:
+        text:
+          multiple: true
+    flow:
+      selector:
+        select:
+          translation_key: flow
+          options:
+            - spotting
+            - light
+            - medium
+            - heavy
+    temperature:
+      selector:
+        number:
+          min: 34
+          max: 43
+          step: 0.01
+          unit_of_measurement: "°C"
+          mode: box
+    note:
+      selector:
+        text:
+          multiline: true
+    date:
+      selector:
+        date:

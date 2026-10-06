@@ -11,7 +11,7 @@ from . import VERSION, backup
 from .config import get_settings
 from .db import init_db
 from .notify import scheduler
-from .routers import assistant, auth, backups, notifications, passkeys, share, tracking
+from .routers import assistant, auth, backups, notifications, passkeys, quick, share, tracking
 
 
 @asynccontextmanager
@@ -56,6 +56,7 @@ def create_app() -> FastAPI:
         share.router,
         backups.router,
         passkeys.router,
+        quick.router,
     ):
         app.include_router(r)
 

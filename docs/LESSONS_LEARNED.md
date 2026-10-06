@@ -65,4 +65,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 62. **First cycle-length chart used bars on a zoomed axis** → exaggerates small differences (dataviz anti-pattern) → dots + line when the baseline isn't zero.
 63. **Printed report squeezed to phone width** → the app shell's `max-w-md` applies in print → `print:max-w-none` on the shell; charts get `print:max-w-md` so SVG text doesn't balloon.
 64. **Heatmap shares diluted in a 6-month report** → share denominators counted all cycles → `symptom_heatmap(..., since=)` limits cycles to the window.
+65. **Pydantic `Unable to evaluate type annotation 'date | None'`** → a model field named `date` shadowed the `date` type → name it `day`.
+66. **New router 404'd** → my string edit targeted a one-line `for r in (...)` that ruff had reformatted to multi-line → re-read formatted files before editing; check new routes in a test.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
