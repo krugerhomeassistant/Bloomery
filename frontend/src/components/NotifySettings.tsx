@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, Smartphone, XCircle } from 'lucide-react'
 import { api } from '../api'
 import { Sheet } from './ui'
+import { currentPushSubscription, disablePush, enablePush, needsHomeScreen, pushSupported } from '../webauthn'
 
 type Cfg = { url: string; time: string; tz: string; kinds: string[] }
 const KINDS: [string, string, string][] = [
@@ -18,9 +19,25 @@ export default function NotifySettings({ open, onClose }: { open: boolean; onClo
   const [busy, setBusy] = useState(false)
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
 
+  const [device, setDevice] = useState(false)
   useEffect(() => {
-    if (open) { setRes(null); api<Cfg>('/api/notifications', { today: false }).then(setF) }
+    if (open) {
+      setRes(null)
+      api<Cfg>('/api/notifications', { today: false }).then(setF)
+      currentPushSubscription().then((s) => setDevice(!!s)).catch(() => setDevice(false))
+    }
   }, [open])
+  const toggleDevice = async () => {
+    setBusy(true); setRes(null)
+    try {
+      if (device) { await disablePush(); setDevice(false) }
+      else { await enablePush(); setDevice(true); await api('/api/notifications', { method: 'PUT', body: { ...f, tz }, today: false }) }
+    } catch (e: any) {
+      setRes({ ok: false, msg: e.message })
+    } finally {
+      setBusy(false)
+    }
+  }
   if (!f) return <Sheet open={open} onClose={onClose} title="Notifications"><p className="p-5 text-muted">Loading…</p></Sheet>
 
   const toggle = (k: string) => setF({ ...f, kinds: f.kinds.includes(k) ? f.kinds.filter((x) => x !== k) : [...f.kinds, k] })
@@ -31,7 +48,7 @@ export default function NotifySettings({ open, onClose }: { open: boolean; onClo
     try {
       if (kind === 'test') {
         const r = await api<{ ok: boolean; title?: string; error?: string }>('/api/notifications/test', { body })
-        setRes({ ok: r.ok, msg: r.ok ? `Sent "${r.title}". Check your phone.` : r.error! })
+        setRes({ ok: r.ok, msg: r.ok ? `Sent "${r.title}". Check your ${device && !f.url ? 'device' : 'phone'}.` : r.error! })
       } else {
         await api('/api/notifications', { method: 'PUT', body, today: false })
         onClose()
@@ -46,8 +63,19 @@ export default function NotifySettings({ open, onClose }: { open: boolean; onClo
   return (
     <Sheet open={open} onClose={onClose} title="Notifications">
       <div className="space-y-4 px-5 pb-8">
+        <div className="card flex items-center gap-3 p-4">
+          <Smartphone className="shrink-0 text-pink-500" />
+          <div className="flex-1">
+            <div className="font-bold">This device</div>
+            <div className="text-xs text-muted">{!pushSupported()
+              ? (needsHomeScreen() ? 'Add Bloomery to your Home Screen (Share → Add to Home Screen), open it from there, then turn this on.' : 'Needs Bloomery to be opened over HTTPS in a browser that supports notifications.')
+              : device ? 'Notifications are sent straight to this device.' : 'Get notifications on this phone or computer, no extra app needed.'}</div>
+          </div>
+          <input type="checkbox" className="h-5 w-5 accent-pink-500" disabled={busy || !pushSupported()} checked={device} onChange={toggleDevice} aria-label="Notifications on this device" />
+        </div>
+
         <label className="block">
-          <span className="mb-1 block text-sm font-bold text-muted">Send to (URL)</span>
+          <span className="mb-1 block text-sm font-bold text-muted">Or send to a URL (ntfy, Gotify, Home Assistant, Discord)</span>
           <input className="input" value={f.url} placeholder="https://ntfy.sh/your-secret-topic" inputMode="url"
             onChange={(e) => setF({ ...f, url: e.target.value })} />
         </label>
@@ -85,7 +113,7 @@ export default function NotifySettings({ open, onClose }: { open: boolean; onClo
           </div>
         )}
         <div className="flex gap-3">
-          <button className="btn-ghost flex-1" disabled={busy || !f.url} onClick={() => run('test')}>Send test</button>
+          <button className="btn-ghost flex-1" disabled={busy || !(f.url || device)} onClick={() => run('test')}>Send test</button>
           <button className="btn-primary flex-1" disabled={busy} onClick={() => run('save')}>Save</button>
         </div>
       </div>

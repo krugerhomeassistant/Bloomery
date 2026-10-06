@@ -1,3 +1,4 @@
+import json
 import time
 from collections import defaultdict, deque
 
@@ -34,6 +35,7 @@ def public_user(u: User) -> dict:
         {
             "pin_set": bool(db.get(Setting, f"pin:{u.id}")),
             "is_owner": u.id == db.exec(select(func.min(User.id))).one(),
+            "passkeys": len(json.loads(pk.value)) if (pk := db.get(Setting, f"passkeys:{u.id}")) else 0,
             **life_stage(db, u.id),
         }
         if db

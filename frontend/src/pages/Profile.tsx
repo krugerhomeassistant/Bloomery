@@ -7,6 +7,7 @@ import { extractAppleHealth } from '../appleHealth'
 import AiSettings from '../components/AiSettings'
 import NotifySettings from '../components/NotifySettings'
 import BackupSettings from '../components/BackupSettings'
+import Passkeys from '../components/Passkeys'
 
 const STAGE_HELP: Record<LifeStage, string> = {
   cycle: 'Period and fertility predictions from your logs.',
@@ -281,6 +282,7 @@ export default function Profile() {
             {user.pin_set && <button value="remove" formNoValidate className="btn-ghost w-full">Turn off app lock</button>}
           </form>
         )}
+        {lock && user.pin_set && <div className="px-5 pb-8"><Passkeys /></div>}
       </Sheet>
 
       <Sheet open={!!pw} onClose={() => setPw(null)} title="Change password">

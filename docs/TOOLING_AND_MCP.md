@@ -17,6 +17,9 @@
 | `pytest-homeassistant-custom-component` | HA test harness for `tests_ha/` (Python 3.13 venv) | real HA core in tests |
 | hassfest (GH action) | validates the HA integration manifest/translations in CI | official HA validator |
 | cryptography (AESGCM) | backup encryption; argon2-cffi low-level API for the key | audited, abi3 wheels for amd64/arm64 |
+| webauthn (py_webauthn 3) | passkey registration/assertion verification | maintained by Duo, avoids hand-rolled crypto |
+| http-ece + py-vapid | Web Push encryption + VAPID JWT | tiny; pywebpush minus requests/aiohttp |
+| cbor2 (test) | soft authenticator in tests (comes with webauthn) | |
 | ruff | lint + format for all Python (`pyproject.toml`; E501 left to formatter) | one fast tool, CI `lint` job |
 | mypy --strict | integration typing (Platinum rule) | `pyproject.toml [tool.mypy]` |
 | hacs/action | HACS repo validation (`validate.yml`, daily) | required for HACS default store |

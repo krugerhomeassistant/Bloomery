@@ -5,6 +5,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-06
+
+### Added
+- Unlock with Face ID, Touch ID, fingerprint or Windows Hello (WebAuthn passkeys) as an alternative to the PIN; manage devices under Profile → App lock.
+- Native push notifications to your phone or computer (Web Push with VAPID, encrypted payloads), alongside ntfy / Gotify / Home Assistant / Discord. Expired devices are cleaned up automatically.
+
+### Fixed
+- A Home Assistant integration test depended on the current date.
+
 ## [1.3.0] - 2026-10-06
 
 ### Added
@@ -91,7 +100,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/krugerhomeassistant/Bloomery/releases/tag/v1.2.0

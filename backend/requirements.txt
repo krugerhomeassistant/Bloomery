@@ -7,3 +7,6 @@ pydantic-settings==2.15.0
 itsdangerous==2.2.0
 tzdata==2026.4
 cryptography==50.0.2
+webauthn==3.0.1
+http-ece==1.2.1
+py-vapid==1.9.4

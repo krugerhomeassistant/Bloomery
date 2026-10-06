@@ -135,7 +135,14 @@
 - [x] Scheduler task in lifespan (daily at local time, once per day); owner-only API `/api/backups/*`; `is_owner` on `/api/auth/me`
 - [x] UI: Profile → Backups & restore sheet (status, run, schedule, keep, passphrase, Google setup guide with redirect URI, cloud + local lists, restore confirm with passphrase)
 - [x] Tests 32/32 (fake Drive via httpx.MockTransport, encrypted restore, tick, owner-only); E2E backup → encrypt → restore → Google return path
-- [ ] Next: HACS default-store PR (v1.3.x), passkeys + Web Push (v1.4), insights charts (v1.5), translations (v1.6)
+- [ ] Next: HACS default-store PR (user), insights charts (v1.5), translations (v1.6)
+
+## Phase 17 — Face ID unlock + push notifications (v1.4.0)
+- [x] `routers/passkeys.py` (py_webauthn 3.0.1): platform authenticator, UV required, RP = Origin host, per-user list in Setting `passkeys:<uid>`, sign-count update, per-address keys; `/me.passkeys`
+- [x] `push.py`: VAPID key in Setting `vapid` (py-vapid), aes128gcm via http-ece, send with httpx (no requests/aiohttp), drop 404/410 subs; contact = subscribing HTTPS host
+- [x] notify: `deliver()` = URL + push; test endpoint works with device only; `/api/notifications/push` GET/POST/DELETE
+- [x] Frontend: `webauthn.ts` helpers, LockScreen Face ID key, Passkeys in App lock sheet, NotifySettings "This device", `public/push-sw.js` via workbox importScripts
+- [x] Tests 34/34 (soft authenticator with real ECDSA incl. wrong origin/replay/unknown device; push payload decrypted as a browser would, 410 cleanup); E2E Chromium virtual authenticator register → lock → unlock
 
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)

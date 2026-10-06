@@ -14,6 +14,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from sqlmodel import Session, select
 
+from . import push
 from .db import get_engine
 from .deps import build_engine
 from .feed import feed
@@ -54,6 +55,22 @@ async def send(url: str, title: str, message: str) -> None:
         r.raise_for_status()
 
 
+async def deliver(db: Session, uid: int, url: str, title: str, message: str) -> int:
+    """Send to the configured URL (ntfy/Gotify/HA/Discord) and to every push-enabled device. Returns deliveries."""
+    n = 0
+    if url:
+        try:
+            await send(url, title, message)
+            n += 1
+        except Exception as e:
+            log.warning("notification to user %s via URL failed: %s", uid, e)
+    try:
+        n += await push.send(db, uid, title, message)
+    except Exception as e:
+        log.warning("push to user %s failed: %s", uid, e)
+    return n
+
+
 def compose(db: Session, user: User, today, kinds: list[str]) -> tuple[str, str] | None:
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day <= today)).all()
     cards = [c for c in feed(build_engine(db, user, today), logs, today, user.goal) if c["kind"] in kinds]
@@ -72,7 +89,8 @@ async def tick(now_utc: datetime | None = None) -> int:
     with Session(get_engine()) as db:
         for row in db.exec(select(Setting).where(Setting.key.startswith("notify:"))).all():
             cfg = {**DEFAULTS, **json.loads(row.value)}
-            if not cfg["url"]:
+            uid = int(row.key.split(":")[1])
+            if not cfg["url"] and not push.subscriptions(db, uid):
                 continue
             try:
                 local = now_utc.astimezone(ZoneInfo(cfg["tz"]))
@@ -81,16 +99,12 @@ async def tick(now_utc: datetime | None = None) -> int:
             today = local.date()
             if cfg["last"] == today.isoformat() or local.strftime("%H:%M") < cfg["time"]:
                 continue
-            user = db.get(User, int(row.key.split(":")[1]))
+            user = db.get(User, uid)
             cfg["last"] = today.isoformat()  # mark first: a failing endpoint must not retry every minute
-            store(db, int(row.key.split(":")[1]), cfg)
+            store(db, uid, cfg)
             msg = user and compose(db, user, today, cfg["kinds"])
             if msg:
-                try:
-                    await send(cfg["url"], *msg)
-                    sent += 1
-                except Exception as e:
-                    log.warning("notification to user %s failed: %s", row.key, e)
+                sent += await deliver(db, uid, cfg["url"], *msg)
     return sent
 
 

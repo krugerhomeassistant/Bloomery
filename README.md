@@ -53,7 +53,7 @@ Recency-weighted cycle length, learned period length, **BBT thermal-shift ovulat
 - A helpful note every time you log
 
 ### 🔔 Notifications
-A daily message on your phone with milestones, heads-ups, recaps, tips or a **pill reminder**, via **ntfy, Gotify, Home Assistant or Discord**. Works on plain-HTTP home servers; no app store needed.
+A daily message with milestones, heads-ups, recaps, tips or a **pill reminder**, as a **native notification on your phone or computer** (HTTPS installs; iPhone: add to Home Screen) or via **ntfy, Gotify, Home Assistant or Discord**. No app store needed.
 
 ### 💞 Partner sharing
 A private read-only link for your partner showing where you are in your cycle, the next 5 weeks and tips on how to support you. Symptoms, moods, sex and notes are never shared, and one tap revokes the link.
@@ -62,7 +62,7 @@ A private read-only link for your partner showing where you are in your cycle, t
 Switch to **Pregnancy** mode for your week, due date, baby-size cards and trimester tips, or **Perimenopause** mode for wider prediction ranges, days since your last period and the 12-month menopause marker. Your history stays intact.
 
 ### 🔐 App lock
-Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, your choice per device; 15 minutes by default).
+Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, your choice per device; 15 minutes by default), or **unlock with Face ID / Touch ID / fingerprint** (passkeys, HTTPS installs).
 
 ### 🏠 Home Assistant & calendar
 A **Home Assistant integration** built to HA's Platinum quality rules (HACS, UI setup, no YAML): cycle sensors plus colour-coded **Periods / Fertile windows / Ovulation calendars**, and a private **iCalendar feed** for Google, Apple or Outlook.
@@ -155,7 +155,7 @@ Only the owner account can change AI settings. The API key is stored in your dat
 
 ## 🔔 Notifications
 
-**Profile → Daily reminders & heads-ups** → paste a URL → **Send test** → **Save**. You get at most one message a day at your chosen time, and nothing on quiet days.
+**Profile → Daily reminders & heads-ups** → turn on **This device** (HTTPS installs; on iPhone/iPad open Bloomery from the Home Screen first) and/or paste a URL below → **Send test** → **Save**. You get at most one message a day at your chosen time, and nothing on quiet days.
 
 | Service | URL to paste |
 |---|---|

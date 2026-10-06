@@ -10,11 +10,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import backup
+from app.db import init_db
 from app.main import app
 from app.routers import auth
 
 
 def owner() -> TestClient:
+    init_db()  # also when this file runs on its own
     c = TestClient(app)
     c.post("/api/auth/login", json={"username": "ana", "password": "supersecret"})
     if c.get("/api/auth/me").status_code != 200:  # running this file alone

@@ -58,4 +58,8 @@ Format: [Problem] → [Root cause] → [Verified solution]
 55. **Drive upload `got multiple values for keyword argument 'headers'`** → helper always passed auth headers while upload passed its own → helper merges `headers` kwarg with the auth header. Caught by the MockTransport fake Drive test.
 56. **Google OAuth in Testing mode** → refresh tokens expire after 7 days → setup guide tells the owner to *Publish app* (drive.file is non-sensitive, no verification needed).
 57. **HA calendar test passed on 1 Oct, failed on 6 Oct** → state written at setup used the real clock, and an unchanged coordinator refresh (`always_update=False`) never rewrites it → freeze time *before* setting up the entry in date-dependent tests.
+58. **py-vapid rejected `sub` = https URL with a path** → only `mailto:` or bare `https://host` pass its check → use the HTTPS host the device subscribed from.
+59. **pywebpush drags in requests + aiohttp** → too heavy for a low-RAM server → use its building blocks (http-ece + py-vapid) and send with httpx.
+60. **Tests run standalone had no tables** → `TestClient(app)` without `with` skips lifespan → call `init_db()` in test helpers.
+61. **Testing WebAuthn without hardware** → backend: soft authenticator (P-256, 'none' attestation, CBOR authData); browser: Chromium CDP `WebAuthn.addVirtualAuthenticator` (internal, UV) on http://localhost (secure context).
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

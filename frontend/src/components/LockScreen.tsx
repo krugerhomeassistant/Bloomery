@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Delete } from 'lucide-react'
+import { Delete, ScanFace } from 'lucide-react'
 import { api } from '../api'
 import { useApp } from '../state'
 import { Logo } from './ui'
+import { passkeysSupported, unlockWithPasskey } from '../webauthn'
 
 export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   const { user, setUser } = useApp()
@@ -26,6 +27,12 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
   })
+  const canBio = !!user?.passkeys && passkeysSupported()
+  const bio = () => {
+    if (busy) return
+    setBusy(true); setErr('')
+    unlockWithPasskey().then(onUnlock).catch((e) => setErr(e.name === 'NotAllowedError' ? 'Cancelled. Use your PIN or try again.' : e.message)).finally(() => setBusy(false))
+  }
   const logout = async () => { await api('/api/auth/logout', { method: 'POST', today: false }).catch(() => {}); setUser(null) }
 
   return (
@@ -37,7 +44,10 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
       </div>
       <p className="-mt-4 mb-4 h-5 text-sm font-bold text-pink-600">{err}</p>
       <div className="grid w-full max-w-[18rem] grid-cols-3 gap-4">
-        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '<'].map((k) => k ? (
+        {['1', '2', '3', '4', '5', '6', '7', '8', '9', canBio ? 'bio' : '', '0', '<'].map((k) => k === 'bio' ? (
+          <button key={k} onClick={bio} aria-label="Unlock with Face ID or fingerprint"
+            className="grid aspect-square place-items-center rounded-full text-pink-500 active:bg-pink-100"><ScanFace size={34} /></button>
+        ) : k ? (
           <button key={k} onClick={() => press(k)} aria-label={k === '<' ? 'Delete' : k}
             className="grid aspect-square place-items-center rounded-full bg-card text-2xl font-bold shadow-sm active:bg-pink-100">
             {k === '<' ? <Delete /> : k}
