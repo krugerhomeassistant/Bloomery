@@ -161,7 +161,7 @@
   "services": {
     "log_period_start": {
       "name": "Teken maandstonde-begin aan",
-      "description": "Merk die begin van 'n maandstonde (en die verwagte volgende paar dae), soos om Teken maandstonde aan in die toep te tik.",
+      "description": "Merk die begin van 'n maandstonde (en die verwagte volgende paar dae), soos om Teken maandstonde aan in die app te tik.",
       "fields": {
         "config_entry_id": {
           "name": "Bloomery-rekening",

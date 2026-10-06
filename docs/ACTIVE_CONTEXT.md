@@ -1,9 +1,9 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-10-06 · **Version:** 2.0.0 (pending CI/release)
+**Date:** 2026-10-06 · **Version:** 2.0.1
 
 ## Current subtask
-v2.0.0 committed: Afrikaans (frontend, backend, HA), cycle-ring legend, i18n check in CI.
+v2.0.1: more conversational Afrikaans (overrides on the 2.0.0 catalogs); "app" not "toep".
 
 ## Last execution results
 - Backend 45/45, ruff clean, frontend build + `npm run i18n` pass (515 strings). Visual check of af screens done.
