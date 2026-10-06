@@ -39,9 +39,17 @@ async def test_entities(
     assert device.configuration_url == "http://bloomery.local:8420"
 
 
-async def test_calendars(hass: HomeAssistant, setup: MockConfigEntry, freezer: FrozenDateTimeFactory) -> None:
-    freezer.move_to("2026-09-30 12:00:00+00:00")
-    async_fire_time_changed(hass)
+async def test_calendars(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    aioclient_mock: AiohttpClientMocker,
+    feed: dict[str, Any],
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    freezer.move_to("2026-09-30 12:00:00+00:00")  # inside the sample fertile window, before setup writes states
+    aioclient_mock.get(URL, json=feed)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     periods = hass.states.get("calendar.bloomery_mia_periods")
     assert periods.attributes["message"] == "Predicted period" and periods.state == "off"
