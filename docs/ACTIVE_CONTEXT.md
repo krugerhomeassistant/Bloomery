@@ -1,16 +1,16 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-10-06 · **Version:** 1.5.0
+**Date:** 2026-10-06 · **Version:** 1.9.0
 
 ## Current subtask
-Released today: v1.3.0 backups (server + Google Drive, encryption, restore), v1.4.0 Face ID unlock + Web Push, v1.5.0 insights charts.
+v2.0 Afrikaans: backend catalog done (commit 959237a); frontend strings + language picker next.
 
 ## Last execution results
-- Backend 35/35 (3.11 + 3.14), HA 13/13 (100%), CI green, releases v1.3.0–v1.5.0 with images.
+- Released v1.6.0 (doctor's report + Code of Conduct), v1.7.0 (quick-log API/HA actions), v1.8.0 (birth control), v1.9.0 (wrist temperature).
+- CODE_OF_CONDUCT.md (Contributor Covenant 2.1) linked from README + CONTRIBUTING; reports via GitHub private reporting.
 
 ## Blockers
-- Translations: waiting for the user to choose languages.
-- HACS default store: PR must come from the user's GitHub account (steps given in chat).
+- HACS default store: PR must come from the user's GitHub account.
 
 ## Immediate next step
-Translations once languages are chosen. 29 Oct: merge Node 26 PR (#1) when LTS (reminder scheduled).
+Frontend i18n (en/af) → bump 2.0.0. 29 Oct: merge Node 26 PR (#1) when LTS (reminder scheduled).

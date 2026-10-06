@@ -154,7 +154,9 @@
 - [x] `pages/Report.tsx` at `/report` + print CSS (forced light, no nav, A4, cards don't split); entry button on Insights
 - [x] Tests 36/36; PDF printed with Chromium and checked
 - [x] CODE_OF_CONDUCT.md (Contributor Covenant 2.1, official text; reports via GitHub private reporting)
-- [ ] Next: v1.7 HA/Siri logging, v1.8 birth control, v1.9 wearable temperature, v2.0 Afrikaans
+- [x] v1.7 HA/Siri quick logging · [x] v1.8 birth control · [x] v1.9 wrist temperature
+- [x] v2.0 i18n: Afrikaans backend catalog + /api/catalog
+- [ ] v2.0 i18n: frontend strings (en/af), language picker, HA translations af, release 2.0.0
 
 ## Phase 20 — Logging from Home Assistant & Siri (v1.7.0)
 - [x] Token kind `api` (write-only key), `routers/quick.py`: Bearer auth, `/catalog`, `/period-start`, `/log` (merge tags by id/label/cat:id, flow, temp °C/°F, note append, day/tz); account delete removes `api:` tokens
