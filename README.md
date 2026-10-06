@@ -185,7 +185,7 @@ Feeds contain cycle dates only, never symptoms or notes. **New token** invalidat
 
 ## ⚡ Siri Shortcuts & automations
 
-**Profile → Shortcuts & automations → Create API key**, then follow the in-app steps for a *"Hey Siri, my period started"* shortcut, a symptom menu shortcut, or Home Assistant. The key can only add logs (`POST /api/quick/period-start`, `POST /api/quick/log`), never read or delete.
+**Profile → Shortcuts & automations → Create API key**, then follow the in-app steps for a *"Hey Siri, my period started"* shortcut, a symptom menu shortcut, or Home Assistant. The key can only add logs (`POST /api/quick/period-start`, `POST /api/quick/log`), never read or delete. The same page shows a **daily automation that sends your Apple Watch wrist temperature** (or a thermometer app's reading) so ovulation gets confirmed without logging anything.
 
 ```bash
 curl -X POST https://bloomery.example/api/quick/log -H "Authorization: Bearer YOUR_KEY" \

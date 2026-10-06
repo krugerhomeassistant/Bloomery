@@ -56,3 +56,34 @@ def test_quick_log_with_api_key():
 
     owner.delete("/api/tokens/api")
     assert bot.post("/api/quick/log", json={"tags": ["cramps"]}).status_code == 401
+
+
+def test_wrist_temperature_import_and_units():
+    from datetime import date
+
+    from app.importers import _apple
+
+    days = _apple(
+        [
+            ["AppleSleepingWristTemperature", "2026-03-02", "35.12", "degC"],
+            ["AppleSleepingWristTemperature", "2026-03-03", "95.5", "degF"],
+            ["BasalBodyTemperature", "2026-03-03", "36.55", "degC"],  # thermometer wins on the same morning
+            ["AppleSleepingWristTemperature", "2026-03-03", "35.40", "degC"],
+        ]
+    )
+    assert days[date(2026, 3, 2)]["temperature"] == 35.12
+    assert days[date(2026, 3, 3)]["temperature"] == 36.55
+
+    init_db()
+    owner = TestClient(app)
+    owner.post("/api/auth/login", json={"username": "ana", "password": "supersecret"})
+    key = owner.post("/api/tokens/api").json()["token"]
+    bot = TestClient(app, headers={"Authorization": f"Bearer {key}"})
+    assert bot.post(
+        "/api/quick/log", json={"day": "2026-03-05", "temperature": 95.36, "temperature_unit": "°F"}
+    ).json()["ok"]
+    assert owner.get("/api/logs/2026-03-05").json()["temperature"] == 35.2
+    assert bot.post(
+        "/api/quick/log", json={"day": "2026-03-06", "temperature": 34.876, "temperature_unit": "ºC"}
+    ).json()["ok"]
+    assert owner.get("/api/logs/2026-03-06").json()["temperature"] == 34.88

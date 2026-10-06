@@ -84,9 +84,11 @@ def _apple(records: list) -> dict[date, dict]:
                 e["flow"] = f
         elif typ == "IntermenstrualBleeding":
             e.setdefault("flow", "spotting")
-        elif typ == "BasalBodyTemperature":
+        elif typ in ("BasalBodyTemperature", "AppleSleepingWristTemperature"):
             t = float(value)
-            e["temperature"] = round((t - 32) * 5 / 9, 2) if unit.lower() == "degf" else t
+            t = round((t - 32) * 5 / 9, 2) if unit.lower() == "degf" else t
+            if typ == "BasalBodyTemperature" or "temperature" not in e:  # a thermometer reading wins over the watch
+                e["temperature"] = t
         elif typ == "CervicalMucusQuality":
             m = next((v for k, v in APPLE_MUCUS.items() if value.endswith(k)), None)
             tag = m and f"discharge:{m}"

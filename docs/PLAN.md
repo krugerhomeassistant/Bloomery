@@ -168,6 +168,13 @@
 - [x] `Profile.hormonal` → no fertile/ovulation kinds/phases/chance/status, calendars & HA events skip them, ring hides fertile arc, partner page too; AI context flag
 - [x] Tests 40/40 (all schedules incl. boundaries, hidden fertility, endpoint + notification); E2E pill setup → Today
 
+## Phase 22 — Wearable temperature (v1.9.0)
+- [x] Apple Health import: `AppleSleepingWristTemperature` (filed under the morning it ends; thermometer BBT wins the same day)
+- [x] Quick log: unit strings (°F/degF/ºC), 32–43 °C; HA action min 32
+- [x] Shortcut automation guide (Find Health Samples → Value/Unit → POST /api/quick/log); labels "Temperature" instead of "Basal"
+- [x] Tests 41/41
+- [ ] Verify on a real iPhone that Shortcuts offers "Wrist Temperature" (sources disagree)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

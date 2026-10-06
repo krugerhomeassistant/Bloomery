@@ -195,7 +195,7 @@
         },
         "temperature": {
           "name": "Temperature",
-          "description": "Basal body temperature in °C."
+          "description": "Waking temperature in °C: basal (thermometer) or wrist/skin (e.g. Apple Watch). Use one source per cycle."
         },
         "note": {
           "name": "Note",

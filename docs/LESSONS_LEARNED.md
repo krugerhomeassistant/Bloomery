@@ -69,4 +69,5 @@ Format: [Problem] → [Root cause] → [Verified solution]
 66. **New router 404'd** → my string edit targeted a one-line `for r in (...)` that ruff had reformatted to multi-line → re-read formatted files before editing; check new routes in a test.
 67. **Committed with a lint error** → `ruff check && ruff format; tests; git commit` used `;` after the lint step, so a failure didn't stop the commit → chain lint, tests and commit with `&&` only.
 68. **strftime `%-d` is glibc-only** (breaks on Windows dev machines) → format day numbers with `d.day`.
+69. **Apple wrist temperature**: HealthKit samples are absolute (≈34–36 °C) while the Health app shows deviation from baseline; Shortcuts access is not clearly documented → accept absolute values in any unit, keep a fallback (Apple Health export import), detection is relative (≥0.2 °C sustained rise) so the baseline doesn't matter as long as one source is used.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

@@ -2,7 +2,7 @@
  *  Output is what /api/import/other expects: {format: 'apple_health', records: [type, date, value, unit][]} */
 const TYPES = new Set([
   'MenstrualFlow', 'IntermenstrualBleeding', 'CervicalMucusQuality', 'OvulationTestResult', 'PregnancyTestResult',
-  'BasalBodyTemperature', 'AbdominalCramps', 'Bloating', 'BreastPain', 'Headache', 'Acne', 'LowerBackPain', 'Fatigue',
+  'BasalBodyTemperature', 'AppleSleepingWristTemperature', 'AbdominalCramps', 'Bloating', 'BreastPain', 'Headache', 'Acne', 'LowerBackPain', 'Fatigue',
   'Nausea', 'MoodChanges', 'SleepChanges', 'HotFlashes', 'Dizziness', 'Constipation', 'Diarrhea', 'AppetiteChanges', 'PelvicPain',
 ])
 const attr = (tag: string, name: string) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1] ?? ''
@@ -14,7 +14,8 @@ export async function extractAppleHealth(file: File, onProgress?: (pct: number) 
   const scan = (text: string) => {
     for (const m of text.matchAll(/<Record\b[^>]*>/g)) {
       const type = attr(m[0], 'type').replace(/^HK(Category|Quantity)TypeIdentifier/, '')
-      if (TYPES.has(type)) records.push([type, attr(m[0], 'startDate').slice(0, 10), attr(m[0], 'value'), attr(m[0], 'unit')])
+      // wrist temperature is measured overnight: file it under the morning it ends (like a waking basal reading)
+      if (TYPES.has(type)) records.push([type, attr(m[0], type === 'AppleSleepingWristTemperature' ? 'endDate' : 'startDate').slice(0, 10), attr(m[0], 'value'), attr(m[0], 'unit')])
     }
   }
   for (;;) {

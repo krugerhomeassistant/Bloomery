@@ -46,6 +46,16 @@ export default function Automations() {
             </ol>
           </details>
           <details className="rounded-2xl bg-pink-50/60 p-3">
+            <summary className="cursor-pointer font-bold">Daily temperature from Apple Watch / Apple Health</summary>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-muted">
+              <li>Shortcuts → <b>Automation</b> → <b>+</b> → <b>Time of Day</b>, e.g. 09:00 daily → <b>Run Immediately</b>.</li>
+              <li>Add <b>Find Health Samples</b>: Type <b>Wrist Temperature</b> (Apple Watch) or <b>Basal Body Temperature</b> (thermometer apps, Oura if it writes to Health), sorted by <b>End Date</b>, latest first, limit <b>1</b>.</li>
+              <li>Add <b>Get Details of Health Samples</b> → <b>Value</b>, and again → <b>Unit</b>.</li>
+              <li>Add <b>Get Contents of URL</b>:<Code>{`${base}/log`}</Code>Method <b>POST</b>, the <b>Authorization</b> header, Request Body <b>JSON</b>: <b>temperature</b> (Number) = Value, <b>temperature_unit</b> (Text) = Unit.</li>
+            </ol>
+            <p className="mt-2 text-muted">Bloomery confirms ovulation from a sustained rise of 0.2 °C or more, which works with wrist readings too. Stick to <b>one source</b> per cycle (watch <i>or</i> thermometer). If Wrist Temperature isn't offered in Shortcuts on your iPhone, use <b>Profile → Import</b> with an Apple Health export instead; it includes wrist temperature.</p>
+          </details>
+          <details className="rounded-2xl bg-pink-50/60 p-3">
             <summary className="cursor-pointer font-bold">Home Assistant and scripts</summary>
             <p className="mt-2 text-muted">Home Assistant: Bloomery integration → <b>Configure</b> → paste the key, then use the <b>Log period start</b> and <b>Log</b> actions. Anything else:</p>
             <Code>{`curl -X POST ${base}/log -H "Authorization: Bearer YOUR_KEY" -H "Content-Type: application/json" -d '{"tags": ["cramps", "mood:sad"]}'`}</Code>

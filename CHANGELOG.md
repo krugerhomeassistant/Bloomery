@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-10-06
+
+### Added
+- **Wrist temperature**: Apple Health imports now include Apple Watch overnight wrist temperature, and a daily Shortcut automation (steps in Profile → Shortcuts & automations) can send the latest wrist or basal temperature automatically. Ovulation is confirmed from a sustained rise, which works with wrist readings.
+- Quick log accepts unit strings like `°F`/`degC` and wrist-range temperatures; the Home Assistant *Log* action accepts temperatures from 32 °C.
+
 ## [1.8.0] - 2026-10-06
 
 ### Added
@@ -123,7 +129,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.5.0...v1.6.0

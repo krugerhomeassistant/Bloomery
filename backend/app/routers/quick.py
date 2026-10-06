@@ -68,7 +68,7 @@ class QuickLog(BaseModel):
     )
     flow: str | None = Field(None, pattern="^(spotting|light|medium|heavy)$")
     temperature: float | None = Field(None, ge=30, le=110)
-    temperature_unit: str = Field("C", pattern="^[CF]$")
+    temperature_unit: str = Field("C", max_length=10, description='"C", "F", or a unit string like "°F" / "degF"')
     note: str | None = Field(None, max_length=1000)
 
 
@@ -106,8 +106,8 @@ def quick_log(body: QuickLog, user: KeyUser, db: DB):
         log.flow = body.flow
     if body.temperature is not None:
         t = body.temperature
-        log.temperature = round((t - 32) * 5 / 9, 2) if body.temperature_unit == "F" else t
-        if not 34 <= log.temperature <= 43:
+        log.temperature = round((t - 32) * 5 / 9, 2) if "F" in body.temperature_unit.upper() else round(t, 2)
+        if not 32 <= log.temperature <= 43:  # wrist/skin temperature runs a few degrees under core
             raise HTTPException(422, "That temperature doesn't look like a body temperature")
     if body.note:
         log.notes = f"{log.notes}\n{body.note}".strip() if log.notes else body.note

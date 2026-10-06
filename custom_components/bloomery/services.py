@@ -24,7 +24,7 @@ SCHEMAS = {
             **BASE,
             vol.Optional("items"): vol.All(cv.ensure_list, [cv.string]),
             vol.Optional("flow"): vol.In(["spotting", "light", "medium", "heavy"]),
-            vol.Optional("temperature"): vol.All(vol.Coerce(float), vol.Range(min=34, max=43)),
+            vol.Optional("temperature"): vol.All(vol.Coerce(float), vol.Range(min=32, max=43)),
             vol.Optional("note"): cv.string,
         }
     ),

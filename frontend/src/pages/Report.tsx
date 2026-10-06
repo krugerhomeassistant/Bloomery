@@ -92,7 +92,7 @@ export default function Report() {
             ))}
           </tbody>
         </table></div>
-        <p className="mt-1 text-xs text-muted">*Spotting outside the period. Ovulation is estimated from cycle length unless confirmed by a basal temperature shift (BBT, {s.bbt_confirmed} cycles).</p>
+        <p className="mt-1 text-xs text-muted">*Spotting outside the period. Ovulation is estimated from cycle length unless confirmed by a sustained temperature rise (BBT, {s.bbt_confirmed} cycles).</p>
       </Section>
 
       <Section title="Cycle length over time"><div className="print:max-w-md"><CycleTrend history={[...r.cycles]} /></div></Section>
@@ -106,7 +106,7 @@ export default function Report() {
       )}
 
       {r.temperature.length > 1 && (
-        <Section title={`Basal body temperature (${F ? '°F' : '°C'})`}>
+        <Section title={`Waking temperature (${F ? '°F' : '°C'}; basal or wrist)`}>
           <LineChart color="#22ADA5" unit={F ? '°F' : '°C'} points={r.temperature.map((p) => ({ ...p, value: F ? p.value * 9 / 5 + 32 : p.value }))} />
         </Section>
       )}

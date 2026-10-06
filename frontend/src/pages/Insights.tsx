@@ -119,7 +119,7 @@ export default function Insights() {
         )}
       </div>
 
-      <SectionTitle>Basal body temperature · this cycle</SectionTitle>
+      <SectionTitle>Temperature · this cycle</SectionTitle>
       <div className="card p-4">
         <LineChart color="#22ADA5" unit={F ? '°F' : '°C'} points={data.temperature.map((p) => ({ ...p, value: F ? p.value * 9 / 5 + 32 : p.value }))} />
       </div>
