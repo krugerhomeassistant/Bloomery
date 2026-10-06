@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Languages, Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock, DatabaseBackup, Pill } from 'lucide-react'
+import { Type, Languages, Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock, DatabaseBackup, Pill } from 'lucide-react'
 import { api, iso, type LifeStage, type Overview, type User } from '../api'
 import { LOCK_CHOICES, lockAfterMin, setLockAfter, useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
@@ -9,6 +9,7 @@ import NotifySettings from '../components/NotifySettings'
 import BackupSettings from '../components/BackupSettings'
 import Passkeys from '../components/Passkeys'
 import Automations from '../components/Automations'
+import Words from '../components/Words'
 import BirthControl, { METHODS } from '../components/BirthControl'
 import { LANGS, N_, t, type Lang } from '../i18n'
 
@@ -36,6 +37,7 @@ export default function Profile() {
   const [aiOpen, setAiOpen] = useState(false)
   const [notifyOpen, setNotifyOpen] = useState(false)
   const [bcOpen, setBcOpen] = useState(false)
+  const [wordsOpen, setWordsOpen] = useState(false)
   const bc = useFetch<{ config: { method: string } }>('/api/contraception', [bcOpen]).data
   const bcLabel = t(METHODS.find(([v]) => v === (bc?.config.method ?? 'none'))?.[1] ?? '').replace(/ \/ (not tracking|nie gevolg nie)/, '')
   // back from Google sign-in: /profile?backup=google-connected|google-failed opens the sheet with the result
@@ -154,6 +156,7 @@ export default function Profile() {
             <Segmented value={user.weight_unit} onChange={(v) => save({ weight_unit: v as 'kg' | 'lb' })} options={[['kg', 'kg'], ['lb', 'lb']]} /></div>
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-semibold"><Moon size={18} /> {t('Theme')}</span>
             <Segmented value={theme} onChange={(v) => setTheme(v as any)} options={[['system', t('Auto')], ['light', t('Light')], ['dark', t('Dark')]]} /></div>
+          <button className="flex w-full items-center justify-between text-left" onClick={() => setWordsOpen(true)}><span className="flex items-center gap-2 font-semibold"><Type size={18} /> {t('My words')}</span><span className="flex items-center gap-1 text-sm text-muted">{user.words.length || ''}<ChevronRight size={18} /></span></button>
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 font-semibold"><Languages size={18} /> {t('Language')}</span>
             <Segmented value={lang} onChange={(v) => changeLang(v as Lang)} options={Object.entries(LANGS) as [string, string][]} /></div>
         </div>
@@ -177,6 +180,7 @@ export default function Profile() {
         <Row icon={<Bell size={18} className="text-pink-500" />} label={t('Daily reminders & heads-ups')} onClick={() => setNotifyOpen(true)} />
       </Group>
       <NotifySettings open={notifyOpen} onClose={() => setNotifyOpen(false)} />
+      <Words open={wordsOpen} onClose={() => setWordsOpen(false)} />
       <BirthControl open={bcOpen} onClose={() => setBcOpen(false)} />
 
       {user.is_owner && (

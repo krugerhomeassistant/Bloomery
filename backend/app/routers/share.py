@@ -12,7 +12,7 @@ from sqlmodel import Session
 
 from .. import VERSION
 from ..deps import SessionDep, TodayDep, UserDep, build_engine
-from ..i18n import LANG, N_, _, user_lang
+from ..i18n import N_, _, use_user
 from ..models import Setting, User
 
 router = APIRouter(tags=["share"])
@@ -49,7 +49,7 @@ def _owner(db: Session, kind: str, token: str) -> User:
     user = db.get(User, int(s.value)) if s else None
     if not user:
         raise HTTPException(404, _("This link is no longer active"))
-    LANG.set(user_lang(db, user.id))  # partner page / HA / calendar texts in the owner's language
+    use_user(db, user.id)  # partner page / HA / calendar texts in the owner's language
     return user
 
 

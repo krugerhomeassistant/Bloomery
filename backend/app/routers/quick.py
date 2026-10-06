@@ -16,7 +16,7 @@ from sqlmodel import Session
 
 from ..catalog import CATALOG, LABELS, catalog_json
 from ..db import get_session
-from ..i18n import CATALOGS, LANG, _, user_lang
+from ..i18n import CATALOGS, _, use_user
 from ..models import DayLog, Setting, User, now
 from .tracking import PeriodStart, _get_log, period_start
 
@@ -29,7 +29,7 @@ async def key_user(db: Annotated[Session, Depends(get_session)], authorization: 
     user = db.get(User, int(row.value)) if row else None
     if not user:
         raise HTTPException(401, _("Invalid or missing API key"), headers={"WWW-Authenticate": "Bearer"})
-    LANG.set(user_lang(db, user.id))
+    use_user(db, user.id)
     return user
 
 

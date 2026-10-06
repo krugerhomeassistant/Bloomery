@@ -18,7 +18,7 @@ from . import contraception, push
 from .db import get_engine
 from .deps import bc_config, build_engine
 from .feed import feed
-from .i18n import _, language, user_lang
+from .i18n import _, language, user_lang, user_words
 from .models import DayLog, Setting, User
 
 log = logging.getLogger("bloomery.notify")
@@ -108,7 +108,7 @@ async def tick(now_utc: datetime | None = None) -> int:
             user = db.get(User, uid)
             cfg["last"] = today.isoformat()  # mark first: a failing endpoint must not retry every minute
             store(db, uid, cfg)
-            with language(user_lang(db, uid)):
+            with language(user_lang(db, uid), user_words(db, uid)):
                 msg = user and compose(db, user, today, cfg["kinds"])
             if msg:
                 sent += await deliver(db, uid, cfg["url"], *msg)

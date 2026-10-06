@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date, timedelta
 from typing import Literal
 
@@ -56,6 +57,30 @@ class LanguageIn(BaseModel):
 def set_language(body: LanguageIn, user: UserDep, db: SessionDep):
     db.merge(Setting(key=f"lang:{user.id}", value=json.dumps(body.lang)))
     db.exec(delete(InsightCache).where(InsightCache.user_id == user.id))  # today's AI insight was in the old language
+    db.commit()
+    return public_user(user)
+
+
+class WordsIn(BaseModel):
+    """Own word swaps, e.g. "period" -> "tyd van die maand". Whole words, any case."""
+
+    words: list[tuple[str, str]] = Field(max_length=200)
+
+    @field_validator("words")
+    @classmethod
+    def clean(cls, v: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        out: dict[str, str] = {}
+        for a, b in v:
+            a, b = (" ".join(re.sub(r'["\\\n\r{}]', " ", x).split()) for x in (a, b))
+            if a and b and len(a) <= 40 and len(b) <= 40:
+                out.setdefault(a.lower(), b)
+        return list(out.items())
+
+
+@router.put("/words")
+def set_words(body: WordsIn, user: UserDep, db: SessionDep):
+    db.merge(Setting(key=f"words:{user.id}", value=json.dumps(body.words)))
+    db.exec(delete(InsightCache).where(InsightCache.user_id == user.id))  # today's insight used the old words
     db.commit()
     return public_user(user)
 

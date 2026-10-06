@@ -1,6 +1,11 @@
 // Afrikaans. Keys are the exact English strings passed to t() / N_(); keep {placeholders} identical. `npm run i18n` lists any that are missing.
 // Native-speaker review welcome.
 export const STRINGS: Record<string, string> = {
+  "My words": "My woorde",
+  "Swap any word Bloomery uses for your own, in every screen, message and notification. Whole words only, and capitals are kept.": "Ruil enige woord wat Bloomery gebruik vir jou eie, op elke skerm, in elke boodskap en kennisgewing. Net hele woorde, en hoofletters bly soos dit is.",
+  "Instead of…": "In plaas van…",
+  "Say…": "Sê…",
+  "Add a word": "Voeg 'n woord by",
   "The ring is your whole pregnancy, 40 weeks all the way around.": "Die ring is jou hele swangerskap, 40 weke heeltemal rondom.",
   "Today · week {n}": "Vandag · week {n}",
   "The ring is one whole cycle, from the first day of a period to the first day of the next.": "Die ring is een hele siklus, van die eerste dag van 'n maandstonde tot die eerste dag van die volgende.",

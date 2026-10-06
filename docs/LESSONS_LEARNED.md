@@ -76,3 +76,5 @@ Format: [Problem] → [Root cause] → [Verified solution]
 72. **Module-level constants evaluated before the language is known** → mark with `N_()` (identity) and call `t()` at the render site; app tree is keyed by `lang` so a switch re-renders.
 73. **`t(` inside code comments counted as a string by the checker** → keep example calls out of comments.
 74. **Missed `_()` in backend status label** (`"Ovulation in"`) → grep `"label"|"headline"` for bare strings after adding a language.
+75. **Word swap could corrupt `{placeholders}`** (replacing `n` inside `{n}`) → lookarounds exclude `{`/`}` and swaps run before `.format()`; typed text (names, notes) is never swapped.
+76. **`pkill -f` pattern matched my own shell command** → killed the tool shell; start servers with `setsid nohup … &` and avoid `pkill -f` with a pattern that appears in the same command line.

@@ -9,8 +9,10 @@ back to English. Run `python -m app.i18n` to list strings used in the code that 
 from __future__ import annotations
 
 import json
+import re
 from contextlib import contextmanager
 from contextvars import ContextVar
+from functools import lru_cache
 from typing import Any
 
 from .locales import af
@@ -18,11 +20,35 @@ from .locales import af
 LANGS = {"en": "English", "af": "Afrikaans"}
 CATALOGS: dict[str, dict[str, str]] = {"af": af.STRINGS}
 LANG: ContextVar[str] = ContextVar("lang", default="en")
+WORDS: ContextVar[tuple[tuple[str, str], ...]] = ContextVar("words", default=())  # the user's own word swaps
+
+
+@lru_cache(maxsize=64)
+def _swaps(words: tuple[tuple[str, str], ...]) -> list[tuple[re.Pattern[str], str]]:
+    # longest first so "period pain" wins over "period"; never match inside {placeholders}
+    return [
+        (re.compile(rf"(?<![\w{{}}]){re.escape(a)}(?![\w{{}}])", re.IGNORECASE), b)
+        for a, b in sorted(words, key=lambda w: -len(w[0]))
+    ]
+
+
+def swap(text: str) -> str:
+    """Apply the user's word swaps, keeping Capitalised / UPPER case of what they replace."""
+    for rx, b in _swaps(WORDS.get()):
+        text = rx.sub(
+            lambda m, b=b: (
+                b.upper() if len(m[0]) > 1 and m[0].isupper() else b[:1].upper() + b[1:] if m[0][:1].isupper() else b
+            ),
+            text,
+        )
+    return text
 
 
 def _(text: str, /, **values: Any) -> str:
     lang = LANG.get()
     s = CATALOGS.get(lang, {}).get(text, text) if lang != "en" else text
+    if WORDS.get():
+        s = swap(s)  # before formatting, so names and notes the user typed are left alone
     return s.format(**values) if values else s
 
 
@@ -55,13 +81,27 @@ def user_lang(db: Any, uid: int) -> str:
     return json.loads(row.value) if row else "en"
 
 
+def user_words(db: Any, uid: int) -> tuple[tuple[str, str], ...]:
+    from .models import Setting
+
+    row = db.get(Setting, f"words:{uid}")
+    return tuple((a, b) for a, b in json.loads(row.value)) if row else ()
+
+
+def use_user(db: Any, uid: int) -> None:
+    """Set the active language and word swaps for the rest of this request."""
+    LANG.set(user_lang(db, uid))
+    WORDS.set(user_words(db, uid))
+
+
 @contextmanager
-def language(lang: str):
-    token = LANG.set(lang if lang in LANGS else "en")
+def language(lang: str, words: tuple[tuple[str, str], ...] = ()):
+    t1, t2 = LANG.set(lang if lang in LANGS else "en"), WORDS.set(words)
     try:
         yield
     finally:
-        LANG.reset(token)
+        LANG.reset(t1)
+        WORDS.reset(t2)
 
 
 if __name__ == "__main__":  # report strings in the code without an Afrikaans entry

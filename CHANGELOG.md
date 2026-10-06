@@ -5,6 +5,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-06
+
+### Added
+- **My words** (Profile → Preferences): swap any word Bloomery uses for your own, e.g. "period" → "time of the month". It applies everywhere: screens, symptom and mood names, daily insights, notifications, calendar feeds, the partner page and AI replies. Whole words only, capitals are kept, text you typed yourself is never changed.
+
 ## [2.0.1] - 2026-10-06
 
 ### Changed
@@ -144,7 +149,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.8.0...v1.9.0

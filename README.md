@@ -85,7 +85,7 @@ A daily personalised insight, a **written recap of every cycle** (tap any cycle 
 <td valign="top">
 
 ### 🌍 Languages
-English and **Afrikaans** (Profile → Language): the app, daily insights, notifications, calendar feeds, the partner page and Home Assistant entities all follow your language. Adding another is one file per layer.
+English and **Afrikaans** (Profile → Language): the app, daily insights, notifications, calendar feeds, the partner page and Home Assistant entities all follow your language. Adding another is one file per layer. **My words** lets anyone swap any word for their own ("period" → "time of the month") everywhere, including notifications and AI replies.
 
 ### 🏠 Built for self-hosting
 Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue, Apple Health or CSV** · **nightly backups to your server and Google Drive (optionally encrypted)** · JSON export · one-tap account deletion.

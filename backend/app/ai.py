@@ -20,7 +20,7 @@ from .config import get_settings
 from .cycles import Engine
 from .db import get_engine
 from .feed import forecasts
-from .i18n import LANG, LANGS, N_, _
+from .i18n import LANG, LANGS, N_, WORDS, _
 from .models import Setting
 
 SYSTEM = """You are Bloomery, a warm, knowledgeable menstrual-health companion inside a private, self-hosted period tracker.
@@ -37,7 +37,14 @@ expect irregular cycles and symptoms like hot flashes, night sweats and sleep ch
 def system() -> str:
     """System prompt, asking for replies in the user's language."""
     lang = LANGS.get(LANG.get(), "English")
-    return SYSTEM + ("" if lang == "English" else f"\nAlways reply in {lang}, in natural, everyday language.")
+    out = SYSTEM + ("" if lang == "English" else f"\nAlways reply in {lang}, in natural, everyday language.")
+    if words := WORDS.get():
+        out += (
+            "\nThe user prefers their own words; use these instead: "
+            + "; ".join(f'"{a}" -> "{b}"' for a, b in words)
+            + "."
+        )
+    return out
 
 
 class AIError(RuntimeError):

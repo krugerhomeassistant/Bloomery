@@ -73,3 +73,5 @@ Single version across `backend/app/__init__.py` (VERSION, served at /api/health)
 
 ## i18n
 `frontend/src/i18n.ts` (t, N_, plural, locale-aware date-fns `format`, `setLang`), `frontend/src/locales/af.ts`, `frontend/i18n-check.mjs`; `state.tsx` holds `lang`/`changeLang` and keys the tree by lang; catalog fetched as `/api/catalog?lang=`. Backend `app/i18n.py` (ContextVar LANG). HA `translations/af.json`.
+
+`WORDS` ContextVar + `swap()` in `app/i18n.py` (set by `use_user()` in deps/quick/share, and `language(lang, words)` in notify); frontend `setWords/swap` in `i18n.ts`, `components/Words.tsx`; `state.tsx` re-keys the tree when words change.

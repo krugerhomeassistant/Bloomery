@@ -77,3 +77,6 @@ English + Afrikaans. User language = Setting `lang:<uid>` (PUT /api/language, re
 
 ## Cycle ring
 One full circle = one cycle. Pink arc = period days, teal arc = fertile window (hidden on hormonal birth control), dark dot = ovulation day, ringed dot = today; legend under the ring gives the cycle-day numbers. In pregnancy: the circle is 40 weeks, ringed dot = today.
+
+## My words (v2.1)
+Per-user word swaps: Setting `words:<uid>` = JSON list of [from, to] (PUT /api/words, returned in /api/auth/me as `words`). Applied after translation to every `_()` / `t()` string (before placeholders are filled, never inside `{}` or to typed data), to the server catalog labels in the frontend, and mentioned in the AI system prompt. Max 200 pairs, 40 chars each.

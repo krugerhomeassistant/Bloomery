@@ -1,6 +1,6 @@
 import { Fragment, createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, type Catalog, type User } from './api'
-import { N_, getLang, setLang, type Lang } from './i18n'
+import { N_, getLang, setLang, setWords, swap, type Lang } from './i18n'
 
 type Ctx = {
   user: User | null
@@ -41,6 +41,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user?.lang && user.lang !== getLang()) { setLang(user.lang); setLangState(user.lang) }
   }, [user?.lang])
+  const [wordsKey, setWordsKey] = useState('')  // re-render everything when the user's own words change
+  useEffect(() => {
+    const k = JSON.stringify(user?.words ?? [])
+    if (k !== wordsKey) { setWords(user?.words ?? []); setWordsKey(k) }
+  }, [user?.words, wordsKey])
+  const wk = wordsKey === '[]' ? '' : wordsKey
   const changeLang = (l: Lang) => {
     setLang(l)
     setLangState(l)
@@ -49,6 +55,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     api<Catalog>(`/api/catalog?lang=${lang}`, { today: false }).then(setCatalog).catch(() => {})
   }, [lang])
+  // symptom / mood names come from the server catalog, so the user's words are applied here too
+  const shownCatalog = catalog && (wk
+    ? { flow: catalog.flow.map((i) => ({ ...i, label: swap(i.label) })), categories: catalog.categories.map((c) => ({ ...c, title: swap(c.title), items: c.items.map((i) => ({ ...i, label: swap(i.label) })) })) }
+    : catalog)
 
   useEffect(() => {
     const mq = matchMedia('(prefers-color-scheme: dark)')
@@ -66,8 +76,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppCtx.Provider value={{ user, setUser, catalog, version, bump, logDay, openLog, lang, changeLang, theme, setTheme, toast, notify }}>
-      <Fragment key={lang}>{children}</Fragment>
+    <AppCtx.Provider value={{ user, setUser, catalog: shownCatalog, version, bump, logDay, openLog, lang, changeLang, theme, setTheme, toast, notify }}>
+      <Fragment key={lang + wk}>{children}</Fragment>
     </AppCtx.Provider>
   )
 }

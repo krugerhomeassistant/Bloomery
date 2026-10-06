@@ -9,7 +9,7 @@ from sqlmodel import func, select
 
 from ..config import get_settings
 from ..deps import SessionDep, UserDep, hash_pw, life_stage, verify_pw
-from ..i18n import _, user_lang
+from ..i18n import _, user_lang, user_words
 from ..models import Setting, User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -37,6 +37,7 @@ def public_user(u: User) -> dict:
             "pin_set": bool(db.get(Setting, f"pin:{u.id}")),
             "is_owner": u.id == db.exec(select(func.min(User.id))).one(),
             "lang": user_lang(db, u.id),
+            "words": user_words(db, u.id),
             "passkeys": len(json.loads(pk.value)) if (pk := db.get(Setting, f"passkeys:{u.id}")) else 0,
             **life_stage(db, u.id),
         }
