@@ -1,16 +1,16 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-10-01 · **Version:** 1.2.1
+**Date:** 2026-10-06 · **Version:** 1.5.0
 
 ## Current subtask
-Dependabot majors: TypeScript 7 and Python 3.14 merged and released as 1.2.1. Node 26 (PR #1) held until it becomes LTS (~Oct 28).
+Released today: v1.3.0 backups (server + Google Drive, encryption, restore), v1.4.0 Face ID unlock + Web Push, v1.5.0 insights charts.
 
 ## Last execution results
-- TS7: build OK, catches type errors, tsc 0.75 s vs 3.4 s. Py 3.14.7: 26/26, wheels OK. Node 26.10: build OK.
-- Repo topics/description set by user; main protected (no deletion / force push).
+- Backend 35/35 (3.11 + 3.14), HA 13/13 (100%), CI green, releases v1.3.0–v1.5.0 with images.
 
 ## Blockers
-None.
+- Translations: waiting for the user to choose languages.
+- HACS default store: PR must come from the user's GitHub account (steps given in chat).
 
 ## Immediate next step
-After Oct 28: merge dependabot/docker/node-26-alpine. Optional: HACS default-store submission.
+Translations once languages are chosen. 29 Oct: merge Node 26 PR (#1) when LTS (reminder scheduled).
