@@ -14,9 +14,9 @@ from zoneinfo import ZoneInfo
 import httpx
 from sqlmodel import Session, select
 
-from . import push
+from . import contraception, push
 from .db import get_engine
-from .deps import build_engine
+from .deps import bc_config, build_engine
 from .feed import feed
 from .models import DayLog, Setting, User
 
@@ -74,8 +74,12 @@ async def deliver(db: Session, uid: int, url: str, title: str, message: str) -> 
 def compose(db: Session, user: User, today, kinds: list[str]) -> tuple[str, str] | None:
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day <= today)).all()
     cards = [c for c in feed(build_engine(db, user, today), logs, today, user.goal) if c["kind"] in kinds]
-    if "pill" in kinds:
-        cards.insert(0, {"emoji": "💊", "title": "Pill reminder", "text": "Time to take your pill."})
+    if "pill" in kinds:  # birth control reminders
+        bc = contraception.status(bc_config(db, user.id), today)
+        if bc and bc["action"]:
+            cards.insert(0, bc)
+        elif not bc_config(db, user.id):  # no method set up: the classic daily pill reminder
+            cards.insert(0, {"emoji": "💊", "title": "Pill reminder", "text": "Time to take your pill."})
     if not cards:
         return None
     title = f"{cards[0]['emoji']} {cards[0]['title']}" + (f" (+{len(cards) - 1} more)" if len(cards) > 1 else "")

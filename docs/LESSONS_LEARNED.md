@@ -67,4 +67,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 64. **Heatmap shares diluted in a 6-month report** → share denominators counted all cycles → `symptom_heatmap(..., since=)` limits cycles to the window.
 65. **Pydantic `Unable to evaluate type annotation 'date | None'`** → a model field named `date` shadowed the `date` type → name it `day`.
 66. **New router 404'd** → my string edit targeted a one-line `for r in (...)` that ruff had reformatted to multi-line → re-read formatted files before editing; check new routes in a test.
+67. **Committed with a lint error** → `ruff check && ruff format; tests; git commit` used `;` after the lint step, so a failure didn't stop the commit → chain lint, tests and commit with `&&` only.
+68. **strftime `%-d` is glibc-only** (breaks on Windows dev machines) → format day numbers with `d.day`.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

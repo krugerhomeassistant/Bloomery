@@ -68,6 +68,7 @@ class Profile:
     goal: str = "track"
     mode: str = "cycle"  # cycle | pregnancy | perimenopause
     lmp: date | None = None  # pregnancy: first day of last period (defaults to last logged period)
+    hormonal: bool = False  # hormonal birth control: no ovulation, so no fertile-window predictions
 
 
 @dataclass
@@ -186,6 +187,8 @@ class Engine:
             phase = "menstrual"
             if info["kind"] is None and (s.predicted or d > self.today):  # predicted / unlogged-but-expected
                 info["kind"] = "predicted_period"
+        elif self.profile.hormonal:
+            phase = "follicular" if d < s.ovulation else "luteal"
         elif d == s.ovulation:
             phase = "ovulation"
             info["kind"] = "ovulation"
@@ -199,7 +202,8 @@ class Engine:
         info["phase"] = phase
         info["predicted"] = s.predicted or d > self.today
         delta = (s.ovulation - d).days
-        info["chance"] = "high" if 0 <= delta <= 2 else "medium" if 3 <= delta <= 5 or delta == -1 else "low"
+        if not self.profile.hormonal:
+            info["chance"] = "high" if 0 <= delta <= 2 else "medium" if 3 <= delta <= 5 or delta == -1 else "low"
         return info
 
     def pregnancy(self) -> dict | None:
@@ -273,7 +277,7 @@ class Engine:
                 "headline": _days(late),
                 "sub": "Log your period when it starts",
             }
-        if s and s.fertile_start <= t <= s.ovulation:
+        if s and not self.profile.hormonal and s.fertile_start <= t <= s.ovulation:
             n = (s.ovulation - t).days
             return {
                 **base,
@@ -304,6 +308,7 @@ class Engine:
         return {
             "today": self.today.isoformat(),
             "mode": self.profile.mode,
+            "hormonal": self.profile.hormonal,
             "pregnancy": self.pregnancy(),
             "status": self.status(),
             "predicted_cycle_length": self.predicted_cycle,
@@ -504,8 +509,10 @@ def _days(n: int) -> str:
 
 
 def _chance_text(c: str | None) -> str:
+    if c is None:  # hormonal birth control
+        return "Fertile days hidden on hormonal birth control"
     return {"high": "High chance of getting pregnant", "medium": "Medium chance of getting pregnant"}.get(
-        c or "", "Low chance of getting pregnant"
+        c, "Low chance of getting pregnant"
     )
 
 

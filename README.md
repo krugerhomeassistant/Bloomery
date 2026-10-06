@@ -61,6 +61,9 @@ A private read-only link for your partner showing where you are in your cycle, t
 ### 🤰 Life stages
 Switch to **Pregnancy** mode for your week, due date, baby-size cards and trimester tips, or **Perimenopause** mode for wider prediction ranges, days since your last period and the 12-month menopause marker. Your history stays intact.
 
+### 💊 Birth control
+Pill, ring, patch, injection, IUD or implant: where you are in the pack or schedule, reminders on the days something needs doing, and no misleading fertile-window predictions on hormonal methods.
+
 ### 🔐 App lock
 Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, your choice per device; 15 minutes by default), or **unlock with Face ID / Touch ID / fingerprint** (passkeys, HTTPS installs).
 

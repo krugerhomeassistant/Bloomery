@@ -162,6 +162,12 @@
 - [x] UI: Profile → Shortcuts & automations (key create/show/copy/rotate/off, Siri Shortcut + HA + curl guides)
 - [x] Tests: backend 37/37 (key can't reach other endpoints), HA 18/18 at 100%; E2E key → curl → log
 
+## Phase 21 — Birth control (v1.8.0)
+- [x] `app/contraception.py` pure status() per method (pill types, ring 3+1 wk, patch 3×1 wk + 1 off, injection 13 wk, IUD monthly string check + replacement, implant replacement); Setting `bc:<uid>`
+- [x] `GET/PUT /api/contraception`; Today feed card (kind contraception); notify "pill" kind = birth control reminders on action days (legacy daily pill text when no method set)
+- [x] `Profile.hormonal` → no fertile/ovulation kinds/phases/chance/status, calendars & HA events skip them, ring hides fertile arc, partner page too; AI context flag
+- [x] Tests 40/40 (all schedules incl. boundaries, hidden fertility, endpoint + notification); E2E pill setup → Today
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

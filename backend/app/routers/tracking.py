@@ -6,10 +6,11 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel import delete, select
 
+from .. import contraception
 from .. import feed as feed_mod
 from ..catalog import LABELS, VALID, catalog_json
 from ..cycles import symptom_heatmap, symptom_patterns
-from ..deps import SessionDep, TodayDep, UserDep, build_engine
+from ..deps import SessionDep, TodayDep, UserDep, bc_config, build_engine
 from ..models import BLEEDING, ChatMessage, DayLog, InsightCache, Setting, User, now
 from .auth import public_user
 
@@ -228,7 +229,38 @@ def daily_feed(user: UserDep, db: SessionDep, today: TodayDep):
     note = db.get(Setting, f"lognote:{user.id}")
     if note and (n := json.loads(note.value))["day"] == today.isoformat():
         cards.insert(0, {"kind": "note", "emoji": "💬", "title": "About today's log", "text": n["text"]})
+    if bc := contraception.status(bc_config(db, user.id), today):
+        cards.insert(0, bc)
     return cards
+
+
+# ---------------------------------------------------------------- birth control
+class ContraceptionIn(BaseModel):
+    method: Literal[contraception.METHODS]  # type: ignore[valid-type]
+    start: date | None = None  # pack start / ring inserted / first patch / last injection / IUD or implant fitted
+    pill_type: Literal["21_7", "24_4", "28", "pop"] | None = None
+    expires: date | None = None  # IUD / implant replacement date
+
+
+@router.get("/contraception")
+def get_contraception(user: UserDep, db: SessionDep, today: TodayDep):
+    cfg = bc_config(db, user.id)
+    return {"config": cfg or {"method": "none"}, "status": contraception.status(cfg, today)}
+
+
+@router.put("/contraception")
+def put_contraception(body: ContraceptionIn, user: UserDep, db: SessionDep, today: TodayDep):
+    if body.method in ("pill", "ring", "patch", "injection") and not body.start:
+        raise HTTPException(422, "Choose the start date")
+    key = f"bc:{user.id}"
+    if body.method == "none":
+        if row := db.get(Setting, key):
+            db.delete(row)
+    else:
+        db.merge(Setting(key=key, value=body.model_dump_json()))
+    db.exec(delete(InsightCache).where(InsightCache.user_id == user.id))  # AI insight mentions fertility
+    db.commit()
+    return get_contraception(user, db, today)
 
 
 @router.get("/report")

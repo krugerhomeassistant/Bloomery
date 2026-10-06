@@ -10,7 +10,7 @@ const KINDS: [string, string, string][] = [
   ['forecast', '🔮', 'Heads-ups: symptoms you usually get around this day'],
   ['recap', '📊', 'Cycle recap when a new cycle starts'],
   ['tip', '💡', 'A daily tip for your cycle phase'],
-  ['pill', '💊', 'Daily pill reminder'],
+  ['pill', '💊', 'Birth control reminders: pill, ring, patch, injection, IUD checks (set your method in Profile)'],
 ]
 
 export default function NotifySettings({ open, onClose }: { open: boolean; onClose: () => void }) {

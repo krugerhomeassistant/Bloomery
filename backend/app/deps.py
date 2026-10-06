@@ -7,6 +7,7 @@ from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException, Query, Request
 from sqlmodel import Session, select
 
+from . import contraception
 from .cycles import Engine, Profile
 from .db import get_session
 from .models import BLEEDING, DayLog, Setting, User
@@ -50,6 +51,12 @@ def life_stage(db: Session, uid: int) -> dict:
     return json.loads(s.value) if s else {"mode": "cycle", "lmp": None}
 
 
+def bc_config(db: Session, uid: int) -> dict | None:
+    """Birth control settings (Setting bc:<uid>), see contraception.py."""
+    s = db.get(Setting, f"bc:{uid}")
+    return json.loads(s.value) if s else None
+
+
 def build_engine(db: Session, user: User, today: date) -> Engine:
     st = life_stage(db, user.id)
     logs = db.exec(select(DayLog).where(DayLog.user_id == user.id)).all()
@@ -61,6 +68,7 @@ def build_engine(db: Session, user: User, today: date) -> Engine:
             user.goal,
             st["mode"],
             date.fromisoformat(st["lmp"]) if st.get("lmp") else None,
+            contraception.hormonal(bc_config(db, user.id)),
         ),
         today,
         [l.day for l in logs if l.flow in BLEEDING],

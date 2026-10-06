@@ -45,8 +45,8 @@ export function CycleRing({ ov, children }: { ov: Overview | null; children?: Re
     arcs = (
       <>
         {arc(0, pos(cur.period_end), '#FF4A7D', 'p')}
-        {arc(pos(cur.fertile_start), pos(cur.fertile_end), '#3CC4BB', 'f')}
-        <circle cx={ox} cy={oy} r="7" fill="#148F88" stroke="var(--color-canvas)" strokeWidth="3" />
+        {!ov?.hormonal && arc(pos(cur.fertile_start), pos(cur.fertile_end), '#3CC4BB', 'f')}
+        {!ov?.hormonal && <circle cx={ox} cy={oy} r="7" fill="#148F88" stroke="var(--color-canvas)" strokeWidth="3" />}
         <circle cx={tx} cy={ty} r="12" fill="var(--color-card)" stroke="#FF4A7D" strokeWidth="4" />
       </>
     )

@@ -96,6 +96,7 @@ def partner_view(token: str, db: SessionDep, today: TodayDep):
         "tip": PARTNER_TIPS.get(phase or "") or (PREGNANCY_TIP if ov["pregnancy"] else None),
         "days": days,
         "pregnancy": ov["pregnancy"],
+        "hormonal": ov["hormonal"],
     }
 
 
@@ -159,9 +160,12 @@ def _events(eng, today: date) -> list[dict]:
                 "start": s.start,
                 "end": s.period_end,
             },
-            {"kind": "fertile", "title": "Fertile window", "start": s.fertile_start, "end": s.fertile_end},
-            {"kind": "ovulation", "title": "Ovulation (estimated)", "start": s.ovulation, "end": s.ovulation},
         ]
+        if not eng.profile.hormonal:  # no ovulation on hormonal birth control
+            out += [
+                {"kind": "fertile", "title": "Fertile window", "start": s.fertile_start, "end": s.fertile_end},
+                {"kind": "ovulation", "title": "Ovulation (estimated)", "start": s.ovulation, "end": s.ovulation},
+            ]
     if eng.pregnancy():  # only the cycle that led to the pregnancy, no future predictions
         lmp = date.fromisoformat(eng.pregnancy()["lmp"])
         out = [e for e in out if e["start"] <= lmp + timedelta(days=28)]

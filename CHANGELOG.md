@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-10-06
+
+### Added
+- **Birth control** (Profile → Birth control): pill (21+7, 24+4, continuous, progestin-only), ring, patch, injection, hormonal or copper IUD, implant. Today shows where you are ("Pill day 12", "Remove your ring today", "Injection due in 6 days", IUD string checks, replacement dates), and *Birth control reminders* arrive with your daily notifications on the days something needs doing.
+- On hormonal methods, fertile-window and ovulation predictions are hidden (app, calendars, Home Assistant, partner page); bleeds are still predicted.
+
 ## [1.7.0] - 2026-10-06
 
 ### Added
@@ -117,7 +123,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.4.0...v1.5.0

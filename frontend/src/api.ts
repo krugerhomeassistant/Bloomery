@@ -59,7 +59,7 @@ export type Segment = {
   fertile_start: string; fertile_end: string; predicted: boolean; ovulation_confirmed: boolean
 }
 export type Overview = {
-  today: string; mode: LifeStage; pregnancy: Pregnancy | null; status: Status; predicted_cycle_length: number; predicted_period_length: number
+  today: string; mode: LifeStage; hormonal: boolean; pregnancy: Pregnancy | null; status: Status; predicted_cycle_length: number; predicted_period_length: number
   luteal_length: number; uncertainty_days: number; next_period: string | null
   current_cycle: Segment | null; upcoming: Segment[]
 }

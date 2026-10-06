@@ -210,6 +210,7 @@ def build_context(engine: Engine, logs: list, user) -> str:
         "today": t.isoformat(),
         "goal": user.goal,
         "life_stage": engine.profile.mode,
+        "hormonal_birth_control": engine.profile.hormonal,
         "pregnancy": ov["pregnancy"],
         "age": (t.year - user.birth_year) if user.birth_year else None,
         "status": ov["status"],

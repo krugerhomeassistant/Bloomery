@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock, DatabaseBackup } from 'lucide-react'
+import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock, DatabaseBackup, Pill } from 'lucide-react'
 import { api, iso, type LifeStage, type Overview, type User } from '../api'
 import { LOCK_CHOICES, lockAfterMin, setLockAfter, useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
@@ -9,6 +9,7 @@ import NotifySettings from '../components/NotifySettings'
 import BackupSettings from '../components/BackupSettings'
 import Passkeys from '../components/Passkeys'
 import Automations from '../components/Automations'
+import BirthControl, { METHODS } from '../components/BirthControl'
 
 const STAGE_HELP: Record<LifeStage, string> = {
   cycle: 'Period and fertility predictions from your logs.',
@@ -33,6 +34,9 @@ export default function Profile() {
   const [msg, setMsg] = useState('')
   const [aiOpen, setAiOpen] = useState(false)
   const [notifyOpen, setNotifyOpen] = useState(false)
+  const [bcOpen, setBcOpen] = useState(false)
+  const bc = useFetch<{ config: { method: string } }>('/api/contraception', [bcOpen]).data
+  const bcLabel = METHODS.find(([v]) => v === (bc?.config.method ?? 'none'))?.[1].replace(' / not tracking', '') ?? ''
   // back from Google sign-in: /profile?backup=google-connected|google-failed opens the sheet with the result
   const [backupReturn] = useState(() => {
     const b = new URLSearchParams(location.search).get('backup')
@@ -131,6 +135,7 @@ export default function Profile() {
           <Row key={k} label={LABEL[k]} onClick={() => { setVal(user[k]); setEditing(k) }}
             value={`${user[k]} days${ov && LEARNED[k](ov) !== user[k] ? ` · using ${LEARNED[k](ov)}` : ''}`} />
         ))}
+        <Row icon={<Pill size={18} className="text-pink-500" />} label="Birth control" value={bcLabel} onClick={() => setBcOpen(true)} />
         <div className="px-4 py-3">
           <div className="mb-2 text-sm font-bold text-muted">Goal</div>
           <Segmented value={user.goal} onChange={(v) => save({ goal: v as User['goal'] })}
@@ -169,6 +174,7 @@ export default function Profile() {
         <Row icon={<Bell size={18} className="text-pink-500" />} label="Daily reminders & heads-ups" onClick={() => setNotifyOpen(true)} />
       </Group>
       <NotifySettings open={notifyOpen} onClose={() => setNotifyOpen(false)} />
+      <BirthControl open={bcOpen} onClose={() => setBcOpen(false)} />
 
       {user.is_owner && (
         <>
