@@ -84,6 +84,9 @@ A daily personalised insight, a **written recap of every cycle** (tap any cycle 
 </td>
 <td valign="top">
 
+### 🌍 Languages
+English and **Afrikaans** (Profile → Language): the app, daily insights, notifications, calendar feeds, the partner page and Home Assistant entities all follow your language. Adding another is one file per layer.
+
 ### 🏠 Built for self-hosting
 Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue, Apple Health or CSV** · **nightly backups to your server and Google Drive (optionally encrypted)** · JSON export · one-tap account deletion.
 
@@ -305,7 +308,7 @@ Linting, Home Assistant tests and the release process are in [CONTRIBUTING.md](C
 - [x] Partner sharing (read-only link)
 - [x] Home Assistant integration (HACS) + calendar feed
 - [x] Streaming AI replies
-- [ ] Translations
+- [x] Translations: English and Afrikaans (add yours, see [CONTRIBUTING.md](CONTRIBUTING.md#translations))
 
 Ideas and bug reports are welcome. [Open an issue](https://github.com/krugerhomeassistant/Bloomery/issues).
 

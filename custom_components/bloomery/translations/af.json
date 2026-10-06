@@ -1,0 +1,217 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Koppel Bloomery",
+        "description": "Maak in Bloomery **Profiel → Home Assistant en kalender** oop, tik **Skep voer** en plak die integrasie-URL hier.",
+        "data": {
+          "url": "Integrasie-URL"
+        },
+        "data_description": {
+          "url": "Lyk soos http://jou-bediener:8420/api/ha/…"
+        }
+      },
+      "reconfigure": {
+        "title": "Werk Bloomery-skakel by",
+        "description": "Plak die nuwe integrasie-URL van Bloomery (nodig nadat jy **Nuwe token** getik het).",
+        "data": {
+          "url": "Integrasie-URL"
+        },
+        "data_description": {
+          "url": "Lyk soos http://jou-bediener:8420/api/ha/…"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Bloomery-skakel het verander",
+        "description": "Die integrasie-URL werk nie meer nie (dit is afgeskakel of 'n nuwe token is geskep). Plak die huidige URL vanaf Bloomery → Profiel → Home Assistant en kalender.",
+        "data": {
+          "url": "Integrasie-URL"
+        },
+        "data_description": {
+          "url": "Lyk soos http://jou-bediener:8420/api/ha/…"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Dit lyk nie soos 'n Bloomery-integrasie-URL nie (…/api/ha/TOKEN).",
+      "invalid_token": "Hierdie skakel is nie meer aktief nie. Skep 'n nuwe een in Bloomery.",
+      "cannot_connect": "Home Assistant kan nie Bloomery by daardie adres bereik nie."
+    },
+    "abort": {
+      "already_configured": "Hierdie Bloomery-rekening is reeds opgestel.",
+      "reconfigure_successful": "Skakel bygewerk.",
+      "unique_id_mismatch": "Daardie skakel behoort aan 'n ander Bloomery-rekening.",
+      "reauth_successful": "Skakel bygewerk."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "cycle_day": {
+        "name": "Siklusdag"
+      },
+      "phase": {
+        "name": "Fase",
+        "state": {
+          "menstrual": "Menstruele",
+          "follicular": "Follikulêre",
+          "fertile": "Vrugbare venster",
+          "ovulation": "Ovulasie",
+          "luteal": "Luteale"
+        }
+      },
+      "days_until_period": {
+        "name": "Dae tot maandstonde"
+      },
+      "next_period": {
+        "name": "Volgende maandstonde"
+      },
+      "ovulation": {
+        "name": "Ovulasie"
+      },
+      "pregnancy_chance": {
+        "name": "Swangerskapskans",
+        "state": {
+          "low": "Laag",
+          "medium": "Medium",
+          "high": "Hoog"
+        }
+      },
+      "life_stage": {
+        "name": "Lewensfase",
+        "state": {
+          "cycle": "Siklus",
+          "pregnancy": "Swangerskap",
+          "perimenopause": "Perimenopouse"
+        }
+      },
+      "pregnancy_week": {
+        "name": "Swangerskapsweek"
+      },
+      "due_date": {
+        "name": "Verwagte datum"
+      },
+      "cycle_length": {
+        "name": "Sikluslengte"
+      },
+      "period_length": {
+        "name": "Maandstonde-lengte"
+      }
+    },
+    "binary_sensor": {
+      "period": {
+        "name": "Maandstonde"
+      },
+      "fertile_window": {
+        "name": "Vrugbare venster"
+      }
+    },
+    "calendar": {
+      "periods": {
+        "name": "Maandstondes"
+      },
+      "fertile_windows": {
+        "name": "Vrugbare vensters"
+      },
+      "ovulation_days": {
+        "name": "Ovulasie"
+      }
+    }
+  },
+  "exceptions": {
+    "feed_revoked": {
+      "message": "Die Bloomery-integrasie-URL is nie meer aktief nie. Skep 'n nuwe een in Bloomery en werk die integrasie by."
+    },
+    "cannot_connect": {
+      "message": "Kan nie Bloomery bereik nie: {error}"
+    },
+    "entry_not_loaded": {
+      "message": "Daardie Bloomery-inskrywing is nie gelaai nie."
+    },
+    "no_api_key": {
+      "message": "Voeg jou Bloomery API-sleutel by die integrasie se opsies (Configure) om vanaf Home Assistant aan te teken."
+    },
+    "invalid_api_key": {
+      "message": "Bloomery het die API-sleutel verwerp. Skep 'n nuwe een in Bloomery en werk die integrasie se opsies by."
+    },
+    "rejected": {
+      "message": "Bloomery kon dit nie aanteken nie: {error}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Aanteken vanaf Home Assistant",
+        "description": "Plak die API-sleutel vanaf Bloomery → Profiel → Kortpaaie en outomatisering om die *Teken maandstonde-begin aan*- en *Teken aan*-aksies te gebruik. Los dit leeg om die aksies af te skakel.",
+        "data": {
+          "api_key": "API-sleutel"
+        },
+        "data_description": {
+          "api_key": "Laat Home Assistant toe om aantekeninge by Bloomery by te voeg. Dit kan niks lees of uitvee nie."
+        }
+      }
+    },
+    "error": {
+      "invalid_api_key": "Bloomery het nie daardie API-sleutel aanvaar nie.",
+      "cannot_connect": "Home Assistant kan nie Bloomery by daardie adres bereik nie."
+    }
+  },
+  "services": {
+    "log_period_start": {
+      "name": "Teken maandstonde-begin aan",
+      "description": "Merk die begin van 'n maandstonde (en die verwagte volgende paar dae), soos om Teken maandstonde aan in die toep te tik.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Bloomery-rekening",
+          "description": "Na watter Bloomery-rekening om aan te teken."
+        },
+        "date": {
+          "name": "Datum",
+          "description": "Dag om vir aan te teken. Verstek is vandag."
+        }
+      }
+    },
+    "log": {
+      "name": "Teken aan",
+      "description": "Voeg simptome, buie en ander items by 'n dag sonder om enigiets wat reeds aangeteken is te verwyder.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Bloomery-rekening",
+          "description": "Na watter Bloomery-rekening om aan te teken."
+        },
+        "date": {
+          "name": "Datum",
+          "description": "Dag om vir aan te teken. Verstek is vandag."
+        },
+        "items": {
+          "name": "Items",
+          "description": "Simptome, buie en meer volgens naam of ID, bv. cramps, Headache of mood:sad."
+        },
+        "flow": {
+          "name": "Vloei",
+          "description": "Bloeding vir daardie dag."
+        },
+        "temperature": {
+          "name": "Temperatuur",
+          "description": "Wakker-temperatuur in °C: basaal (termometer) of pols/vel (bv. Apple Watch). Gebruik een bron per siklus."
+        },
+        "note": {
+          "name": "Nota",
+          "description": "Teks wat by die dag se notas gevoeg word."
+        }
+      }
+    }
+  },
+  "selector": {
+    "flow": {
+      "options": {
+        "spotting": "Spikkelbloeding",
+        "light": "Lig",
+        "medium": "Medium",
+        "heavy": "Swaar"
+      }
+    }
+  }
+}

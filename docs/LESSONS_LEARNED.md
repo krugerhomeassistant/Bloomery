@@ -71,3 +71,8 @@ Format: [Problem] → [Root cause] → [Verified solution]
 68. **strftime `%-d` is glibc-only** (breaks on Windows dev machines) → format day numbers with `d.day`.
 69. **Apple wrist temperature**: HealthKit samples are absolute (≈34–36 °C) while the Health app shows deviation from baseline; Shortcuts access is not clearly documented → accept absolute values in any unit, keep a fallback (Apple Health export import), detection is relative (≥0.2 °C sustained rise) so the baseline doesn't matter as long as one source is used.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
+70. **Regex-wrapping constants mangled lines with emoji/ids** (`'🌺N_(', text: ')…`, route `'/N_('`) → a one-pass regex over array lines mis-paired quotes → wrap constants with N_() by hand or check `git diff` for odd quote pairs; `tsc` does NOT catch it (still valid JS).
+71. **JSX-text codemod splits mixed paragraphs into fragments** (`t('and')`, `t('POST')`, `t('/calendar.ics?tz=')`) → fragments translate acceptably word-order permitting, but technical tokens must stay untranslated and the long Shortcut tutorial in Automations.tsx stays English → keep help steps English, translate headings/buttons.
+72. **Module-level constants evaluated before the language is known** → mark with `N_()` (identity) and call `t()` at the render site; app tree is keyed by `lang` so a switch re-renders.
+73. **`t(` inside code comments counted as a string by the checker** → keep example calls out of comments.
+74. **Missed `_()` in backend status label** (`"Ovulation in"`) → grep `"label"|"headline"` for bare strings after adding a language.

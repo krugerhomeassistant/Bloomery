@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { format, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
+import { format, t } from '../i18n'
 import { RefreshCw, Sparkles } from 'lucide-react'
 import { api } from '../api'
 import { Sheet } from './ui'
@@ -19,25 +20,25 @@ export default function RecapSheet({ start, onClose }: { start: string | null; o
   }
   useEffect(() => { setR(null); load() }, [start]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const title = start && `Cycle from ${format(parseISO(start), 'MMM d')}${r?.length ? ` · ${r.length} days` : r && !r.complete ? ' · so far' : ''}`
+  const title = start && t('Cycle from {date}', { date: format(parseISO(start), 'MMM d') }) + (r?.length ? ` · ${t('{n} days', { n: r.length })}` : r && !r.complete ? ` · ${t('so far')}` : '')
   return (
     <Sheet open={!!start} onClose={onClose} title={<span className="flex items-center gap-2"><Sparkles size={20} className="text-[#7C5CE0]" />{title}</span>}>
       <div className="px-5 pb-8">
         {!r ? (
-          <p className="flex items-center gap-2 text-muted"><RefreshCw size={16} className="animate-spin" /> Writing your recap…</p>
+          <p className="flex items-center gap-2 text-muted"><RefreshCw size={16} className="animate-spin" /> {t('Writing your recap…')}</p>
         ) : (
           <>
             <p className="whitespace-pre-wrap leading-relaxed">{r.content}</p>
-            {r.error && <p className="mt-3 text-xs text-muted">AI unavailable, showing the basic summary ({r.error})</p>}
-            {r.source === 'rules' && !r.error && <p className="mt-4 text-xs text-muted">Turn on the AI assistant in Profile for a detailed, personal recap.</p>}
+            {r.error && <p className="mt-3 text-xs text-muted">{t('AI unavailable, showing the basic summary (')}{r.error})</p>}
+            {r.source === 'rules' && !r.error && <p className="mt-4 text-xs text-muted">{t('Turn on the AI assistant in Profile for a detailed, personal recap.')}</p>}
             {r.source === 'ai' && (
               <button className="btn-ghost mt-5 text-sm" disabled={busy} onClick={() => load(true)}>
-                <RefreshCw size={16} className={busy ? 'animate-spin' : ''} /> Rewrite
+                <RefreshCw size={16} className={busy ? 'animate-spin' : ''} /> {t('Rewrite')}
               </button>
             )}
           </>
         )}
-        <p className="mt-6 text-xs text-muted">Based on your own logs. Not medical advice.</p>
+        <p className="mt-6 text-xs text-muted">{t('Based on your own logs. Not medical advice.')}</p>
       </div>
     </Sheet>
   )

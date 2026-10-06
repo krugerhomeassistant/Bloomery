@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { X, Minus, Plus } from 'lucide-react'
+import { t } from '../i18n'
 
 export function Logo({ size = 40 }: { size?: number }) {
   return <img src="/icon.svg" width={size} height={size} alt="Bloomery" className="rounded-[28%]" />
@@ -29,7 +30,7 @@ export function Sheet({ open, onClose, title, children, full }: {
         {title !== undefined && (
           <div className="flex items-center justify-between px-5 pt-4 pb-2">
             <div className="text-lg font-extrabold">{title}</div>
-            <button onClick={onClose} className="rounded-full p-2 hover:bg-pink-100" aria-label="Close">
+            <button onClick={onClose} className="rounded-full p-2 hover:bg-pink-100" aria-label={t('Close')}>
               <X size={22} />
             </button>
           </div>
@@ -67,14 +68,14 @@ export function Stepper({ value, onChange, min, max, unit }: {
 }) {
   return (
     <div className="flex items-center justify-center gap-6">
-      <button className="grid h-12 w-12 place-items-center rounded-full bg-pink-100 text-pink-600" onClick={() => onChange(Math.max(min, value - 1))} aria-label="Decrease">
+      <button className="grid h-12 w-12 place-items-center rounded-full bg-pink-100 text-pink-600" onClick={() => onChange(Math.max(min, value - 1))} aria-label={t('Decrease')}>
         <Minus />
       </button>
       <div className="min-w-24 text-center">
         <div className="text-5xl font-black text-pink-500">{value}</div>
         <div className="text-muted">{unit}</div>
       </div>
-      <button className="grid h-12 w-12 place-items-center rounded-full bg-pink-100 text-pink-600" onClick={() => onChange(Math.min(max, value + 1))} aria-label="Increase">
+      <button className="grid h-12 w-12 place-items-center rounded-full bg-pink-100 text-pink-600" onClick={() => onChange(Math.min(max, value + 1))} aria-label={t('Increase')}>
         <Plus />
       </button>
     </div>
@@ -84,7 +85,7 @@ export function Stepper({ value, onChange, min, max, unit }: {
 export function LineChart({ points, color = '#FF4A7D', unit = '', height = 140 }: {
   points: { date: string; value: number }[]; color?: string; unit?: string; height?: number
 }) {
-  if (points.length < 2) return <div className="py-6 text-center text-sm text-muted">Log at least two values to see a chart.</div>
+  if (points.length < 2) return <div className="py-6 text-center text-sm text-muted">{t('Log at least two values to see a chart.')}</div>
   const W = 320, H = height, P = 24
   const vs = points.map((p) => p.value)
   const lo = Math.min(...vs), hi = Math.max(...vs), span = hi - lo || 1

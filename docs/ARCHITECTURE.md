@@ -70,3 +70,6 @@ Design tokens in `index.css` `@theme` (pink-500 #FF4A7D primary, teal-400/500 fe
 
 ## Versioning
 Single version across `backend/app/__init__.py` (VERSION, served at /api/health), integration `manifest.json`, `frontend/package*.json`; set by `scripts/bump.py`, enforced by the release job.
+
+## i18n
+`frontend/src/i18n.ts` (t, N_, plural, locale-aware date-fns `format`, `setLang`), `frontend/src/locales/af.ts`, `frontend/i18n-check.mjs`; `state.tsx` holds `lang`/`changeLang` and keys the tree by lang; catalog fetched as `/api/catalog?lang=`. Backend `app/i18n.py` (ContextVar LANG). HA `translations/af.json`.

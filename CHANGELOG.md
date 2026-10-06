@@ -5,6 +5,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-06
+
+### Added
+- **Afrikaans** (Profile → Language; new accounts follow the browser language). Everything follows your language: screens, daily insights and recaps, notifications, the partner page, calendar feeds, the doctor's report, dates, quick-log names (Siri / Home Assistant accept Afrikaans names) and the Home Assistant integration. The AI assistant is asked to reply in your language.
+- **The cycle ring explains itself**: a legend under the ring on Today (and the partner page) shows the period, fertile window, ovulation day and today with their cycle-day numbers, plus a one-line description of what the ring is.
+- Translation tooling: `npm run i18n` and `python -m app.i18n` list missing strings; CI fails on gaps. Guide in CONTRIBUTING.md.
+
+### Fixed
+- The status label "Ovulation in" is now translated.
+
 ## [1.9.0] - 2026-10-06
 
 ### Added
@@ -129,7 +139,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.6.0...v1.7.0

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { addDays, format, isToday, parseISO } from 'date-fns'
+import { addDays, isToday, parseISO } from 'date-fns'
+import { format, t } from '../i18n'
 import { ChevronLeft, ChevronRight, Droplet, Search } from 'lucide-react'
 import { api, iso, type DayLog } from '../api'
 import { useApp } from '../state'
@@ -83,25 +84,25 @@ export default function LogDay() {
   const d = logDay ? parseISO(logDay) : new Date()
   const title = (
     <div className="flex items-center gap-1">
-      <button className="rounded-full p-1 hover:bg-pink-100" onClick={() => openLog(iso(addDays(d, -1)))} aria-label="Previous day"><ChevronLeft size={20} /></button>
-      <span className="min-w-28 text-center">{isToday(d) ? 'Today' : format(d, 'EEE, MMM d')}</span>
-      <button className="rounded-full p-1 hover:bg-pink-100 disabled:opacity-30" disabled={isToday(d)} onClick={() => openLog(iso(addDays(d, 1)))} aria-label="Next day"><ChevronRight size={20} /></button>
+      <button className="rounded-full p-1 hover:bg-pink-100" onClick={() => openLog(iso(addDays(d, -1)))} aria-label={t('Previous day')}><ChevronLeft size={20} /></button>
+      <span className="min-w-28 text-center">{isToday(d) ? t('Today') : format(d, 'EEE, MMM d')}</span>
+      <button className="rounded-full p-1 hover:bg-pink-100 disabled:opacity-30" disabled={isToday(d)} onClick={() => openLog(iso(addDays(d, 1)))} aria-label={t('Next day')}><ChevronRight size={20} /></button>
     </div>
   )
 
   return (
     <Sheet open={!!logDay} onClose={() => openLog(null)} title={title} full>
       {!log || !catalog ? (
-        <div className="p-10 text-center text-muted">Loading…</div>
+        <div className="p-10 text-center text-muted">{t('Loading…')}</div>
       ) : (
         <div className="space-y-4 px-4 pb-28">
           <label className="flex items-center gap-2 rounded-2xl bg-card px-4 py-3 shadow-sm">
             <Search size={18} className="text-muted" />
-            <input className="flex-1 bg-transparent outline-none" placeholder="Search symptoms, moods…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input className="flex-1 bg-transparent outline-none" placeholder={t('Search symptoms, moods…')} value={q} onChange={(e) => setQ(e.target.value)} />
           </label>
 
           {!q && (
-            <Section title="Menstrual flow" color="#FF4A7D">
+            <Section title={t('Menstrual flow')} color="#FF4A7D">
               {catalog.flow.map((f) => (
                 <Chip key={f.id} active={log.flow === f.id} emoji={<Drops n={f.id} on={log.flow === f.id} />} label={f.label} color="#FF4A7D"
                   onClick={() => setLog({ ...log, flow: log.flow === f.id ? null : f.id })} />
@@ -120,22 +121,22 @@ export default function LogDay() {
 
           {!q && (
             <div className="card space-y-3 p-4">
-              <h3 className="font-extrabold">Measurements</h3>
-              <Num label={`Basal temperature (°${F ? 'F' : 'C'})`} value={nums.temperature} step="0.01" placeholder={F ? '97.7' : '36.5'}
+              <h3 className="font-extrabold">{t('Measurements')}</h3>
+              <Num label={t('Basal temperature ({u})', { u: F ? '°F' : '°C' })} value={nums.temperature} step="0.01" placeholder={F ? '97.7' : '36.5'}
                 onChange={(v) => setNums({ ...nums, temperature: v })} />
-              <Num label={`Weight (${LBS ? 'lb' : 'kg'})`} value={nums.weight} step="0.1" onChange={(v) => setNums({ ...nums, weight: v })} />
-              <Num label="Water (ml)" value={nums.water} step="50" onChange={(v) => setNums({ ...nums, water: v })} />
-              <Num label="Sleep (hours)" value={nums.sleep} step="0.5" onChange={(v) => setNums({ ...nums, sleep: v })} />
+              <Num label={t('Weight ({u})', { u: LBS ? 'lb' : 'kg' })} value={nums.weight} step="0.1" onChange={(v) => setNums({ ...nums, weight: v })} />
+              <Num label={t('Water (ml)')} value={nums.water} step="50" onChange={(v) => setNums({ ...nums, water: v })} />
+              <Num label={t('Sleep (hours)')} value={nums.sleep} step="0.5" onChange={(v) => setNums({ ...nums, sleep: v })} />
               <div>
-                <div className="mb-1 text-sm font-bold text-muted">Notes</div>
-                <textarea className="input min-h-24" value={log.notes ?? ''} placeholder="Anything else worth remembering?"
+                <div className="mb-1 text-sm font-bold text-muted">{t('Notes')}</div>
+                <textarea className="input min-h-24" value={log.notes ?? ''} placeholder={t('Anything else worth remembering?')}
                   onChange={(e) => setLog({ ...log, notes: e.target.value })} />
               </div>
             </div>
           )}
           {err && <p className="text-center text-sm font-bold text-pink-600">{err}</p>}
           <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md bg-gradient-to-t from-canvas via-canvas to-transparent px-4 pb-safe pt-6">
-            <button className="btn-primary mb-2 w-full" onClick={apply} disabled={saving}>Apply</button>
+            <button className="btn-primary mb-2 w-full" onClick={apply} disabled={saving}>{t('Apply')}</button>
           </div>
         </div>
       )}

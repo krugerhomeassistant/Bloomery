@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { Fragment, createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, type Catalog, type User } from './api'
+import { N_, getLang, setLang, type Lang } from './i18n'
 
 type Ctx = {
   user: User | null
@@ -9,6 +10,8 @@ type Ctx = {
   bump: () => void
   logDay: string | null // open log sheet for date
   openLog: (d: string | null) => void
+  lang: Lang
+  changeLang: (l: Lang) => void
   theme: Theme
   setTheme: (t: Theme) => void
   toast: string | null
@@ -22,6 +25,7 @@ export const useApp = () => useContext(AppCtx)
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
+  const [lang, setLangState] = useState<Lang>(getLang)
   const [version, setVersion] = useState(0)
   const [logDay, openLog] = useState<string | null>(null)
   const [theme, setThemeState] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'system')
@@ -33,9 +37,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t)
   }, [toast])
 
+  // the account's language wins once signed in; before that the browser's / last used one applies
   useEffect(() => {
-    api<Catalog>('/api/catalog', { today: false }).then(setCatalog).catch(() => {})
-  }, [])
+    if (user?.lang && user.lang !== getLang()) { setLang(user.lang); setLangState(user.lang) }
+  }, [user?.lang])
+  const changeLang = (l: Lang) => {
+    setLang(l)
+    setLangState(l)
+    if (user) api('/api/language', { method: 'PUT', body: { lang: l }, today: false }).then(() => setUser({ ...user, lang: l })).catch(() => {})
+  }
+  useEffect(() => {
+    api<Catalog>(`/api/catalog?lang=${lang}`, { today: false }).then(setCatalog).catch(() => {})
+  }, [lang])
 
   useEffect(() => {
     const mq = matchMedia('(prefers-color-scheme: dark)')
@@ -53,12 +66,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppCtx.Provider value={{ user, setUser, catalog, version, bump, logDay, openLog, theme, setTheme, toast, notify }}>{children}</AppCtx.Provider>
+    <AppCtx.Provider value={{ user, setUser, catalog, version, bump, logDay, openLog, lang, changeLang, theme, setTheme, toast, notify }}>
+      <Fragment key={lang}>{children}</Fragment>
+    </AppCtx.Provider>
   )
 }
 
 // ---------------------------------------------------------------- app lock timing (per device)
-export const LOCK_CHOICES: [number, string][] = [[1, '1 minute'], [5, '5 minutes'], [15, '15 minutes'], [60, '1 hour'], [240, '4 hours']]
+export const LOCK_CHOICES: [number, string][] = [[1, N_('1 minute')], [5, N_('5 minutes')], [15, N_('15 minutes')], [60, N_('1 hour')], [240, N_('4 hours')]]
 const ls = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
 export const lockAfterMin = () => Number(ls('lockAfter')) || 15
 export const setLockAfter = (m: number) => { try { localStorage.setItem('lockAfter', String(m)) } catch {} }

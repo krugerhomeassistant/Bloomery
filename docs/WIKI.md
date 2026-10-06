@@ -71,3 +71,9 @@ Bottom nav: Today · Calendar · Insights · Assistant · Profile. Global LogDay
 
 ## Safety copy
 Every AI prompt and Insights page states estimates ≠ medical advice ≠ contraception. Flags recommend a healthcare professional.
+
+## Languages (v2.0)
+English + Afrikaans. User language = Setting `lang:<uid>` (PUT /api/language, returned by /api/auth/me as `lang`); before login the browser language / last choice (`localStorage.lang`). Backend: `_()` + `app/locales/af.py`; frontend: `t()` / `N_()` + `src/locales/af.ts`; HA: `translations/af.json`. Missing keys fall back to English. `npm run i18n` and `python -m app.i18n` list gaps (CI fails). Terms: period=maandstonde, fertile window=vrugbare venster, ovulation=ovulasie, insight=insig, log=aanteken.
+
+## Cycle ring
+One full circle = one cycle. Pink arc = period days, teal arc = fertile window (hidden on hormonal birth control), dark dot = ovulation day, ringed dot = today; legend under the ring gives the cycle-day numbers. In pregnancy: the circle is 40 weeks, ringed dot = today.

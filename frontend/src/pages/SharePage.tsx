@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { addDays, format, getDay, parseISO } from 'date-fns'
+import { addDays, getDay, parseISO } from 'date-fns'
+import { format, t } from '../i18n'
 import { Heart } from 'lucide-react'
 import { api, type Overview, type Pregnancy, type Status } from '../api'
 import { CycleRing } from '../components/CycleRing'
@@ -29,7 +30,7 @@ export default function SharePage({ token }: { token: string }) {
     <div className="mx-auto max-w-md px-4 pt-6 pb-10">
       <header className="mb-4 flex items-center gap-3 px-1">
         <Logo size={36} />
-        <div><div className="text-sm font-semibold text-muted">Shared with you</div><h1 className="text-2xl font-black">{v.name}'s cycle</h1></div>
+        <div><div className="text-sm font-semibold text-muted">{t('Shared with you')}</div><h1 className="text-2xl font-black">{v.name}{t('\'s cycle')}</h1></div>
       </header>
 
       <CycleRing ov={{ ...v, luteal_length: 14, predicted_period_length: 5, uncertainty_days: 2, upcoming: [], mode: v.pregnancy ? 'pregnancy' : 'cycle', pregnancy: v.pregnancy ?? null, hormonal: !!v.hormonal } as Overview} />
@@ -37,17 +38,17 @@ export default function SharePage({ token }: { token: string }) {
       {v.tip && (
         <div className="card mt-6 flex gap-3 p-4">
           <Heart className="shrink-0 text-pink-500" />
-          <div><div className="font-extrabold">How you can help</div><p className="text-sm text-muted">{v.tip}</p></div>
+          <div><div className="font-extrabold">{t('How you can help')}</div><p className="text-sm text-muted">{v.tip}</p></div>
         </div>
       )}
 
       <div className="card mt-4 p-4">
         <div className="mb-3 flex justify-between text-sm">
-          <span className="font-extrabold">Next 5 weeks</span>
-          {v.next_period && <span className="text-muted">Next period ~{format(parseISO(v.next_period), 'MMM d')}</span>}
+          <span className="font-extrabold">{t('Next 5 weeks')}</span>
+          {v.next_period && <span className="text-muted">{t('Next period ~')}{format(parseISO(v.next_period), 'MMM d')}</span>}
         </div>
         <div className="grid grid-cols-7 gap-y-1.5 text-center text-xs font-bold text-muted">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => t(d)[0]).map((d, i) => <div key={i}>{d}</div>)}
           {Array.from({ length: offset }, (_, i) => <div key={`e${i}`} />)}
           {v.days.map((d, i) => (
             <div key={d.date} className="flex justify-center">
@@ -58,12 +59,12 @@ export default function SharePage({ token }: { token: string }) {
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-3 text-[11px] font-semibold text-muted">
-          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-pink-500" />Period</span>
-          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border-2 border-dashed border-pink-400" />Predicted</span>
-          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-teal-400" />Fertile</span>
+          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-pink-500" />{t('Period')}</span>
+          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border-2 border-dashed border-pink-400" />{t('Predicted')}</span>
+          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-full bg-teal-400" />{t('Fertile')}</span>
         </div>
       </div>
-      <p className="mt-6 text-center text-xs text-muted">Shared privately from Bloomery · predictions are estimates, not contraception</p>
+      <p className="mt-6 text-center text-xs text-muted">{t('Shared privately from Bloomery · predictions are estimates, not contraception')}</p>
     </div>
   )
 }

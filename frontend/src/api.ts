@@ -48,6 +48,7 @@ export type User = {
   passkeys: number
   mode: LifeStage
   lmp: string | null
+  lang: 'en' | 'af'
 }
 export type LifeStage = 'cycle' | 'pregnancy' | 'perimenopause'
 export type Pregnancy = { lmp: string; days: number; week: number; day: number; due: string; days_left: number; trimester: number; size: string | null }

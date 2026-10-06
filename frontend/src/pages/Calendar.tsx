@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { addDays, addMonths, eachDayOfInterval, endOfMonth, format, getDay, isAfter, isToday, parseISO, startOfMonth } from 'date-fns'
+import { addDays, addMonths, eachDayOfInterval, endOfMonth, getDay, isAfter, isToday, parseISO, startOfMonth } from 'date-fns'
+import { format, t , N_ } from '../i18n'
 import { Check, Plus } from 'lucide-react'
 import { api, iso, type DayInfo } from '../api'
 import { useApp, useFetch } from '../state'
 
 const PHASE_NAME: Record<string, string> = {
-  menstrual: 'Period', follicular: 'Follicular phase', fertile: 'Fertile window', ovulation: 'Ovulation day', luteal: 'Luteal phase',
+  menstrual: N_('Period'), follicular: N_('Follicular phase'), fertile: N_('Fertile window'), ovulation: N_('Ovulation day'), luteal: N_('Luteal phase'),
 }
 
 export default function Calendar() {
@@ -54,13 +55,13 @@ export default function Calendar() {
     <div className="flex h-full flex-col">
       <div className="sticky top-0 z-10 bg-canvas px-4 pb-2 pt-4 shadow-[0_6px_12px_-10px_rgba(0,0,0,0.15)]">
         <div className="mb-3 flex items-center justify-between">
-          <h1 className="text-2xl font-black">{edit ? 'Edit period' : 'Calendar'}</h1>
+          <h1 className="text-2xl font-black">{edit ? t('Edit period') : t('Calendar')}</h1>
           {!edit && (
-            <button className="btn-ghost px-4 py-2 text-sm" onClick={() => setParams({ edit: '1' })}>Edit period</button>
+            <button className="btn-ghost px-4 py-2 text-sm" onClick={() => setParams({ edit: '1' })}>{t('Edit period')}</button>
           )}
         </div>
         <div className="grid grid-cols-7 text-center text-xs font-bold text-muted">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <div key={i}>{d}</div>)}
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => t(d)[0]).map((d, i) => <div key={i}>{d}</div>)}
         </div>
       </div>
 
@@ -113,8 +114,8 @@ export default function Calendar() {
       <div className="fixed inset-x-0 bottom-[calc(var(--nav-h)+0.5rem)] z-20 mx-auto max-w-md px-3">
         {edit ? (
           <div className="card flex gap-3 p-3 shadow-xl">
-            <button className="btn-ghost flex-1" onClick={() => setParams({})}>Cancel</button>
-            <button className="btn-primary flex-1" disabled={saving} onClick={save}>Save</button>
+            <button className="btn-ghost flex-1" onClick={() => setParams({})}>{t('Cancel')}</button>
+            <button className="btn-primary flex-1" disabled={saving} onClick={save}>{t('Save')}</button>
           </div>
         ) : (
           sel && (
@@ -123,22 +124,22 @@ export default function Calendar() {
                 <div>
                   <div className="text-sm font-bold text-muted">{format(parseISO(selected), 'EEEE, MMMM d')}</div>
                   <div className="text-xl font-black">
-                    {sel.cycle_day ? `Cycle day ${sel.cycle_day}` : 'No cycle data'}
+                    {sel.cycle_day ? t('Cycle day {n}', { n: sel.cycle_day }) : t('No cycle data')}
                   </div>
                   <div className="text-sm">
-                    {sel.phase && <span className={sel.phase === 'fertile' || sel.phase === 'ovulation' ? 'text-teal-500 font-bold' : sel.phase === 'menstrual' ? 'text-pink-500 font-bold' : 'text-muted'}>{PHASE_NAME[sel.phase]}{sel.predicted && sel.phase === 'menstrual' && sel.kind !== 'period' ? ' (predicted)' : ''}</span>}
-                    {sel.chance && <span className="text-muted"> · {sel.chance} chance of pregnancy</span>}
+                    {sel.phase && <span className={sel.phase === 'fertile' || sel.phase === 'ovulation' ? 'text-teal-500 font-bold' : sel.phase === 'menstrual' ? 'text-pink-500 font-bold' : 'text-muted'}>{t(PHASE_NAME[sel.phase])}{sel.predicted && sel.phase === 'menstrual' && sel.kind !== 'period' ? t(' (predicted)') : ''}</span>}
+                    {sel.chance && <span className="text-muted"> · {sel.chance} {t('chance of pregnancy')}</span>}
                   </div>
                 </div>
-                <button onClick={() => openLog(selected)} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-pink-500 text-white shadow-lg shadow-pink-500/30" aria-label="Log">
+                <button onClick={() => openLog(selected)} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-pink-500 text-white shadow-lg shadow-pink-500/30" aria-label={t('Log')}>
                   <Plus />
                 </button>
               </div>
               <div className="mt-3 flex flex-wrap gap-3 text-[11px] font-semibold text-muted">
-                <Legend cls="bg-pink-500" label="Period" />
-                <Legend cls="border-2 border-dashed border-pink-400" label="Predicted" />
-                <Legend cls="bg-teal-400" label="Fertile" />
-                <Legend cls="border-2 border-dashed border-teal-400 bg-teal-50" label="Ovulation" />
+                <Legend cls="bg-pink-500" label={t('Period')} />
+                <Legend cls="border-2 border-dashed border-pink-400" label={t('Predicted')} />
+                <Legend cls="bg-teal-400" label={t('Fertile')} />
+                <Legend cls="border-2 border-dashed border-teal-400 bg-teal-50" label={t('Ovulation')} />
               </div>
             </div>
           )

@@ -1,5 +1,6 @@
 /** WebAuthn (passkeys) + Web Push helpers: base64url <-> bytes for the JSON the server speaks. */
 import { api } from './api'
+import { t } from './i18n'
 
 const toBytes = (s: string) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), (c) => c.charCodeAt(0))
 const toB64 = (b: ArrayBuffer | null) => (b ? btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : null)
@@ -44,7 +45,7 @@ export async function currentPushSubscription() {
 }
 
 export async function enablePush() {
-  if ((await Notification.requestPermission()) !== 'granted') throw new Error('Notifications are blocked for Bloomery in your browser or phone settings.')
+  if ((await Notification.requestPermission()) !== 'granted') throw new Error(t('Notifications are blocked for Bloomery in your browser or phone settings.'))
   const { public_key } = await api<{ public_key: string }>('/api/notifications/push', { today: false })
   const reg = await navigator.serviceWorker.ready
   const sub = (await reg.pushManager.getSubscription()) ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toBytes(public_key) }))

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { format, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
+import { format, N_, t } from '../i18n'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useApp, useFetch } from '../state'
@@ -22,8 +23,8 @@ type Report = {
   notes: { date: string; text: string }[]
 }
 const d = (iso: string | null) => (iso ? format(parseISO(iso), 'd MMM yyyy') : '—')
-const GOAL: Record<string, string> = { track: 'Tracking cycle', conceive: 'Trying to conceive', avoid: 'Avoiding pregnancy (fertility awareness)' }
-const PHASE: Record<string, string> = { menstrual: 'during period', follicular: 'after period', fertile: 'around ovulation', luteal: 'before period' }
+const GOAL: Record<string, string> = { track: N_('Tracking cycle'), conceive: N_('Trying to conceive'), avoid: N_('Avoiding pregnancy (fertility awareness)') }
+const PHASE: Record<string, string> = { menstrual: N_('during period'), follicular: N_('after period'), fertile: N_('around ovulation'), luteal: N_('before period') }
 
 /** Printable summary for a GP / gynaecologist. "Save as PDF" from the print dialog makes the PDF. */
 export default function Report() {
@@ -40,91 +41,91 @@ export default function Report() {
   return (
     <div className="mx-auto max-w-3xl px-4 pb-10 pt-4 text-[15px] print:p-0 print:text-[12px]">
       <div className="no-print mb-4 flex flex-wrap items-center gap-2">
-        <button className="rounded-full p-2 hover:bg-pink-100" onClick={() => nav(-1)} aria-label="Back"><ArrowLeft /></button>
-        <select className="input w-auto py-2" value={months} onChange={(e) => setMonths(+e.target.value)} aria-label="Period covered">
-          {[3, 6, 12, 24].map((m) => <option key={m} value={m}>Last {m} months</option>)}
+        <button className="rounded-full p-2 hover:bg-pink-100" onClick={() => nav(-1)} aria-label={t('Back')}><ArrowLeft /></button>
+        <select className="input w-auto py-2" value={months} onChange={(e) => setMonths(+e.target.value)} aria-label={t('Period covered')}>
+          {[3, 6, 12, 24].map((m) => <option key={m} value={m}>{t('Last')} {m} {t('months')}</option>)}
         </select>
-        <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" className="h-4 w-4 accent-pink-500" checked={notes} onChange={(e) => setNotes(e.target.checked)} />Include my notes</label>
-        <button className="btn-primary ml-auto px-5 py-2.5 text-sm" onClick={() => print()}><Printer size={18} /> Print / Save PDF</button>
-        <p className="w-full text-xs text-muted">Sex and activity logs are never included. Choose "Save as PDF" in the print dialog to keep a file.</p>
+        <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" className="h-4 w-4 accent-pink-500" checked={notes} onChange={(e) => setNotes(e.target.checked)} />{t('Include my notes')}</label>
+        <button className="btn-primary ml-auto px-5 py-2.5 text-sm" onClick={() => print()}><Printer size={18} /> {t('Print / Save PDF')}</button>
+        <p className="w-full text-xs text-muted">{t('Sex and activity logs are never included. Choose "Save as PDF" in the print dialog to keep a file.')}</p>
       </div>
 
       <header className="flex items-start justify-between border-b-2 border-pink-500 pb-3">
         <div>
-          <h1 className="text-2xl font-black">Menstrual cycle summary</h1>
-          <div className="text-muted">{r.patient.name}{r.patient.age ? `, ${r.patient.age} years` : ''} · {GOAL[r.patient.goal] ?? r.patient.goal}{r.patient.life_stage !== 'cycle' ? ` · ${r.patient.life_stage}` : ''}</div>
-          <div className="text-sm text-muted">{d(r.since)} to {d(r.generated)} · generated {d(r.generated)}</div>
+          <h1 className="text-2xl font-black">{t('Menstrual cycle summary')}</h1>
+          <div className="text-muted">{r.patient.name}{r.patient.age ? `, ${t('{n} years', { n: r.patient.age })}` : ''} · {t(GOAL[r.patient.goal] ?? r.patient.goal)}{r.patient.life_stage !== 'cycle' ? ` · ${t(r.patient.life_stage)}` : ''}</div>
+          <div className="text-sm text-muted">{d(r.since)} {t('to')} {d(r.generated)} {t('· generated')} {d(r.generated)}</div>
         </div>
-        <div className="flex items-center gap-2 text-sm font-bold text-pink-500"><Logo size={28} /> Bloomery</div>
+        <div className="flex items-center gap-2 text-sm font-bold text-pink-500"><Logo size={28} /> {t('Bloomery')}</div>
       </header>
 
       {r.patient.pregnancy && (
-        <p className="mt-3 rounded-2xl bg-pink-50 p-3 font-semibold">Pregnant: {r.patient.pregnancy.week} weeks {r.patient.pregnancy.day} days, due {d(r.patient.pregnancy.due)} (from last menstrual period).</p>
+        <p className="mt-3 rounded-2xl bg-pink-50 p-3 font-semibold">{t('Pregnant:')} {r.patient.pregnancy.week} {t('weeks')} {r.patient.pregnancy.day} {t('days, due')} {d(r.patient.pregnancy.due)} {t('(from last menstrual period).')}</p>
       )}
 
       <section className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 print:grid-cols-4">
-        <Fact k="Cycle length" v={s.avg_cycle ? `${s.avg_cycle} d` : '—'} sub={s.min_cycle ? `range ${s.min_cycle}–${s.max_cycle} d${s.sd_cycle !== null ? `, SD ${s.sd_cycle}` : ''}` : `${s.cycles} complete cycles`} />
-        <Fact k="Period length" v={s.avg_period ? `${s.avg_period} d` : '—'} sub="average" />
-        <Fact k="Last period" v={d(s.last_period)} sub={s.next_period ? `next expected ${d(s.next_period)}` : ''} />
-        <Fact k="Regularity" v={s.regularity === 'unknown' ? '—' : s.regularity} sub={`${s.cycles} complete cycles · luteal ${s.luteal} d`} />
+        <Fact k={t('Cycle length')} v={s.avg_cycle ? t('{n} d', { n: s.avg_cycle }) : '—'} sub={s.min_cycle ? t('range {a}–{b} d', { a: s.min_cycle, b: s.max_cycle }) + (s.sd_cycle !== null ? `, SD ${s.sd_cycle}` : '') : t('{n} complete cycles', { n: s.cycles })} />
+        <Fact k={t('Period length')} v={s.avg_period ? t('{n} d', { n: s.avg_period }) : '—'} sub={t('average')} />
+        <Fact k={t('Last period')} v={d(s.last_period)} sub={s.next_period ? t('next expected {d}', { d: d(s.next_period) }) : ''} />
+        <Fact k={t('Regularity')} v={s.regularity === 'unknown' ? '—' : t(s.regularity)} sub={`${t('{n} complete cycles', { n: s.cycles })} · ${t('luteal {n} d', { n: s.luteal })}`} />
       </section>
 
       {r.flags.length > 0 && (
-        <Section title="Flagged for discussion">
+        <Section title={t('Flagged for discussion')}>
           <ul className="list-disc space-y-1 pl-5">{r.flags.map((f) => <li key={f.title}><b>{f.title}.</b> {f.text}</li>)}</ul>
         </Section>
       )}
 
-      <Section title="Cycles">
+      <Section title={t('Cycles')}>
         <div className="-mx-1 overflow-x-auto"><table className="w-full min-w-[34rem] text-left text-sm print:min-w-0 print:text-[11px] [&_td]:px-1 [&_td]:align-top [&_th]:px-1 [&_th]:align-bottom">
-          <thead className="text-xs uppercase text-muted"><tr><th className="py-1">Start</th><th>Length</th><th>Period</th><th>Heavy days</th><th>Spotting*</th><th>Ovulation</th><th>Most logged</th></tr></thead>
+          <thead className="text-xs uppercase text-muted"><tr><th className="py-1">{t('Start')}</th><th>{t('Length')}</th><th>{t('Period')}</th><th>{t('Heavy days')}</th><th>{t('Spotting*')}</th><th>{t('Ovulation')}</th><th>{t('Most logged')}</th></tr></thead>
           <tbody className="divide-y divide-line">
             {r.cycles.map((c) => (
               <tr key={c.start}>
                 <td className="whitespace-nowrap py-1.5">{d(c.start)}</td>
-                <td>{c.length ? `${c.length} d` : `${c.days_so_far} d so far`}</td>
-                <td>{c.period_length} d</td>
+                <td>{c.length ? t('{n} d', { n: c.length }) : t('{n} d so far', { n: c.days_so_far })}</td>
+                <td>{t('{n} d', { n: c.period_length })}</td>
                 <td>{c.heavy_days || '—'}</td>
                 <td>{c.spotting_days || '—'}</td>
-                <td className="whitespace-nowrap">{format(parseISO(c.ovulation), 'd MMM')} {c.ovulation_confirmed ? '(BBT)' : '(est.)'}</td>
+                <td className="whitespace-nowrap">{format(parseISO(c.ovulation), 'd MMM')} {c.ovulation_confirmed ? t('(BBT)') : t('(est.)')}</td>
                 <td className="text-muted">{c.top.join(', ') || '—'}</td>
               </tr>
             ))}
           </tbody>
         </table></div>
-        <p className="mt-1 text-xs text-muted">*Spotting outside the period. Ovulation is estimated from cycle length unless confirmed by a sustained temperature rise (BBT, {s.bbt_confirmed} cycles).</p>
+        <p className="mt-1 text-xs text-muted">{t('*Spotting outside the period. Ovulation is estimated from cycle length unless confirmed by a sustained temperature rise (BBT,')} {s.bbt_confirmed} {t('cycles).')}</p>
       </Section>
 
-      <Section title="Cycle length over time"><div className="print:max-w-md"><CycleTrend history={[...r.cycles]} /></div></Section>
+      <Section title={t('Cycle length over time')}><div className="print:max-w-md"><CycleTrend history={[...r.cycles]} /></div></Section>
 
       {(r.symptoms.length > 0 || r.patterns.length > 0) && (
-        <Section title="Symptoms and mood">
-          {r.symptoms.length > 0 && <p><b>Days logged:</b> {r.symptoms.map((x) => `${x.label} (${x.days})`).join(', ')}.</p>}
-          {r.patterns.length > 0 && <p className="mt-1"><b>Recurring patterns:</b> {r.patterns.map((p) => `${p.label} ${PHASE[p.phase] ?? p.phase} (${Math.round(p.share * 100)}% of occurrences)`).join('; ')}.</p>}
+        <Section title={t('Symptoms and mood')}>
+          {r.symptoms.length > 0 && <p><b>{t('Days logged:')}</b> {r.symptoms.map((x) => `${x.label} (${x.days})`).join(', ')}.</p>}
+          {r.patterns.length > 0 && <p className="mt-1"><b>{t('Recurring patterns:')}</b> {r.patterns.map((p) => `${p.label} ${t(PHASE[p.phase] ?? p.phase)} (${t('{n}% of occurrences', { n: Math.round(p.share * 100) })})`).join('; ')}.</p>}
           {r.heatmap.rows.length > 0 && <div className="mt-3"><SymptomMap map={r.heatmap} emoji={emoji} /></div>}
         </Section>
       )}
 
       {r.temperature.length > 1 && (
-        <Section title={`Waking temperature (${F ? '°F' : '°C'}; basal or wrist)`}>
+        <Section title={t('Waking temperature ({u}; basal or wrist)', { u: F ? '°F' : '°C' })}>
           <LineChart color="#22ADA5" unit={F ? '°F' : '°C'} points={r.temperature.map((p) => ({ ...p, value: F ? p.value * 9 / 5 + 32 : p.value }))} />
         </Section>
       )}
 
       {(r.pill || r.tests.length > 0) && (
-        <Section title="Contraception and tests">
-          {r.pill && <p>Pill: taken on {r.pill.taken} logged days, <b>missed {r.pill.missed}</b>.</p>}
-          {r.tests.map((t) => <p key={t.date + t.test}>{d(t.date)}: {t.test} {t.result}</p>)}
+        <Section title={t('Contraception and tests')}>
+          {r.pill && <p>{t('Pill: taken on')} {r.pill.taken} {t('logged days,')} <b>{t('missed')} {r.pill.missed}</b>.</p>}
+          {r.tests.map((x) => <p key={x.date + x.test}>{d(x.date)}: {x.test} {x.result}</p>)}
         </Section>
       )}
 
       {r.notes.length > 0 && (
-        <Section title="Notes">
+        <Section title={t('Notes')}>
           <ul className="space-y-1">{r.notes.map((n) => <li key={n.date}><span className="text-muted">{d(n.date)}:</span> {n.text}</li>)}</ul>
         </Section>
       )}
 
-      <p className="mt-6 text-xs text-muted">Self-reported data from the Bloomery cycle tracker. Predictions and ovulation dates are estimates, not a diagnosis.</p>
+      <p className="mt-6 text-xs text-muted">{t('Self-reported data from the Bloomery cycle tracker. Predictions and ovulation dates are estimates, not a diagnosis.')}</p>
     </div>
   )
 }

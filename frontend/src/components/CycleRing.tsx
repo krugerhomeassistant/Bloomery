@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { differenceInCalendarDays, parseISO } from 'date-fns'
+
 import type { Overview } from '../api'
+import { t } from '../i18n'
 
 const THEMES: Record<string, { bg: string; fg: string; accent: string }> = {
   period: { bg: 'radial-gradient(circle at 30% 25%, #FF8FAB 0%, #FF4A7D 60%, #EB2F65 100%)', fg: '#fff', accent: '#fff' },
@@ -18,6 +20,8 @@ export function CycleRing({ ov, children }: { ov: Overview | null; children?: Re
   const S = 320, C = S / 2, R = 150
   const cur = ov?.current_cycle
   let arcs: ReactNode = null
+  let legend: ReactNode = null
+  let caption = ''
   const preg = ov?.pregnancy
   if (preg) {  // progress through 280 days
     const pt = (day: number) => { const a = (day / 280) * 2 * Math.PI - Math.PI / 2; return [C + R * Math.cos(a), C + R * Math.sin(a)] }
@@ -28,6 +32,8 @@ export function CycleRing({ ov, children }: { ov: Overview | null; children?: Re
         <circle cx={x} cy={y} r="12" fill="var(--color-card)" stroke="#7C5CE0" strokeWidth="4" />
       </>
     )
+    caption = t('The ring is your whole pregnancy, 40 weeks all the way around.')
+    legend = <Key dot="today" color="#7C5CE0" text={t('Today · week {n}', { n: preg.week })} />
   } else if (cur) {
     const len = cur.length
     const s0 = parseISO(cur.start)
@@ -50,8 +56,18 @@ export function CycleRing({ ov, children }: { ov: Overview | null; children?: Re
         <circle cx={tx} cy={ty} r="12" fill="var(--color-card)" stroke="#FF4A7D" strokeWidth="4" />
       </>
     )
+    caption = t('The ring is one whole cycle, from the first day of a period to the first day of the next.')
+    legend = (
+      <>
+        <Key bar color="#FF4A7D" text={t('Period · days {a}–{b}', { a: 1, b: pos(cur.period_end) + 1 })} />
+        {!ov?.hormonal && <Key bar color="#3CC4BB" text={t('Fertile window · days {a}–{b}', { a: pos(cur.fertile_start) + 1, b: pos(cur.fertile_end) + 1 })} />}
+        {!ov?.hormonal && <Key dot="ovulation" color="#148F88" text={t('Ovulation · day {n}', { n: pos(cur.ovulation) + 1 })} />}
+        <Key dot="today" color="#FF4A7D" text={t('Today · day {n}', { n: Math.min(today, len - 1) + 1 })} />
+      </>
+    )
   }
   return (
+    <>
     <div className="relative mx-auto aspect-square w-full max-w-[320px]">
       <svg viewBox={`0 0 ${S} ${S}`} className="absolute inset-0 h-full w-full overflow-visible">
         <circle cx={C} cy={C} r={R} stroke="var(--color-line)" strokeWidth="9" fill="none" />
@@ -69,5 +85,23 @@ export function CycleRing({ ov, children }: { ov: Overview | null; children?: Re
         {children && <div className="mt-4">{children}</div>}
       </div>
     </div>
+    {legend && (
+      <div className="mx-auto mt-3 max-w-[320px] text-center">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-xs font-semibold">{legend}</div>
+        <p className="mt-1.5 text-[11px] leading-snug text-muted">{caption}</p>
+      </div>
+    )}
+    </>
+  )
+}
+
+function Key({ color, text, bar, dot }: { color: string; text: string; bar?: boolean; dot?: 'today' | 'ovulation' }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      {bar && <span className="h-1.5 w-4 rounded-full" style={{ background: color }} />}
+      {dot === 'ovulation' && <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />}
+      {dot === 'today' && <span className="h-3 w-3 rounded-full border-[3px] bg-card" style={{ borderColor: color }} />}
+      {text}
+    </span>
   )
 }

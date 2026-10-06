@@ -289,7 +289,7 @@ class Engine:
             return {
                 **base,
                 "state": "fertile",
-                "label": _("Ovulation") if n == 0 else "Ovulation in",
+                "label": _("Ovulation") if n == 0 else _("Ovulation in"),
                 "headline": _("Today") if n == 0 else _days(n),
                 "sub": _chance_text(info["chance"]),
             }

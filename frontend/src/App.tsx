@@ -14,13 +14,14 @@ import Profile from './pages/Profile'
 import LogDay from './pages/LogDay'
 import Report from './pages/Report'
 import LockScreen from './components/LockScreen'
+import { t , N_ } from './i18n'
 
 const TABS = [
-  { to: '/', label: 'Today', icon: Flower2 },
-  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { to: '/insights', label: 'Insights', icon: BarChart3 },
-  { to: '/assistant', label: 'Assistant', icon: Sparkles },
-  { to: '/profile', label: 'Profile', icon: UserIcon },
+  { to: '/', label: N_('Today'), icon: Flower2 },
+  { to: '/calendar', label: N_('Calendar'), icon: CalendarDays },
+  { to: '/insights', label: N_('Insights'), icon: BarChart3 },
+  { to: '/assistant', label: N_('Assistant'), icon: Sparkles },
+  { to: '/profile', label: N_('Profile'), icon: UserIcon },
 ]
 
 export default function App() {
@@ -67,7 +68,7 @@ export default function App() {
             {TABS.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} end={to === '/'}
                 className={({ isActive }) => `flex flex-col items-center gap-0.5 pt-2.5 pb-1 text-[11px] font-bold transition ${isActive ? 'text-pink-500' : 'text-muted'}`}>
-                {({ isActive }) => (<><Icon size={23} strokeWidth={isActive ? 2.5 : 2} />{label}</>)}
+                {({ isActive }) => (<><Icon size={23} strokeWidth={isActive ? 2.5 : 2} />{t(label)}</>)}
               </NavLink>
             ))}
           </div>
@@ -76,8 +77,8 @@ export default function App() {
         {user.pin_set && locked && <LockScreen onUnlock={() => { markActive(); setLocked(false) }} />}
         {toast && (
           <div role="status" className="sheet-in fixed inset-x-3 bottom-[calc(var(--nav-h)+0.75rem)] z-40 mx-auto flex max-w-md items-start gap-3 rounded-3xl bg-ink p-4 text-left text-sm text-canvas shadow-2xl">
-            <span className="text-lg">💬</span><span className="flex-1">{toast}<span className="mt-1 block text-xs opacity-60">Saved to today's insights</span></span>
-            <button onClick={() => notify(null)} className="-m-1 rounded-full p-1 opacity-70 hover:opacity-100" aria-label="Dismiss"><X size={18} /></button>
+            <span className="text-lg">💬</span><span className="flex-1">{toast}<span className="mt-1 block text-xs opacity-60">{t('Saved to today\'s insights')}</span></span>
+            <button onClick={() => notify(null)} className="-m-1 rounded-full p-1 opacity-70 hover:opacity-100" aria-label={t('Dismiss')}><X size={18} /></button>
           </div>
         )}
       </div>

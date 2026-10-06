@@ -36,3 +36,5 @@
 
 ## Candidate integrations (not yet added)
 - Alembic (migrations) · pywebpush (reminders) · GitHub Actions + GHCR (CI images) · Renovate (dep updates)
+
+- `frontend/i18n-check.mjs` (`npm run i18n`): extracts t()/N_() strings, compares with af.ts, checks placeholders. Used in CI before the build.

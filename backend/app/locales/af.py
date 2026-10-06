@@ -57,6 +57,7 @@ STRINGS: dict[str, str] = {
     "Ovulation (estimated)": "Ovulasie (beraam)",
     "Period": "Maandstonde",
     "Period expected": "Maandstonde verwag",
+    "Ovulation in": "Ovulasie oor",
     "Period in": "Maandstonde oor",
     "Period in {n} day": "Maandstonde oor {n} dag",
     "Period in {n} days": "Maandstonde oor {n} dae",
