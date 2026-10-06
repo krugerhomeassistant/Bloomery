@@ -54,4 +54,7 @@ Format: [Problem] → [Root cause] → [Verified solution]
 51. **Dependabot opened major-bump PRs instantly** (TypeScript 7, Python 3.14, Node 26) → review majors manually; CI on PRs guards them.
 52. **Python 3.14 test run failed with `_eval_type() ... prefer_fwd_module`** → uv 0.8 only knew 3.14.0rc2 (pydantic incompatible with the RC) → upgrade uv (`pip install -U uv`), use a final 3.14.x; also check cp314 wheels exist for amd64 + arm64 before bumping the slim image (no compiler in it).
 53. **Merging Dependabot PRs from here** → no GitHub API auth; `git fetch origin <dependabot branch>` + `git merge` + push to main closes the PR automatically.
+54. **Two backups in the same second overwrote each other** → second-resolution file names → add `-2`, `-3` suffix when the name exists (regex allows it).
+55. **Drive upload `got multiple values for keyword argument 'headers'`** → helper always passed auth headers while upload passed its own → helper merges `headers` kwarg with the auth header. Caught by the MockTransport fake Drive test.
+56. **Google OAuth in Testing mode** → refresh tokens expire after 7 days → setup guide tells the owner to *Publish app* (drive.file is non-sensitive, no verification needed).
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.

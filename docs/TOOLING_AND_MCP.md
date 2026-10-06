@@ -16,6 +16,7 @@
 | Playwright (Chromium) | visual QA screenshots at 390×844 (script pattern in LESSONS #4 / ACTIVE_CONTEXT) |
 | `pytest-homeassistant-custom-component` | HA test harness for `tests_ha/` (Python 3.13 venv) | real HA core in tests |
 | hassfest (GH action) | validates the HA integration manifest/translations in CI | official HA validator |
+| cryptography (AESGCM) | backup encryption; argon2-cffi low-level API for the key | audited, abi3 wheels for amd64/arm64 |
 | ruff | lint + format for all Python (`pyproject.toml`; E501 left to formatter) | one fast tool, CI `lint` job |
 | mypy --strict | integration typing (Platinum rule) | `pyproject.toml [tool.mypy]` |
 | hacs/action | HACS repo validation (`validate.yml`, daily) | required for HACS default store |

@@ -44,6 +44,7 @@ export type User = {
   temp_unit: 'C' | 'F'
   weight_unit: 'kg' | 'lb'
   pin_set: boolean
+  is_owner: boolean
   mode: LifeStage
   lmp: string | null
 }

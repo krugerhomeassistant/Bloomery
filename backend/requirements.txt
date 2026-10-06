@@ -6,3 +6,4 @@ httpx==0.28.1
 pydantic-settings==2.15.0
 itsdangerous==2.2.0
 tzdata==2026.4
+cryptography==50.0.2

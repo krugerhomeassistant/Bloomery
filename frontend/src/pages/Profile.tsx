@@ -1,11 +1,12 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock } from 'lucide-react'
+import { Bell, ChevronRight, Download, LogOut, Moon, Sparkles, Trash2, Upload, KeyRound, Lock, DatabaseBackup } from 'lucide-react'
 import { api, iso, type LifeStage, type Overview, type User } from '../api'
 import { LOCK_CHOICES, lockAfterMin, setLockAfter, useApp, useFetch } from '../state'
 import { SectionTitle, Sheet, Stepper } from '../components/ui'
 import { extractAppleHealth } from '../appleHealth'
 import AiSettings from '../components/AiSettings'
 import NotifySettings from '../components/NotifySettings'
+import BackupSettings from '../components/BackupSettings'
 
 const STAGE_HELP: Record<LifeStage, string> = {
   cycle: 'Period and fertility predictions from your logs.',
@@ -30,6 +31,13 @@ export default function Profile() {
   const [msg, setMsg] = useState('')
   const [aiOpen, setAiOpen] = useState(false)
   const [notifyOpen, setNotifyOpen] = useState(false)
+  // back from Google sign-in: /profile?backup=google-connected|google-failed opens the sheet with the result
+  const [backupReturn] = useState(() => {
+    const b = new URLSearchParams(location.search).get('backup')
+    if (b) history.replaceState(null, '', location.pathname)
+    return b
+  })
+  const [backupOpen, setBackupOpen] = useState(!!backupReturn)
   const file = useRef<HTMLInputElement>(null)
   if (!user) return null
 
@@ -159,6 +167,18 @@ export default function Profile() {
         <Row icon={<Bell size={18} className="text-pink-500" />} label="Daily reminders & heads-ups" onClick={() => setNotifyOpen(true)} />
       </Group>
       <NotifySettings open={notifyOpen} onClose={() => setNotifyOpen(false)} />
+
+      {user.is_owner && (
+        <>
+          <SectionTitle>Backups</SectionTitle>
+          <Group>
+            <Row icon={<DatabaseBackup size={18} className="text-pink-500" />} label="Backups & restore" value="Server + Google Drive" onClick={() => setBackupOpen(true)} />
+          </Group>
+          <BackupSettings open={backupOpen} onClose={() => setBackupOpen(false)} notice={!backupReturn ? null :
+            (backupReturn === 'google-connected' ? { ok: true, text: 'Google Drive connected. Backups are now uploaded there too.' }
+              : { ok: false, text: "Couldn't connect Google Drive. Check the client ID, secret and redirect URI, then try again." })} />
+        </>
+      )}
 
       <SectionTitle>Partner sharing</SectionTitle>
       <Group>

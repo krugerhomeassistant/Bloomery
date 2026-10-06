@@ -82,7 +82,7 @@ A daily personalised insight, a **written recap of every cycle** (tap any cycle 
 <td valign="top">
 
 ### 🏠 Built for self-hosting
-Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue, Apple Health or CSV** · JSON export · one-tap account deletion.
+Multi-arch Docker image · ~60 MB RAM · installable **PWA** · dark mode · multi-user · argon2 passwords · **import your history from Flo, Clue, Apple Health or CSV** · **nightly backups to your server and Google Drive (optionally encrypted)** · JSON export · one-tap account deletion.
 
 </td>
 </tr>
@@ -179,6 +179,15 @@ You get a *Bloomery* device with **status, cycle day, phase, days until period, 
 **Other calendar apps:** subscribe to the `.ics` link shown in the same Profile section; add `&type=period`, `&type=fertile` or `&type=ovulation` to get one calendar per type with its own colour.
 
 Feeds contain cycle dates only, never symptoms or notes. **New token** invalidates the old links (HA asks for the new one); **Turn off** removes them.
+
+## 💾 Backups
+
+**Profile → Backups & restore** (server owner only).
+
+- A consistent snapshot of the whole database every night (default 03:00, keeps the newest 14) in `/data/backups`, plus **Back up now**.
+- **Encryption**: set a passphrase and backups are AES-256-GCM encrypted (key derived with Argon2id). Keep the passphrase somewhere safe; without it an encrypted backup can't be restored.
+- **Google Drive**: create a free OAuth client once (steps are shown in the app; Bloomery must be reached over HTTPS) and each backup is also uploaded to a *Bloomery backups* folder. Bloomery only gets the `drive.file` permission, so it can only see files it created.
+- **Restore** from a server backup, an uploaded file or straight from Google Drive. A safety copy of the current data is saved first. On a brand-new server: create an account, connect the same Google client and restore.
 
 ## 🔒 Privacy
 

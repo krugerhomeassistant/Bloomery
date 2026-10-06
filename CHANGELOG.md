@@ -5,6 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-06
+
+### Added
+- Backups: nightly consistent snapshots in `/data/backups` with retention, *Back up now*, download, and restore from a server backup or an uploaded file (a safety copy is taken first).
+- Optional backup encryption with a passphrase (AES-256-GCM, Argon2id key derivation).
+- Google Drive backups: upload to a *Bloomery backups* folder (`drive.file` scope), cloud retention, and restore straight from Drive (also on a fresh install).
+
 ## [1.2.1] - 2026-10-01
 
 ### Changed
@@ -84,6 +91,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/krugerhomeassistant/Bloomery/releases/tag/v1.2.0

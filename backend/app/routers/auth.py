@@ -30,7 +30,15 @@ def registration_open(db) -> bool:
 
 def public_user(u: User) -> dict:
     db = object_session(u)
-    extra = {"pin_set": bool(db.get(Setting, f"pin:{u.id}")), **life_stage(db, u.id)} if db else {}
+    extra = (
+        {
+            "pin_set": bool(db.get(Setting, f"pin:{u.id}")),
+            "is_owner": u.id == db.exec(select(func.min(User.id))).one(),
+            **life_stage(db, u.id),
+        }
+        if db
+        else {}
+    )
     return u.model_dump(exclude={"password_hash"}) | extra
 
 

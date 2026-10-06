@@ -128,6 +128,15 @@
 - [ ] Merge Node 26 PR (#1) once Node 26 is LTS (~2026-10-28); build already verified on v26.10.0
 - [ ] Optional: submit to HACS default store (needs release + passing HACS action)
 
+## Phase 16 — Backups (v1.3.0)
+- [x] `app/backup.py`: sqlite3 backup API snapshot → gzip → optional AES-256-GCM (Argon2id 32 MiB); `/data/backups`, retention, unique names, 3 pre-restore safety copies
+- [x] Restore: validate (magic, gzip, SQLite header, integrity_check, core tables) → safety copy → dispose engine → sqlite backup API into the live file → init_db
+- [x] Google Drive (web OAuth, `drive.file`): connect/callback with session state + origin, folder find-or-create (fresh-install recovery), multipart upload, prune, download/restore, revoke on disconnect
+- [x] Scheduler task in lifespan (daily at local time, once per day); owner-only API `/api/backups/*`; `is_owner` on `/api/auth/me`
+- [x] UI: Profile → Backups & restore sheet (status, run, schedule, keep, passphrase, Google setup guide with redirect URI, cloud + local lists, restore confirm with passphrase)
+- [x] Tests 32/32 (fake Drive via httpx.MockTransport, encrypted restore, tick, owner-only); E2E backup → encrypt → restore → Google return path
+- [ ] Next: HACS default-store PR (v1.3.x), passkeys + Web Push (v1.4), insights charts (v1.5), translations (v1.6)
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)
@@ -136,7 +145,7 @@
 - [x] Pregnancy mode (weeks, due date) & perimenopause mode
 - [x] Partner read-only sharing link
 - [x] Streaming AI responses
-- [ ] Symptom predictions ("cramps likely in 2 days") from patterns
+- [x] Symptom predictions (feed forecasts / heads-ups, v0.3)
 - [ ] Localisation (i18n)
 - [ ] Encrypted-at-rest DB (SQLCipher) option
-- [ ] CI: GitHub Actions build + test + publish image to GHCR
+- [x] CI: GitHub Actions build + test + publish image to GHCR

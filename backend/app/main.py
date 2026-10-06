@@ -7,19 +7,20 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import VERSION
+from . import VERSION, backup
 from .config import get_settings
 from .db import init_db
 from .notify import scheduler
-from .routers import assistant, auth, notifications, share, tracking
+from .routers import assistant, auth, backups, notifications, share, tracking
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
-    task = asyncio.create_task(scheduler())
+    tasks = [asyncio.create_task(scheduler()), asyncio.create_task(backup.scheduler())]
     yield
-    task.cancel()
+    for t in tasks:
+        t.cancel()
 
 
 def create_app() -> FastAPI:
@@ -47,7 +48,7 @@ def create_app() -> FastAPI:
             resp.headers.setdefault("Cache-Control", "no-store")  # health data must not sit in shared caches
         return resp
 
-    for r in (auth.router, tracking.router, assistant.router, notifications.router, share.router):
+    for r in (auth.router, tracking.router, assistant.router, notifications.router, share.router, backups.router):
         app.include_router(r)
 
     @app.get("/api/health")
