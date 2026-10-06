@@ -24,12 +24,27 @@ def test_quick_log_with_api_key():
     assert bot.post("/api/quick/period-start", json={"day": "2026-05-01"}).json()["days"] >= 3
     assert owner.get("/api/logs/2026-05-01").json()["flow"] == "medium"
 
-    r = bot.post("/api/quick/log", json={"day": "2026-05-02", "tags": ["Cramps", "mood:sad", "headache"], "note": "rough day"})
+    r = bot.post(
+        "/api/quick/log", json={"day": "2026-05-02", "tags": ["Cramps", "mood:sad", "headache"], "note": "rough day"}
+    )
     assert r.json()["logged"] == ["Cramps", "Sad", "Headache"]
-    r = bot.post("/api/quick/log", json={"day": "2026-05-02", "tags": ["cramps", "Bloating"], "flow": "heavy",
-                                         "temperature": 97.9, "temperature_unit": "F", "note": "better later"})
+    r = bot.post(
+        "/api/quick/log",
+        json={
+            "day": "2026-05-02",
+            "tags": ["cramps", "Bloating"],
+            "flow": "heavy",
+            "temperature": 97.9,
+            "temperature_unit": "F",
+            "note": "better later",
+        },
+    )
     log = owner.get("/api/logs/2026-05-02").json()
-    assert log["tags"]["symptoms"].count("cramps") == 1 and "sad" in log["tags"]["mood"] and log["tags"]["digestion"] == ["bloating"]
+    assert (
+        log["tags"]["symptoms"].count("cramps") == 1
+        and "sad" in log["tags"]["mood"]
+        and log["tags"]["digestion"] == ["bloating"]
+    )
     assert log["flow"] == "heavy" and log["temperature"] == 36.61 and log["notes"] == "rough day\nbetter later"
 
     assert bot.post("/api/quick/log", json={"tags": ["unicorns"]}).status_code == 422

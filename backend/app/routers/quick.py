@@ -63,7 +63,9 @@ def resolve(name: str) -> tuple[str, str] | None:
 class QuickLog(BaseModel):
     day: date | None = None
     tz: str | None = Field(None, max_length=64)
-    tags: list[str] = Field(default_factory=list, max_length=30, description='Ids, labels or "category:id", e.g. ["Cramps", "mood:sad"]')
+    tags: list[str] = Field(
+        default_factory=list, max_length=30, description='Ids, labels or "category:id", e.g. ["Cramps", "mood:sad"]'
+    )
     flow: str | None = Field(None, pattern="^(spotting|light|medium|heavy)$")
     temperature: float | None = Field(None, ge=30, le=110)
     temperature_unit: str = Field("C", pattern="^[CF]$")

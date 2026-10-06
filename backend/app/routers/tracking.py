@@ -352,7 +352,8 @@ def delete_account(request: Request, user: UserDep, db: SessionDep):
         delete(Setting).where(
             Setting.key.like(f"%:{u}")
             | Setting.key.like(f"%:{u}:%")
-            | (Setting.key.like("share:%") | Setting.key.like("ha:%") | Setting.key.like("api:%")) & (Setting.value == u)
+            | (Setting.key.like("share:%") | Setting.key.like("ha:%") | Setting.key.like("api:%"))
+            & (Setting.value == u)
         )
     )
     db.delete(user)
