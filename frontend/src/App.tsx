@@ -12,6 +12,7 @@ import Insights from './pages/Insights'
 import Assistant from './pages/Assistant'
 import Profile from './pages/Profile'
 import LogDay from './pages/LogDay'
+import Report from './pages/Report'
 import LockScreen from './components/LockScreen'
 
 const TABS = [
@@ -49,7 +50,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="mx-auto flex min-h-full max-w-md flex-col">
+      <div className="mx-auto flex min-h-full max-w-md flex-col print:max-w-none">
         <main className="flex-1 pb-[var(--nav-h)]">
           <Routes>
             <Route path="/" element={<Today />} />
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/insights" element={<Insights />} />
             <Route path="/assistant" element={<Assistant />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/report" element={<Report />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

@@ -90,3 +90,37 @@ body {
 .pb-safe {
   padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
 }
+
+/* printing (doctor's report → Save as PDF): always light, no app chrome, A4 */
+@media print {
+  :root,
+  .dark {
+    --color-ink: #2d2a3e;
+    --color-muted: #6f6c7d;
+    --color-canvas: #ffffff;
+    --color-card: #ffffff;
+    --color-line: #e8dfe3;
+    --color-pink-50: #fff0f4;
+    --color-pink-100: #ffe3ec;
+    --color-teal-50: #ecfbf9;
+    --color-teal-100: #d3f5f1;
+    --nav-h: 0px;
+  }
+  nav,
+  .no-print {
+    display: none !important;
+  }
+  .card {
+    box-shadow: none;
+    border: 1px solid var(--color-line);
+    break-inside: avoid;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+}

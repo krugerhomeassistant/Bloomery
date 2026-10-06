@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping! Issues and pull requests are welcome.
+Thanks for helping! Issues and pull requests are welcome. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Develop
 

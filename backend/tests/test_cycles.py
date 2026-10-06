@@ -123,3 +123,27 @@ def test_symptom_heatmap():
     assert row["label"] == "Cramps" and row["share"][1] == 1.0 and row["share"][0] == 0
     assert row["share"][25] == round(1 / 3, 2)  # day 26 reached by the 3 finished cycles only
     assert all(r["tag"] != "symptoms:fine" for r in h["rows"])
+
+
+def test_doctor_report():
+    from types import SimpleNamespace as NS
+
+    from app.report import build
+
+    starts = [date(2026, 1, 1) + D(days=28 * i) for i in range(6)]
+    today = starts[-1] + D(days=5)
+    eng = Engine(Profile(), today, bleed(*starts))
+    logs = [
+        NS(day=s, flow="heavy", tags={"symptoms": ["cramps"], "sex": ["unprotected"]}, notes="ouch", temperature=None)
+        for s in starts
+    ]
+    logs += [NS(day=starts[2] + D(days=15), flow="spotting", tags={"pill": ["missed"]}, notes="", temperature=36.6)]
+    user = NS(display_name="Mia", username="mia", birth_year=1995, goal="track")
+    r = build(eng, logs, user, today, 3, include_notes=False)
+    assert r["patient"]["age"] == 31 and r["notes"] == []
+    assert r["since"] == (today - D(days=91)).isoformat()
+    assert all(c["start"] >= "2026-03-01" or c["length"] for c in r["cycles"])
+    assert r["summary"]["avg_cycle"] == 28 and r["summary"]["cycles"] >= 2
+    assert {s["label"] for s in r["symptoms"]} == {"Cramps"}  # sex logs never in the report
+    assert r["cycles"][0]["heavy_days"] == 1 and r["pill"] == {"taken": 0, "missed": 1}
+    assert build(eng, logs, user, today, 6, include_notes=True)["notes"][0]["text"] == "ouch"

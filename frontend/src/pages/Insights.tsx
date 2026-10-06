@@ -1,5 +1,6 @@
 import { differenceInCalendarDays, format, parseISO } from 'date-fns'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, FileText } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import type { Overview } from '../api'
 import { useApp, useFetch } from '../state'
 import { LineChart, SectionTitle, Spinner } from '../components/ui'
@@ -34,7 +35,10 @@ export default function Insights() {
 
   return (
     <div className="px-4 pt-4 pb-8">
-      <h1 className="px-1 text-2xl font-black">Insights</h1>
+      <div className="flex items-center justify-between px-1">
+        <h1 className="text-2xl font-black">Insights</h1>
+        <Link to="/report" className="btn-ghost px-4 py-2 text-sm"><FileText size={16} /> Doctor's report</Link>
+      </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Tile label="Average cycle" value={stats.avg_cycle_length ?? ov.predicted_cycle_length} unit="days" sub={stats.avg_cycle_length ? `${stats.min_cycle}–${stats.max_cycle} day range` : 'from your settings'} />

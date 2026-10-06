@@ -547,14 +547,18 @@ def symptom_patterns(engine: Engine, logs: list[tuple[date, dict]], catalog_labe
 
 
 def symptom_heatmap(
-    engine: Engine, logs: list[tuple[date, dict]], catalog_labels: dict[str, str], top_n: int = 6
+    engine: Engine,
+    logs: list[tuple[date, dict]],
+    catalog_labels: dict[str, str],
+    top_n: int = 6,
+    since: date | None = None,
 ) -> dict:
     """How often each of the most-logged symptoms/moods shows up on each cycle day, across your logged cycles.
 
     Cell value = share of cycles (that reached that day) in which the tag was logged on that cycle day.
     """
     days = min(max(engine.predicted_cycle, 21), 35)
-    segs = [s for s in engine.segments if not s.predicted and s.start <= engine.today]
+    segs = [s for s in engine.segments if not s.predicted and s.start <= engine.today and (not since or s.end >= since)]
     by_day: dict[str, Counter] = defaultdict(Counter)
     total: Counter = Counter()
     for d, tags in logs:

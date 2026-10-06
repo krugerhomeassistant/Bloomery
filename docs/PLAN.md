@@ -149,6 +149,13 @@
 - [x] `components/InsightCharts.tsx`: CycleTrend (dots + thin line, dashed avg, typical band; tap/hover detail) and SymptomMap (single-hue sequential grid, tap detail line, legend, aria-labels)
 - [x] Tests 35/35; screenshots light + dark
 
+## Phase 19 — Doctor's report (v1.6.0)
+- [x] `app/report.py` + `GET /api/report?months=&notes=`: window cycles (heavy/spotting days, top tags), summary (avg/min/max/SD), flags, symptom counts/patterns/heatmap (window-only via `since`), BBT, pill, positive tests, optional notes; sex/activity excluded
+- [x] `pages/Report.tsx` at `/report` + print CSS (forced light, no nav, A4, cards don't split); entry button on Insights
+- [x] Tests 36/36; PDF printed with Chromium and checked
+- [x] CODE_OF_CONDUCT.md (Contributor Covenant 2.1, official text; reports via GitHub private reporting)
+- [ ] Next: v1.7 HA/Siri logging, v1.8 birth control, v1.9 wearable temperature, v2.0 Afrikaans
+
 ## Backlog (next)
 - [ ] Alembic migrations (needed before first schema change)
 - [x] Reminders/notifications — done via ntfy/Gotify/HA/Discord (Web Push still possible later for HTTPS installs)

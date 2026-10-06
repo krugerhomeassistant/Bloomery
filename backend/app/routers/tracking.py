@@ -231,6 +231,15 @@ def daily_feed(user: UserDep, db: SessionDep, today: TodayDep):
     return cards
 
 
+@router.get("/report")
+def doctor_report(user: UserDep, db: SessionDep, today: TodayDep, months: int = 6, notes: bool = False):
+    """Data for the printable doctor's report (last `months` months)."""
+    from ..report import build
+
+    logs = db.exec(select(DayLog).where(DayLog.user_id == user.id, DayLog.day <= today)).all()
+    return build(build_engine(db, user, today), logs, user, today, max(1, min(months, 24)), notes)
+
+
 @router.get("/insights")
 def insights(user: UserDep, db: SessionDep, today: TodayDep):
     eng = build_engine(db, user, today)

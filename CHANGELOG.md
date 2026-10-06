@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-06
+
+### Added
+- **Doctor's report** (Insights → Doctor's report): a printable summary of the last 3–24 months for a GP or gynaecologist (cycle and period lengths, regularity, heavy and spotting days, estimated or temperature-confirmed ovulation, symptom patterns and map, temperature, pill adherence, positive tests, health flags, optional notes). *Print / Save PDF* uses the browser's print dialog; sex and activity logs are never included.
+- Code of Conduct (Contributor Covenant 2.1).
+
 ## [1.5.0] - 2026-10-06
 
 ### Added
@@ -105,7 +111,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.2.1...v1.3.0

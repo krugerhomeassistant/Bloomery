@@ -68,7 +68,7 @@ Optional 4-digit PIN when you come back after being away (1 minute to 4 hours, y
 A **Home Assistant integration** built to HA's Platinum quality rules (HACS, UI setup, no YAML): cycle sensors plus colour-coded **Periods / Fertile windows / Ovulation calendars**, and a private **iCalendar feed** for Google, Apple or Outlook.
 
 ### 📊 Insights
-Averages, regularity, **cycle length over time**, a **symptom map by cycle day**, cycle history, symptom ↔ phase patterns, temperature and weight charts, plus gentle health-check flags.
+A **doctor's report** you can print or save as PDF, averages, regularity, **cycle length over time**, a **symptom map by cycle day**, cycle history, symptom ↔ phase patterns, temperature and weight charts, plus gentle health-check flags.
 
 </td>
 </tr>
@@ -277,7 +277,7 @@ cd frontend && npm install && npm run dev         # http://localhost:5173
 python scripts/seed_demo.py http://localhost:8000
 ```
 
-Linting, Home Assistant tests and the release process are in [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
+Linting, Home Assistant tests and the release process are in [CONTRIBUTING.md](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md). Everyone taking part follows our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 🗺️ Roadmap
 

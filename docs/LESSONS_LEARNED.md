@@ -63,4 +63,6 @@ Format: [Problem] → [Root cause] → [Verified solution]
 60. **Tests run standalone had no tables** → `TestClient(app)` without `with` skips lifespan → call `init_db()` in test helpers.
 61. **Testing WebAuthn without hardware** → backend: soft authenticator (P-256, 'none' attestation, CBOR authData); browser: Chromium CDP `WebAuthn.addVirtualAuthenticator` (internal, UV) on http://localhost (secure context).
 62. **First cycle-length chart used bars on a zoomed axis** → exaggerates small differences (dataviz anti-pattern) → dots + line when the baseline isn't zero.
+63. **Printed report squeezed to phone width** → the app shell's `max-w-md` applies in print → `print:max-w-none` on the shell; charts get `print:max-w-md` so SVG text doesn't balloon.
+64. **Heatmap shares diluted in a 6-month report** → share denominators counted all cycles → `symptom_heatmap(..., since=)` limits cycles to the window.
 10. **`starlette.testclient` deprecation warning re httpx** → Starlette now prefers `httpx2` → harmless; revisit when upgrading.
