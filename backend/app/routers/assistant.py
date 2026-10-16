@@ -73,6 +73,16 @@ async def test_config(body: ConfigIn, user: UserDep, db: SessionDep):
         return {"ok": False, "error": str(e)}
 
 
+@router.post("/config/models")
+async def list_models(body: ConfigIn, user: UserDep, db: SessionDep):
+    """Models the provider offers for the (possibly unsaved) settings; the settings sheet shows them as a picker."""
+    require_admin(user, db)
+    try:
+        return {"ok": True, "models": await ai.list_models(ai.config(body.model_dump()))}
+    except ai.AIError as e:
+        return {"ok": False, "error": str(e)}
+
+
 def _logs(db, user):
     return db.exec(select(DayLog).where(DayLog.user_id == user.id)).all()
 

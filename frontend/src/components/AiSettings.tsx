@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react'
 import { api } from '../api'
 import { useApp } from '../state'
 import { Sheet } from './ui'
@@ -24,6 +24,9 @@ export default function AiSettings({ open, onClose }: { open: boolean; onClose: 
   const [f, setF] = useState({ provider: 'none', model: '', base_url: '', api_key: '' })
   const [test, setTest] = useState<{ ok: boolean; msg: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [models, setModels] = useState<string[] | null>(null)  // what the provider offers for this key
+  const [modelErr, setModelErr] = useState('')
+  const [loadingModels, setLoadingModels] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -38,6 +41,24 @@ export default function AiSettings({ open, onClose }: { open: boolean; onClose: 
   const pick = (id: string) => { setF({ provider: id, model: '', base_url: '', api_key: '' }); setTest(null) }
   // blank model/url = provider default; blank key = keep saved key
   const body = () => ({ provider: f.provider, model: f.model.trim(), base_url: f.base_url.trim(), api_key: f.api_key.trim() || null })
+
+  const sameProvider = cfg?.provider === f.provider
+  const canList = f.provider !== 'none' && (f.provider === 'ollama' || f.provider === 'custom' || !!f.api_key.trim() || (sameProvider && !!cfg?.has_key))
+  const loadModels = async (b = body()) => {
+    setLoadingModels(true)
+    try {
+      const r = await api<{ ok: boolean; models?: string[]; error?: string }>('/api/ai/config/models', { body: b, today: false })
+      setModels(r.ok ? r.models! : null)
+      setModelErr(r.ok ? '' : r.error!)
+    } catch (e: any) {
+      setModels(null); setModelErr(e.message)
+    } finally {
+      setLoadingModels(false)
+    }
+  }
+  // list the provider's models once the sheet shows a usable key (or a keyless provider); a typed key loads on blur
+  useEffect(() => { setModels(null); setModelErr(''); if (open && cfg && canList && !f.api_key) loadModels() }, [open, cfg, f.provider])  // eslint-disable-line react-hooks/exhaustive-deps
+  const options = (models ?? p.models).includes(f.model) || !f.model ? (models ?? p.models) : [f.model, ...(models ?? p.models)]
 
   const run = async (kind: 'test' | 'save') => {
     setBusy(true)
@@ -58,7 +79,6 @@ export default function AiSettings({ open, onClose }: { open: boolean; onClose: 
     }
   }
 
-  const sameProvider = cfg?.provider === f.provider
   return (
     <Sheet open={open} onClose={onClose} title={t('AI assistant')}>
       <div className="space-y-4 px-5 pb-8">
@@ -81,14 +101,25 @@ export default function AiSettings({ open, onClose }: { open: boolean; onClose: 
                     </span>
                     <input className="input" type="password" autoComplete="off" value={f.api_key}
                       placeholder={sameProvider && cfg.has_key ? t('Saved key ····{hint} (leave blank to keep)', { hint: cfg.key_hint }) : t('Paste your API key')}
-                      onChange={(e) => setF({ ...f, api_key: e.target.value })} />
+                      onChange={(e) => setF({ ...f, api_key: e.target.value })} onBlur={() => f.api_key.trim() && loadModels()} />
                   </label>
                 )}
                 <label className="block">
-                  <span className="mb-1 block text-sm font-bold text-muted">{t('Model')}</span>
-                  <input className="input" list="ai-models" value={f.model} placeholder={defaults?.model || t('model id')}
-                    onChange={(e) => setF({ ...f, model: e.target.value })} />
-                  <datalist id="ai-models">{p.models.map((m) => <option key={m} value={m} />)}</datalist>
+                  <span className="mb-1 flex items-center justify-between text-sm font-bold text-muted">
+                    {t('Model')}
+                    {canList && <button type="button" className="flex items-center gap-1 text-pink-500" disabled={loadingModels} onClick={() => loadModels()}>
+                      <RefreshCw size={13} className={loadingModels ? 'animate-spin' : ''} /> {t('Refresh list')}</button>}
+                  </span>
+                  {options.length || defaults?.model ? (
+                    <select className="input" value={f.model} onChange={(e) => setF({ ...f, model: e.target.value })}>
+                      <option value="">{defaults?.model ? t('Default ({model})', { model: defaults.model }) : t('Choose a model')}</option>
+                      {options.map((m) => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  ) : (  // OpenAI-compatible server whose model list can't be read: last resort
+                    <input className="input" value={f.model} placeholder={t('model id')} onChange={(e) => setF({ ...f, model: e.target.value })} />
+                  )}
+                  {modelErr ? <span className="mt-1 block text-xs text-pink-600">{t('Couldn\'t load the model list: {error}', { error: modelErr })}</span>
+                    : !canList ? <span className="mt-1 block text-xs text-muted">{t('Paste your API key to load the models you can use.')}</span> : null}
                 </label>
                 <details open={f.provider === 'custom' || f.provider === 'ollama'}>
                   <summary className="cursor-pointer text-sm font-bold text-muted">{t('Advanced')}</summary>

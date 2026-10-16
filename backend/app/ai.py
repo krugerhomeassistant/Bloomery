@@ -147,6 +147,36 @@ def _status_error(r: httpx.Response) -> AIError:
     return AIError(f"AI provider returned {r.status_code}: {detail}")
 
 
+_NOT_CHAT = re.compile(
+    r"embed|tts|whisper|dall-e|image|audio|realtime|transcribe|moderation|search|davinci|babbage", re.I
+)
+
+
+async def list_models(cfg: dict) -> list[str]:
+    """Model ids the provider says this key can use (Anthropic /v1/models, OpenAI-style /models, Ollama /v1/models)."""
+    provider, base, key = cfg["provider"], cfg["base_url"], cfg["api_key"]
+    if provider not in PROVIDERS or not base:
+        raise AIError("Base URL is required for this provider.")
+    if provider == "anthropic":
+        url, headers = f"{base}/v1/models?limit=1000", {"x-api-key": key, "anthropic-version": "2023-06-01"}
+    else:
+        url, headers = f"{base}/models", ({"Authorization": f"Bearer {key}"} if key else {})
+    try:
+        async with httpx.AsyncClient(timeout=15) as c:
+            r = await c.get(url, headers=headers)
+    except httpx.HTTPError as e:
+        raise AIError(f"Could not reach AI provider at {base}: {e.__class__.__name__}") from e
+    if r.status_code >= 400:
+        raise _status_error(r)
+    try:
+        ids = [m["id"] for m in r.json()["data"] if isinstance(m.get("id"), str)]
+    except (ValueError, KeyError, TypeError) as e:
+        raise AIError("That provider didn't return a model list.") from e
+    if provider == "openai":  # the account also lists embedding, image and audio models
+        ids = [i for i in ids if i.startswith(("gpt-", "chatgpt-", "o1", "o3", "o4", "o5")) and not _NOT_CHAT.search(i)]
+    return sorted(set(ids)) if provider != "anthropic" else ids  # Anthropic lists newest first
+
+
 async def complete(system: str, messages: list[dict], max_tokens: int = 700, cfg: dict | None = None) -> str:
     cfg = cfg or config()
     url, headers, body = _request(cfg, system, messages, max_tokens, stream=False)

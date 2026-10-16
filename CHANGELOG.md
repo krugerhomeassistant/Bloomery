@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-10-16
+
 ## [2.1.0] - 2026-10-06
 
 ### Added
@@ -149,7 +151,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v1.9.0...v2.0.0

@@ -1,6 +1,11 @@
 // Afrikaans. Keys are the exact English strings passed to t() / N_(); keep {placeholders} identical. `npm run i18n` lists any that are missing.
 // Native-speaker review welcome.
 export const STRINGS: Record<string, string> = {
+  "Refresh list": "Verfris lys",
+  "Default ({model})": "Verstek ({model})",
+  "Choose a model": "Kies 'n model",
+  "Couldn't load the model list: {error}": "Kon nie die modellys laai nie: {error}",
+  "Paste your API key to load the models you can use.": "Plak jou API-sleutel om die modelle wat jy kan gebruik te laai.",
   "My words": "My woorde",
   "Swap any word Bloomery uses for your own, in every screen, message and notification. Whole words only, and capitals are kept.": "Ruil enige woord wat Bloomery gebruik vir jou eie, op elke skerm, in elke boodskap en kennisgewing. Net hele woorde, en hoofletters bly soos dit is.",
   "Instead of…": "In plaas van…",

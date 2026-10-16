@@ -1,9 +1,9 @@
 # ACTIVE CONTEXT
 
-**Date:** 2026-10-06 · **Version:** 2.1.0
+**Date:** 2026-10-06 · **Version:** 2.2.0
 
 ## Current subtask
-v2.1.0: My words (per-user word swaps) on top of v2.0.1 conversational Afrikaans.
+v2.2.0: AI model picker (lists provider models). Earlier today: My words (2.1.0).
 
 ## Last execution results
 - Backend 45/45, ruff clean, frontend build + `npm run i18n` pass (515 strings). Visual check of af screens done.

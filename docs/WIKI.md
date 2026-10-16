@@ -80,3 +80,6 @@ One full circle = one cycle. Pink arc = period days, teal arc = fertile window (
 
 ## My words (v2.1)
 Per-user word swaps: Setting `words:<uid>` = JSON list of [from, to] (PUT /api/words, returned in /api/auth/me as `words`). Applied after translation to every `_()` / `t()` string (before placeholders are filled, never inside `{}` or to typed data), to the server catalog labels in the frontend, and mentioned in the AI system prompt. Max 200 pairs, 40 chars each.
+
+## Model picker (v2.2)
+AI settings → Model is a `<select>` filled by POST /api/ai/config/models (admin only; uses unsaved form values, falls back to the stored key): Anthropic `GET /v1/models`, others `GET {base}/models` (OpenAI list filtered to chat models). Failure → built-in presets + error; keyless custom servers fall back to a text field.
