@@ -55,6 +55,7 @@ SYMPTOM_TIPS = {
     "symptoms:cramps": N_("Heat, gentle stretching and staying hydrated can take the edge off."),
     "symptoms:headache": N_("Hormone dips can trigger headaches — water, regular meals and rest help."),
     "symptoms:tender_breasts": N_("A soft, supportive bra and less salt/caffeine can ease tenderness."),
+    "symptoms:swollen_breasts": N_("Less salt, a supportive bra and a warm compress can ease swelling."),
     "symptoms:fatigue": N_("Iron-rich food and an earlier night can help your energy recover."),
     "symptoms:insomnia": N_("Try a cooler room and no screens for the last hour before bed."),
     "symptoms:backache": N_("Heat on your lower back and gentle cat-cow stretches can help."),

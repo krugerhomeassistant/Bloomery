@@ -11,6 +11,7 @@ CATALOG: list[dict] = [
             ("fine", "Everything is fine", "👍"),
             ("cramps", "Cramps", "🌀"),
             ("tender_breasts", "Tender breasts", "🍈"),
+            ("swollen_breasts", "Swollen breasts", "🎈"),
             ("headache", "Headache", "🤕"),
             ("acne", "Acne", "🔴"),
             ("backache", "Backache", "🦴"),

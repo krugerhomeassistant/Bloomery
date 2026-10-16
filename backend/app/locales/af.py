@@ -198,6 +198,8 @@ STRINGS: dict[str, str] = {
     "Everything is fine": "Als is lekker",
     "Cramps": "Krampe",
     "Tender breasts": "Teer borste",
+    "Swollen breasts": "Geswelde borste",
+    "Less salt, a supportive bra and a warm compress can ease swelling.": "Minder sout, 'n bra met goeie ondersteuning en 'n warm kompres maak die swelsel gemakliker.",
     "Headache": "Hoofpyn",
     "Acne": "Puisies",
     "Backache": "Rugpyn",
