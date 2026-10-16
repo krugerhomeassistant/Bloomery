@@ -78,3 +78,4 @@ Format: [Problem] → [Root cause] → [Verified solution]
 74. **Missed `_()` in backend status label** (`"Ovulation in"`) → grep `"label"|"headline"` for bare strings after adding a language.
 75. **Word swap could corrupt `{placeholders}`** (replacing `n` inside `{n}`) → lookarounds exclude `{`/`}` and swaps run before `.format()`; typed text (names, notes) is never swapped.
 76. **`pkill -f` pattern matched my own shell command** → killed the tool shell; start servers with `setsid nohup … &` and avoid `pkill -f` with a pattern that appears in the same command line.
+77. **Blank AI insight card** → model returned empty text (reasoning model ate `max_tokens`), stored as a cached "ai" insight → `ai.complete` raises on empty, daily endpoint ignores empty cache, budget 400→1000.

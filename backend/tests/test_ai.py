@@ -69,3 +69,11 @@ def test_list_models(monkeypatch):
     assert asyncio.run(ai.list_models(cfg("openai"))) == ["gpt-5", "gpt-5-mini", "o3-mini"]
     with pytest.raises(ai.AIError):
         asyncio.run(ai.list_models(ai.config({"provider": "custom"})))  # no base URL
+
+
+def test_empty_reply_is_an_error(monkeypatch):
+    handler = lambda req: httpx.Response(200, json={"content": [{"type": "thinking"}]})
+    real = httpx.AsyncClient
+    monkeypatch.setattr(httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(handler), **kw))
+    with pytest.raises(ai.AIError, match="empty reply"):
+        asyncio.run(ai.complete("s", [{"role": "user", "content": "hi"}], cfg=ai.config({"provider": "anthropic", "api_key": "k"})))

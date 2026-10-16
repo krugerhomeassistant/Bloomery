@@ -5,6 +5,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-10-16
+
+### Fixed
+- Daily AI insight card stayed blank when the model returned no text (e.g. a reasoning model using its whole token budget). Empty replies are now an error with a hint and fall back to the rule-based insight; they are never cached, and the daily token budget is higher.
+
 ## [2.2.0] - 2026-10-16
 
 ## [2.1.0] - 2026-10-06
@@ -151,7 +156,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.0.0...v2.0.1

@@ -192,7 +192,10 @@ async def complete(system: str, messages: list[dict], max_tokens: int = 700, cfg
         text = "".join(b.get("text", "") for b in j.get("content", []) if b.get("type") == "text")
     else:
         text = j["choices"][0]["message"]["content"] or ""
-    return _THINK.sub("", text).strip()
+    text = _THINK.sub("", text).strip()
+    if not text:  # e.g. a reasoning model spent the whole token budget thinking
+        raise AIError(f"{cfg['model'] or 'The model'} returned an empty reply. Pick another model in AI settings.")
+    return text
 
 
 async def stream(system: str, messages: list[dict], max_tokens: int = 700, cfg: dict | None = None):

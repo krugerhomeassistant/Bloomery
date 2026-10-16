@@ -93,13 +93,13 @@ async def daily(user: UserDep, db: SessionDep, today: TodayDep, refresh: bool = 
     if not ai.enabled() or not eng.periods:
         return {"source": "rules", "content": ai.fallback_insight(eng)}
     cached = db.exec(select(InsightCache).where(InsightCache.user_id == user.id, InsightCache.day == today)).first()
-    if cached and not refresh:
+    if cached and cached.content.strip() and not refresh:
         return {"source": "ai", "content": cached.content, "cached": True}
     try:
         text = await ai.complete(
             ai.system() + "\n\nUSER DATA (JSON):\n" + ai.build_context(eng, _logs(db, user), user),
             [{"role": "user", "content": ai.daily_prompt(today)}],
-            max_tokens=400,
+            max_tokens=1000,
         )
     except ai.AIError as e:
         return {"source": "rules", "content": ai.fallback_insight(eng), "error": str(e)}
