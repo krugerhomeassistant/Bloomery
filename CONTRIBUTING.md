@@ -24,6 +24,8 @@ Strings are written in English in the code and looked up by their exact text: `t
 
 ## Checks (same as CI)
 
+`scripts/check.sh` runs the lint, test and build gates below; `ln -sf ../../scripts/check.sh .git/hooks/pre-push` runs it before every push.
+
 ```bash
 pip install ruff && ruff check . && ruff format --check .
 python -m pytest backend/tests

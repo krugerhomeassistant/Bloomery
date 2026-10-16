@@ -79,3 +79,4 @@ Format: [Problem] → [Root cause] → [Verified solution]
 75. **Word swap could corrupt `{placeholders}`** (replacing `n` inside `{n}`) → lookarounds exclude `{`/`}` and swaps run before `.format()`; typed text (names, notes) is never swapped.
 76. **`pkill -f` pattern matched my own shell command** → killed the tool shell; start servers with `setsid nohup … &` and avoid `pkill -f` with a pattern that appears in the same command line.
 77. **Blank AI insight card** → model returned empty text (reasoning model ate `max_tokens`), stored as a cached "ai" insight → `ai.complete` raises on empty, daily endpoint ignores empty cache, budget 400→1000.
+78. **CI failed on `ruff format --check`** (2.2.1) because I ran only `ruff check` and my venv had no ruff → `scripts/check.sh` mirrors CI and is the pre-push hook; always run it (and watch the run with `gh run watch`) before declaring a release done.

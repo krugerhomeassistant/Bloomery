@@ -76,4 +76,8 @@ def test_empty_reply_is_an_error(monkeypatch):
     real = httpx.AsyncClient
     monkeypatch.setattr(httpx, "AsyncClient", lambda **kw: real(transport=httpx.MockTransport(handler), **kw))
     with pytest.raises(ai.AIError, match="empty reply"):
-        asyncio.run(ai.complete("s", [{"role": "user", "content": "hi"}], cfg=ai.config({"provider": "anthropic", "api_key": "k"})))
+        asyncio.run(
+            ai.complete(
+                "s", [{"role": "user", "content": "hi"}], cfg=ai.config({"provider": "anthropic", "api_key": "k"})
+            )
+        )
