@@ -1,12 +1,12 @@
-fastapi==0.142.1
+fastapi==0.146.0
 uvicorn[standard]==0.54.0
-sqlmodel==0.0.47
+sqlmodel==0.0.48
 argon2-cffi==25.1.0
 httpx==0.28.1
-pydantic-settings==2.15.0
+pydantic-settings==2.16.0
 itsdangerous==2.2.0
-tzdata==2026.4
+tzdata==2026.5
 cryptography==50.0.2
 webauthn==3.0.1
 http-ece==1.2.1
-py-vapid==1.9.4
+py-vapid==1.9.6
