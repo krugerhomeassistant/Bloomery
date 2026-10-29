@@ -12,4 +12,4 @@ v2.3.0: swollen breasts symptom. 2.2.1: fix blank AI insight (empty model reply)
 - HACS default store PR must come from the user's account.
 
 ## Immediate next step
-Verify CI + release v2.0.0. Native-speaker review of Afrikaans welcome. 29 Oct: merge Node 26 PR (#1) when LTS.
+Native-speaker review of Afrikaans welcome. Node 26 adopted 2026-10-29 (Unreleased).

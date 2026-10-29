@@ -125,7 +125,7 @@
 - [x] CI creates tag + release when main has an unreleased version (tag push blocked from this sandbox)
 - [ ] User: add GitHub repo topics (HACS check)
 - [x] Dependabot majors reviewed: TypeScript 7 + Python 3.14 merged (v1.2.1); tests on 3.14.7, cp314 wheels for amd64+arm64 verified
-- [ ] Merge Node 26 PR (#1) once Node 26 is LTS (~2026-10-28); build already verified on v26.10.0
+- [x] Node 26 (LTS 2026-10-28): Dockerfile + CI bumped directly on main (Dependabot PR #1 was closed and stale)
 - [ ] Optional: submit to HACS default store (needs release + passing HACS action)
 
 ## Phase 16 — Backups (v1.3.0)

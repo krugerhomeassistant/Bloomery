@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Docker build and CI now use Node 26 (LTS since 2026-10-28).
+
 ## [2.3.0] - 2026-10-16
 
 ### Added
