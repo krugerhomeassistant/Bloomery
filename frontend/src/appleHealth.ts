@@ -3,7 +3,7 @@
 const TYPES = new Set([
   'MenstrualFlow', 'IntermenstrualBleeding', 'CervicalMucusQuality', 'OvulationTestResult', 'PregnancyTestResult',
   'BasalBodyTemperature', 'AppleSleepingWristTemperature', 'AbdominalCramps', 'Bloating', 'BreastPain', 'Headache', 'Acne', 'LowerBackPain', 'Fatigue',
-  'Nausea', 'MoodChanges', 'SleepChanges', 'HotFlashes', 'Dizziness', 'Constipation', 'Diarrhea', 'AppetiteChanges', 'PelvicPain',
+  'Nausea', 'Vomiting', 'MoodChanges', 'SleepChanges', 'HotFlashes', 'Dizziness', 'Constipation', 'Diarrhea', 'AppetiteChanges', 'PelvicPain',
 ])
 const attr = (tag: string, name: string) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1] ?? ''
 

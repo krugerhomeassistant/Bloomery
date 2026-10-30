@@ -63,6 +63,7 @@ SYMPTOM_TIPS = {
     "symptoms:cravings": N_("Totally normal. Pair treats with protein or fibre to avoid energy crashes."),
     "digestion:bloating": N_("Less salt, more water and a short walk after meals can reduce bloating."),
     "digestion:nausea": N_("Small, bland meals and ginger tea can settle your stomach."),
+    "digestion:vomiting": N_("Sip water or an electrolyte drink in small amounts. Seek care if you can't keep fluids down."),
     "mood:anxious": N_("Slow breathing (in 4, out 6) for a couple of minutes calms the nervous system."),
     "mood:irritated": N_("Hormone shifts can shorten your fuse — a short walk or some quiet time helps."),
     "mood:sad": N_(

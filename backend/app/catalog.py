@@ -92,6 +92,7 @@ CATALOG: list[dict] = [
         "color": "#20C997",
         "items": [
             ("nausea", "Nausea", "🤢"),
+            ("vomiting", "Vomiting", "🤮"),
             ("bloating", "Bloating", "🎈"),
             ("constipation", "Constipation", "🧱"),
             ("diarrhea", "Diarrhea", "🌊"),

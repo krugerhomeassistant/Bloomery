@@ -211,6 +211,8 @@ STRINGS: dict[str, str] = {
     "Vaginal dryness": "Vaginale droogheid",
     "Bloating": "Opgeblasenheid",
     "Nausea": "Naarheid",
+    "Vomiting": "Braking",
+    "Sip water or an electrolyte drink in small amounts. Seek care if you can't keep fluids down.": "Neem klein slukkies water of 'n elektroliet-drankie. Kry hulp as jy niks binne kan hou nie.",
     "Dizziness": "Duiseligheid",
     "Hot flashes": "Warm gloede",
     "Night sweats": "Nagsweet",

@@ -5,6 +5,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-30
+
+### Added
+- **Vomiting** symptom (Digestion and stool), with a care tip, Apple Health import and Afrikaans translation.
+
 ### Changed
 - Docker build and CI now use Node 26 (LTS since 2026-10-28).
 
@@ -164,7 +169,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - First release: cycle tracking, predictions, insights, AI assistant, Docker image.
 
-[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/krugerhomeassistant/Bloomery/compare/v2.1.0...v2.2.0

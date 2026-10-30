@@ -59,6 +59,7 @@ APPLE_SYMPTOMS = {
     "AppetiteChanges": "symptoms:cravings",
     "Bloating": "digestion:bloating",
     "Nausea": "digestion:nausea",
+    "Vomiting": "digestion:vomiting",
     "Constipation": "digestion:constipation",
     "Diarrhea": "digestion:diarrhea",
     "MoodChanges": "mood:mood_swings",
