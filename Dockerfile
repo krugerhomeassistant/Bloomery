@@ -7,7 +7,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ---- runtime ----
-FROM python:3.14-slim
+FROM python:3.15-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     BLOOMERY_DATA_DIR=/data BLOOMERY_STATIC_DIR=/app/static
 WORKDIR /app
